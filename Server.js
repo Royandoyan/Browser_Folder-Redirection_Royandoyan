@@ -23,7 +23,7 @@ const upload = multer({ storage: storage });
 
 // Serve HTML file
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, '/templates/index.html'));
+  res.sendFile(path.join(__dirname, 'templates', 'index.html'));
 });
 
 // File upload endpoint
@@ -33,7 +33,7 @@ app.post('/upload', upload.single('file'), (req, res) => {
 
 // Create folder endpoint
 app.post('/create-folder', (req, res) => {
-  const folderName = req.query.folderName;
+  const folderName = req.body.folderName; // Change from query to body (HTML form method="POST")
   const folderPath = path.join(__dirname, 'uploads', folderName);
   if (!fs.existsSync(folderPath)) {
     fs.mkdirSync(folderPath);
