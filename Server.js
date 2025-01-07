@@ -5,16 +5,19 @@ const fs = require('fs');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Log __dirname for debugging
+console.log("__dirname:", __dirname);
+
 // Setup storage for file uploads
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    // Use an absolute path for the uploads folder
-    const dir = path.join(__dirname, 'uploads');
+    // Use an absolute path for the uploads folder, making sure it's relative to __dirname
+    const uploadDir = path.join(__dirname, 'uploads');
     // Ensure the directory exists or create it
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir);
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir);
     }
-    cb(null, dir);
+    cb(null, uploadDir);
   },
   filename: (req, file, cb) => {
     cb(null, file.originalname);
