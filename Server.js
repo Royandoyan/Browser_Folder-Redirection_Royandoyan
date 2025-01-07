@@ -8,15 +8,16 @@ const PORT = process.env.PORT || 3000;
 // Setup storage for file uploads
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    const dir = path.join(__dirname, 'uploads'); // Ensure the path is correct
-    console.log('__dirname:', __dirname); // Debugging line
+    // Use an absolute path for the uploads folder
+    const dir = path.join(__dirname, 'uploads');
+    // Ensure the directory exists or create it
     if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir); // Creates the folder if it doesn't exist
+      fs.mkdirSync(dir);
     }
     cb(null, dir);
   },
   filename: (req, file, cb) => {
-    cb(null, file.originalname); // Save file with its original name
+    cb(null, file.originalname);
   }
 });
 
@@ -24,11 +25,14 @@ const upload = multer({ storage: storage });
 
 // Serve HTML file
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'templates', 'index.html'));
+  res.sendFile(path.join(__dirname, '/templates/index.html'));
 });
 
 // File upload endpoint
 app.post('/upload', upload.single('file'), (req, res) => {
+  if (!req.file) {
+    return res.status(400).send('No file uploaded');
+  }
   res.send('File uploaded successfully');
 });
 
