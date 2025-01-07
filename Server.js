@@ -21,11 +21,9 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage });
 
-// Serve static files from the 'templates' folder
-app.use(express.static(path.join(__dirname, 'templates'))); // Ensure this line is included
-
-// Serve the index.html page
+// Serve HTML file
 app.get('/', (req, res) => {
+  // Use __dirname to make sure it's resolved correctly for deployment
   res.sendFile(path.join(__dirname, 'templates', 'index.html'));
 });
 
@@ -36,7 +34,7 @@ app.post('/upload', upload.single('file'), (req, res) => {
 
 // Create folder endpoint
 app.post('/create-folder', (req, res) => {
-  const folderName = req.body.folderName;
+  const folderName = req.query.folderName;
   const folderPath = path.join(__dirname, 'uploads', folderName);
   if (!fs.existsSync(folderPath)) {
     fs.mkdirSync(folderPath);
