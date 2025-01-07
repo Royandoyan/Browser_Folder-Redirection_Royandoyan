@@ -21,8 +21,10 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage });
 
-// Serve HTML file
-app.use(express.static(path.join(__dirname, 'templates'))); // Serve static files from 'templates' folder
+// Serve static files from the 'templates' folder
+app.use(express.static(path.join(__dirname, 'templates'))); // Ensure this line is included
+
+// Serve the index.html page
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'templates', 'index.html'));
 });
