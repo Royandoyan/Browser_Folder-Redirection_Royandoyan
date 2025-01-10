@@ -7,11 +7,17 @@ const WebSocket = require('ws');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Serve static files (e.g., images, CSS, JS) from the 'uploads' folder
+app.use(express.static(path.join(__dirname, 'uploads')));
+app.use(express.static(path.join(__dirname, 'public')));  // Serve static assets
+
 // Middleware to parse JSON
 app.use(express.json());
 
-// Serve static files from the uploads folder
-app.use(express.static(path.join(__dirname, 'uploads')));
+// Route to serve the index.html at the root path
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'index.html'));
+});
 
 // Configure multer to handle file uploads
 const storage = multer.diskStorage({
