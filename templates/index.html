@@ -3,52 +3,38 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Browser File Redirection</title>
+  <title>File Manager</title>
+  <style>
+    #file-structure div {
+      margin: 5px 0;
+    }
+    .folder {
+      font-weight: bold;
+    }
+    .file {
+      font-style: italic;
+    }
+  </style>
 </head>
 <body>
-  <h1>Browser File Redirection</h1>
+  <h1>File Manager</h1>
 
-  <!-- File Upload -->
-  <h2>Upload File</h2>
-  <form action="/upload" method="POST" enctype="multipart/form-data">
-    <label for="file">Select file:</label>
-    <input type="file" name="file" id="file" required>
-    <button type="submit">Upload</button>
-  </form>
-
-  <!-- Create Folder -->
-  <h2>Create Folder</h2>
   <form id="create-folder-form">
-    <label for="folderName">Folder Name:</label>
-    <input type="text" id="folderName" required>
+    <input type="text" id="folderName" placeholder="Folder Name" required>
     <button type="submit">Create Folder</button>
   </form>
 
-  <!-- File Structure -->
-  <h2>Folders and Files</h2>
+  <form id="upload-form">
+    <input type="file" id="fileInput" required>
+    <button type="submit">Upload File</button>
+  </form>
+
+  <h2>Files and Folders:</h2>
   <div id="file-structure"></div>
 
   <script>
     const ws = new WebSocket(`ws://${window.location.host}`);
 
-    // Function to fetch and display file structure
-    async function fetchFileStructure() {
-      const response = await fetch('/files');
-      const data = await response.json();
-      const container = document.getElementById('file-structure');
-      container.innerHTML = '';
-
-      data.forEach(item => {
-        const element = document.createElement('div');
-        element.textContent = item.name;
-        if (item.isDirectory) {
-          element.style.fontWeight = 'bold';
-        }
-        container.appendChild(element);
-      });
-    }
-
-    // Listen for WebSocket updates
     ws.onmessage = (event) => {
       const message = JSON.parse(event.data);
       if (message.type === 'update') {
@@ -56,15 +42,49 @@
       }
     };
 
-    // Handle create folder form submission
+    async function fetchFileStructure() {
+      const response = await fetch('/files');
+      const data = await response.json();
+
+      const container = document.getElementById('file-structure');
+      container.innerHTML = ''; // Clear previous content
+
+      data.forEach(item => {
+        const element = document.createElement('div');
+        element.textContent = item.name;
+        element.className = item.isDirectory ? 'folder' : 'file';
+        container.appendChild(element);
+      });
+    }
+
     document.getElementById('create-folder-form').addEventListener('submit', async (e) => {
       e.preventDefault();
       const folderName = document.getElementById('folderName').value;
-      await fetch(`/create-folder?folderName=${folderName}`, { method: 'POST' });
+      const response = await fetch(`/create-folder?folderName=${folderName}`, { method: 'POST' });
+      if (response.ok) {
+        alert('Folder created successfully');
+        fetchFileStructure();
+      } else {
+        alert('Failed to create folder');
+      }
     });
 
-    // Fetch the initial file structure
-    fetchFileStructure();
+    document.getElementById('upload-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const fileInput = document.getElementById('fileInput');
+      const formData = new FormData();
+      formData.append('file', fileInput.files[0]);
+
+      const response = await fetch('/upload', { method: 'POST', body: formData });
+      if (response.ok) {
+        alert('File uploaded successfully');
+        fetchFileStructure();
+      } else {
+        alert('Failed to upload file');
+      }
+    });
+
+    fetchFileStructure(); // Load files and folders on page load
   </script>
 </body>
 </html>
