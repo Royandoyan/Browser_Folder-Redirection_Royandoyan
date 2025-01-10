@@ -6,31 +6,49 @@
   <title>File Manager</title>
   <style>
     #file-structure div {
-      margin: 5px 0;
+      margin: 20px;
       display: flex;
+      flex-direction: column;
       align-items: center;
     }
-    .folder {
+
+    .folder, .file {
+      font-size: 16px;
+      text-align: center;
       font-weight: bold;
-      margin-right: 10px;
-      font-size: 20px;
     }
+
+    .folder {
+      font-size: 18px;
+      margin-top: 10px;
+    }
+
     .file {
+      font-size: 16px;
       font-style: italic;
-      margin-right: 10px;
+      margin-top: 10px;
     }
-    .file img {
-      max-width: 50px;
-      max-height: 50px;
-      margin-right: 10px;
-    }
+
     .folder-icon {
-      width: 20px;
-      height: 20px;
-      background-image: url(folder.png); /* You can replace this with any folder icon */
+      width: 100px; /* Increased folder icon size */
+      height: 100px;
+      background-image: url('folder.png'); /* Replace with actual folder icon image */
       background-size: contain;
       background-repeat: no-repeat;
-      margin-right: 10px;
+      margin-bottom: 10px;
+    }
+
+    .file img {
+      width: 150px; /* Increased image size */
+      height: 150px;
+      object-fit: cover; /* Ensures the image fits and is not distorted */
+      border-radius: 10px; /* Optional for rounded corners */
+      margin-bottom: 10px;
+    }
+
+    /* Ensure the image container size is large enough */
+    .file img, .folder-icon {
+      display: block;
     }
   </style>
 </head>
@@ -69,7 +87,9 @@
 
       data.forEach(item => {
         const element = document.createElement('div');
+        
         if (item.isDirectory) {
+          // Folder element
           const folderIcon = document.createElement('span');
           folderIcon.className = 'folder-icon';
           element.appendChild(folderIcon);
@@ -79,6 +99,7 @@
           folderName.className = 'folder';
           element.appendChild(folderName);
         } else {
+          // File element
           const fileName = document.createElement('span');
           fileName.textContent = item.name;
           fileName.className = 'file';
@@ -86,12 +107,14 @@
           // Show image preview for image files
           if (item.name.match(/\.(jpeg|jpg|gif|png)$/i)) {
             const imgPreview = document.createElement('img');
-            imgPreview.src = `/uploads/${item.name}`;
+            imgPreview.src = `/uploads/${item.name}`; // Make sure the path is correct
+            imgPreview.alt = item.name; // Set alt text for better accessibility
             element.appendChild(imgPreview);
           }
 
           element.appendChild(fileName);
         }
+
         container.appendChild(element);
       });
     }
