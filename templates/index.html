@@ -9,16 +9,14 @@
 <body>
   <h1>File Manager</h1>
 
-  <!-- Folder Creation Form -->
   <form id="create-folder-form">
     <input type="text" id="folderName" placeholder="Folder Name" required>
     <button type="submit">Create Folder</button>
   </form>
 
-  <!-- File Upload Form -->
   <form id="upload-form" enctype="multipart/form-data">
-    <input type="file" name="files" accept="*/*" required multiple>
-    <button type="submit">Upload Files</button>
+    <input type="file" id="fileInput" accept="*/*" required multiple>
+    <button type="submit">Upload File</button>
   </form>
 
   <h2>Files and Folders:</h2>
