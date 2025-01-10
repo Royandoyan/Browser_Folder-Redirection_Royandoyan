@@ -7,12 +7,30 @@
   <style>
     #file-structure div {
       margin: 5px 0;
+      display: flex;
+      align-items: center;
     }
     .folder {
       font-weight: bold;
+      margin-right: 10px;
+      font-size: 20px;
     }
     .file {
       font-style: italic;
+      margin-right: 10px;
+    }
+    .file img {
+      max-width: 50px;
+      max-height: 50px;
+      margin-right: 10px;
+    }
+    .folder-icon {
+      width: 20px;
+      height: 20px;
+      background-image: url('folder-icon.png'); /* You can replace this with any folder icon */
+      background-size: contain;
+      background-repeat: no-repeat;
+      margin-right: 10px;
     }
   </style>
 </head>
@@ -33,9 +51,7 @@
   <div id="file-structure"></div>
 
   <script>
-    // Dynamically determine the WebSocket URL based on the current page's protocol (http or https)
-    const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
-    const ws = new WebSocket(`${protocol}://${window.location.host}`);
+    const ws = new WebSocket(`${window.location.protocol === 'https:' ? 'wss' : 'ws'}://${window.location.host}`);
 
     ws.onmessage = (event) => {
       const message = JSON.parse(event.data);
@@ -53,8 +69,29 @@
 
       data.forEach(item => {
         const element = document.createElement('div');
-        element.textContent = item.name;
-        element.className = item.isDirectory ? 'folder' : 'file';
+        if (item.isDirectory) {
+          const folderIcon = document.createElement('span');
+          folderIcon.className = 'folder-icon';
+          element.appendChild(folderIcon);
+
+          const folderName = document.createElement('span');
+          folderName.textContent = item.name;
+          folderName.className = 'folder';
+          element.appendChild(folderName);
+        } else {
+          const fileName = document.createElement('span');
+          fileName.textContent = item.name;
+          fileName.className = 'file';
+
+          // Show image preview for image files
+          if (item.name.match(/\.(jpeg|jpg|gif|png)$/i)) {
+            const imgPreview = document.createElement('img');
+            imgPreview.src = `/uploads/${item.name}`;
+            element.appendChild(imgPreview);
+          }
+
+          element.appendChild(fileName);
+        }
         container.appendChild(element);
       });
     }
