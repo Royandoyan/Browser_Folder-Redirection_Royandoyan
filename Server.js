@@ -26,7 +26,7 @@ const storage = multer.diskStorage({
     cb(null, file.originalname);
   }
 });
-const upload = multer({ storage }).array('files');  // For multiple files
+const upload = multer({ storage }).array('files');
 
 // Route to serve index page
 app.get('/', (req, res) => {

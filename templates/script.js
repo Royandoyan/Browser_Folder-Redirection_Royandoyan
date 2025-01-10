@@ -27,52 +27,26 @@ async function fetchFileStructure() {
       folderName.className = 'folder';
       element.appendChild(folderName);
     } else {
-      const fileName = document.createElement('span');
-      fileName.textContent = item.name;
-      fileName.className = 'file';
+      const fileLink = document.createElement('a');
+      fileLink.href = `/uploads/${item.name}`;
+      fileLink.target = '_blank';
 
-      if (item.name.match(/\.(jpeg|jpg|gif|png)$/i)) {
+      if (item.name.match(/\.(jpeg|jpg|png|gif)$/i)) {
         const imgPreview = document.createElement('img');
         imgPreview.src = `/uploads/${item.name}`;
-        element.appendChild(imgPreview);
+        imgPreview.alt = item.name;
+        imgPreview.style.width = '150px';
+        imgPreview.style.height = 'auto';
+        fileLink.appendChild(imgPreview);
       } else {
-        const fileIcon = document.createElement('img');
-        fileIcon.src = getFileIcon(item.name);
-        fileIcon.className = 'file-icon';
-        element.appendChild(fileIcon);
+        fileLink.textContent = item.name;
+        fileLink.className = 'file';
       }
 
-      const fileType = document.createElement('span');
-      fileType.textContent = getFileExtension(item.name);
-      fileType.className = 'file-type';
-      element.appendChild(fileType);
-
-      element.appendChild(fileName);
+      element.appendChild(fileLink);
     }
     container.appendChild(element);
   });
-}
-
-function getFileIcon(fileName) {
-  const extension = fileName.split('.').pop().toLowerCase();
-  switch (extension) {
-    case 'pdf': return 'icons/pdf-icon.png';
-    case 'doc':
-    case 'docx': return 'icons/word-icon.png';
-    case 'ppt':
-    case 'pptx': return 'icons/ppt-icon.png';
-    case 'xls':
-    case 'xlsx': return 'icons/excel-icon.png';
-    case 'zip': return 'icons/zip-icon.png';
-    case 'mp4':
-    case 'mkv':
-    case 'mov': return 'icons/video-icon.png';
-    default: return 'icons/file-icon.png';
-  }
-}
-
-function getFileExtension(fileName) {
-  return fileName.split('.').pop().toUpperCase();
 }
 
 // Handle folder creation
@@ -107,4 +81,4 @@ document.getElementById('upload-form').addEventListener('submit', async (e) => {
   }
 });
 
-fetchFileStructure(); 
+fetchFileStructure();
