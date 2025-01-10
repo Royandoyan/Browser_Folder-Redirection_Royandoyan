@@ -32,17 +32,59 @@ async function fetchFileStructure() {
       fileName.textContent = item.name;
       fileName.className = 'file';
 
-      // Show image preview only after upload
+      // Show the image for image files
       if (item.name.match(/\.(jpeg|jpg|gif|png)$/i)) {
         const imgPreview = document.createElement('img');
         imgPreview.src = `/uploads/${item.name}`;
         element.appendChild(imgPreview);
+      } else {
+        // Show a generic icon for other file types
+        const fileIcon = document.createElement('img');
+        fileIcon.src = getFileIcon(item.name);
+        fileIcon.className = 'file-icon';
+        element.appendChild(fileIcon);
       }
+
+      const fileType = document.createElement('span');
+      fileType.textContent = getFileExtension(item.name);
+      fileType.className = 'file-type';
+      element.appendChild(fileType);
 
       element.appendChild(fileName);
     }
     container.appendChild(element);
   });
+}
+
+// Helper function to determine the file icon based on extension
+function getFileIcon(fileName) {
+  const extension = fileName.split('.').pop().toLowerCase();
+  switch (extension) {
+    case 'pdf':
+      return 'icons/pdf-icon.png';
+    case 'doc':
+    case 'docx':
+      return 'icons/word-icon.png';
+    case 'ppt':
+    case 'pptx':
+      return 'icons/ppt-icon.png';
+    case 'xls':
+    case 'xlsx':
+      return 'icons/excel-icon.png';
+    case 'zip':
+      return 'icons/zip-icon.png';
+    case 'mp4':
+    case 'mkv':
+    case 'mov':
+      return 'icons/video-icon.png';
+    default:
+      return 'icons/file-icon.png';
+  }
+}
+
+// Helper function to get file extension
+function getFileExtension(fileName) {
+  return fileName.split('.').pop().toUpperCase();
 }
 
 // Handle folder creation
@@ -63,14 +105,18 @@ document.getElementById('upload-form').addEventListener('submit', async (e) => {
   e.preventDefault();
   const fileInput = document.getElementById('fileInput');
   const formData = new FormData();
-  formData.append('file', fileInput.files[0]);
+  
+  // Loop through all files selected
+  Array.from(fileInput.files).forEach(file => {
+    formData.append('files', file);
+  });
 
   const response = await fetch('/upload', { method: 'POST', body: formData });
   if (response.ok) {
-    alert('File uploaded successfully');
+    alert('Files uploaded successfully');
     fetchFileStructure();
   } else {
-    alert('Failed to upload file');
+    alert('Failed to upload files');
   }
 });
 
