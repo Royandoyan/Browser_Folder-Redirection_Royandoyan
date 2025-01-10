@@ -7,17 +7,11 @@ const WebSocket = require('ws');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Serve static files (e.g., images, CSS, JS) from the 'uploads' folder
-app.use(express.static(path.join(__dirname, 'uploads')));
-app.use(express.static(path.join(__dirname, 'public')));  // Serve static assets
-
 // Middleware to parse JSON
 app.use(express.json());
 
-// Route to serve the index.html at the root path
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'index.html'));
-});
+// Serve static files from the uploads folder
+app.use(express.static(path.join(__dirname, 'uploads')));
 
 // Configure multer to handle file uploads
 const storage = multer.diskStorage({
@@ -39,24 +33,15 @@ app.post('/upload', upload.single('file'), (req, res) => {
   if (!req.file) {
     return res.status(400).send('No file uploaded');
   }
-  broadcastUpdate();
   res.send({ message: 'File uploaded successfully', filename: req.file.originalname });
 });
 
-// Route to create folders
-app.post('/create-folder', (req, res) => {
-  const folderName = req.query.folderName;
-  const folderPath = path.join(__dirname, 'uploads', folderName);
-  if (!fs.existsSync(folderPath)) {
-    fs.mkdirSync(folderPath, { recursive: true });
-    broadcastUpdate();
-    res.send('Folder created successfully');
-  } else {
-    res.send('Folder already exists');
-  }
+// Serve the index page
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'templates', 'index.html'));
 });
 
-// Route to get files and folder structure
+// Get the list of files in the uploads folder
 app.get('/files', (req, res) => {
   const uploadDir = path.join(__dirname, 'uploads');
   const files = fs.readdirSync(uploadDir);
