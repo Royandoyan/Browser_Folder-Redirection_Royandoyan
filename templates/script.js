@@ -9,49 +9,54 @@ ws.onmessage = (event) => {
 
 // Fetching and displaying file/folder structure
 async function fetchFileStructure() {
-  const response = await fetch('/files');
-  const data = await response.json();
-
-  const container = document.getElementById('file-structure');
-  container.innerHTML = ''; 
-
-  data.forEach(item => {
-    const element = document.createElement('div');
-    if (item.isDirectory) {
-      const folderIcon = document.createElement('span');
-      folderIcon.className = 'folder-icon';
-      element.appendChild(folderIcon);
-
-      const folderName = document.createElement('span');
-      folderName.textContent = item.name;
-      folderName.className = 'folder';
-      element.appendChild(folderName);
-    } else {
-      const fileName = document.createElement('span');
-      fileName.textContent = item.name;
-      fileName.className = 'file';
-
-      if (item.name.match(/\.(jpeg|jpg|gif|png)$/i)) {
-        const imgPreview = document.createElement('img');
-        imgPreview.src = `/uploads/${item.name}`;
-        element.appendChild(imgPreview);
+    const response = await fetch('/files');
+    const data = await response.json();
+  
+    const container = document.getElementById('file-structure');
+    container.innerHTML = ''; // Clear previous content
+  
+    data.forEach(item => {
+      const element = document.createElement('div');
+      if (item.isDirectory) {
+        const folderIcon = document.createElement('span');
+        folderIcon.className = 'folder-icon';
+        element.appendChild(folderIcon);
+  
+        const folderName = document.createElement('span');
+        folderName.textContent = item.name;
+        folderName.className = 'folder';
+        element.appendChild(folderName);
       } else {
-        const fileIcon = document.createElement('img');
-        fileIcon.src = getFileIcon(item.name);
-        fileIcon.className = 'file-icon';
-        element.appendChild(fileIcon);
+        const fileName = document.createElement('span');
+        fileName.textContent = item.name;
+        fileName.className = 'file';
+  
+        // Show the image for image files
+        if (item.name.match(/\.(jpeg|jpg|gif|png)$/i)) {
+          const imgPreview = document.createElement('img');
+          imgPreview.src = `/uploads/${item.name}`;
+          imgPreview.alt = item.name; // Add an alt attribute for better accessibility
+          imgPreview.className = 'file-image';
+          element.appendChild(imgPreview);
+        } else {
+          // Show a generic icon for other file types
+          const fileIcon = document.createElement('img');
+          fileIcon.src = getFileIcon(item.name);
+          fileIcon.className = 'file-icon';
+          element.appendChild(fileIcon);
+        }
+  
+        const fileType = document.createElement('span');
+        fileType.textContent = getFileExtension(item.name);
+        fileType.className = 'file-type';
+        element.appendChild(fileType);
+  
+        element.appendChild(fileName);
       }
-
-      const fileType = document.createElement('span');
-      fileType.textContent = getFileExtension(item.name);
-      fileType.className = 'file-type';
-      element.appendChild(fileType);
-
-      element.appendChild(fileName);
-    }
-    container.appendChild(element);
-  });
-}
+      container.appendChild(element);
+    });
+  }
+  
 
 function getFileIcon(fileName) {
   const extension = fileName.split('.').pop().toLowerCase();

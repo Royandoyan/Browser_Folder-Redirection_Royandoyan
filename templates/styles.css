@@ -21,7 +21,15 @@
   max-height: 200px;
   display: block;
   margin-top: 10px;
+  object-fit: cover;  /* Ensure the image fits within the space without distortion */
 }
+
+.file-image {
+  margin-top: 5px;
+  max-width: 200px;  /* Set a max width for image previews */
+  height: auto;
+}
+
 .folder-icon {
   width: 100px;
   height: 100px;
