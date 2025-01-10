@@ -21,38 +21,7 @@ node_modules/
 dist/
 build/
 
-# IDE files
-.vscode/
-.idea/
-*.swp
-
-# OS-specific files
-.DS_Store
-Thumbs.db
-# Logs
-logs/
-*.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-
-# Runtime data
-pids/
-*.pid
-*.seed
-*.pid.lock
-
-# Dependency directories
-node_modules/
-
-# Environment variables
-.env
-
-# Build output
-dist/
-build/
-
-# IDE files
+# IDE and editor files
 .vscode/
 .idea/
 *.swp
@@ -61,5 +30,5 @@ build/
 .DS_Store
 Thumbs.db
 
-# Uploads folder
+# Uploads folder (generated at runtime)
 uploads/
