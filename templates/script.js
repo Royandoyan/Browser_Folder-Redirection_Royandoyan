@@ -32,7 +32,7 @@ async function fetchFileStructure() {
       fileName.textContent = item.name;
       fileName.className = 'file';
 
-      // Show image preview for image files
+      // Show image preview only after upload
       if (item.name.match(/\.(jpeg|jpg|gif|png)$/i)) {
         const imgPreview = document.createElement('img');
         imgPreview.src = `/uploads/${item.name}`;
@@ -44,20 +44,6 @@ async function fetchFileStructure() {
     container.appendChild(element);
   });
 }
-
-// Image preview before upload
-document.getElementById('fileInput').addEventListener('change', function(event) {
-  const file = event.target.files[0];
-  if (file) {
-    const reader = new FileReader();
-    reader.onload = function(e) {
-      const imagePreview = document.getElementById('imagePreview');
-      imagePreview.src = e.target.result;
-      imagePreview.style.display = 'block';
-    };
-    reader.readAsDataURL(file);
-  }
-});
 
 // Handle folder creation
 document.getElementById('create-folder-form').addEventListener('submit', async (e) => {
