@@ -5,9 +5,8 @@ const fs = require('fs');
 const WebSocket = require('ws');
 
 const app = express();
-const PORT = process.env.PORT || 3000; // Use dynamic port provided by Render or 3000 for local development
+const PORT = process.env.PORT || 3000;
 
-// Middleware to parse JSON
 app.use(express.json());
 
 // Serve static files
@@ -27,23 +26,23 @@ const storage = multer.diskStorage({
     cb(null, file.originalname);
   }
 });
-const upload = multer({ storage });
+const upload = multer({ storage }).array('files');  // For multiple files
 
-// Route: Serve the index page
+// Route to serve index page
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'templates', 'index.html'));
 });
 
-// Route: Handle file uploads
-app.post('/upload', upload.single('file'), (req, res) => {
-  if (!req.file) {
-    return res.status(400).send('No file uploaded');
+// Route for file upload
+app.post('/upload', upload, (req, res) => {
+  if (!req.files || req.files.length === 0) {
+    return res.status(400).send('No files uploaded');
   }
   broadcastUpdate();
-  res.send('File uploaded successfully');
+  res.send('Files uploaded successfully');
 });
 
-// Route: Create a new folder
+// Route to create folder
 app.post('/create-folder', (req, res) => {
   const folderName = req.query.folderName;
   const folderPath = path.join(__dirname, 'uploads', folderName);
@@ -56,7 +55,7 @@ app.post('/create-folder', (req, res) => {
   }
 });
 
-// Route: Get folder and file structure
+// Route to fetch file structure
 app.get('/files', (req, res) => {
   const uploadDir = path.join(__dirname, 'uploads');
 
@@ -79,14 +78,12 @@ app.get('/files', (req, res) => {
   res.json(getFiles(uploadDir));
 });
 
-// Set up WebSocket Server
 const server = app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
 });
 
+// WebSocket Setup
 const wss = new WebSocket.Server({ server });
-
-// Function to broadcast updates
 const broadcastUpdate = () => {
   const updateMessage = JSON.stringify({ type: 'update' });
   wss.clients.forEach(client => {

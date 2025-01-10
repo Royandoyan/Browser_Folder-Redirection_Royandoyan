@@ -1,4 +1,3 @@
-// script.js
 const ws = new WebSocket(`${window.location.protocol === 'https:' ? 'wss' : 'ws'}://${window.location.host}`);
 
 ws.onmessage = (event) => {
@@ -14,7 +13,7 @@ async function fetchFileStructure() {
   const data = await response.json();
 
   const container = document.getElementById('file-structure');
-  container.innerHTML = ''; // Clear previous content
+  container.innerHTML = ''; 
 
   data.forEach(item => {
     const element = document.createElement('div');
@@ -32,13 +31,11 @@ async function fetchFileStructure() {
       fileName.textContent = item.name;
       fileName.className = 'file';
 
-      // Show the image for image files
       if (item.name.match(/\.(jpeg|jpg|gif|png)$/i)) {
         const imgPreview = document.createElement('img');
         imgPreview.src = `/uploads/${item.name}`;
         element.appendChild(imgPreview);
       } else {
-        // Show a generic icon for other file types
         const fileIcon = document.createElement('img');
         fileIcon.src = getFileIcon(item.name);
         fileIcon.className = 'file-icon';
@@ -56,33 +53,24 @@ async function fetchFileStructure() {
   });
 }
 
-// Helper function to determine the file icon based on extension
 function getFileIcon(fileName) {
   const extension = fileName.split('.').pop().toLowerCase();
   switch (extension) {
-    case 'pdf':
-      return 'icons/pdf-icon.png';
+    case 'pdf': return 'icons/pdf-icon.png';
     case 'doc':
-    case 'docx':
-      return 'icons/word-icon.png';
+    case 'docx': return 'icons/word-icon.png';
     case 'ppt':
-    case 'pptx':
-      return 'icons/ppt-icon.png';
+    case 'pptx': return 'icons/ppt-icon.png';
     case 'xls':
-    case 'xlsx':
-      return 'icons/excel-icon.png';
-    case 'zip':
-      return 'icons/zip-icon.png';
+    case 'xlsx': return 'icons/excel-icon.png';
+    case 'zip': return 'icons/zip-icon.png';
     case 'mp4':
     case 'mkv':
-    case 'mov':
-      return 'icons/video-icon.png';
-    default:
-      return 'icons/file-icon.png';
+    case 'mov': return 'icons/video-icon.png';
+    default: return 'icons/file-icon.png';
   }
 }
 
-// Helper function to get file extension
 function getFileExtension(fileName) {
   return fileName.split('.').pop().toUpperCase();
 }
@@ -105,8 +93,7 @@ document.getElementById('upload-form').addEventListener('submit', async (e) => {
   e.preventDefault();
   const fileInput = document.getElementById('fileInput');
   const formData = new FormData();
-  
-  // Loop through all files selected
+
   Array.from(fileInput.files).forEach(file => {
     formData.append('files', file);
   });
@@ -120,4 +107,4 @@ document.getElementById('upload-form').addEventListener('submit', async (e) => {
   }
 });
 
-fetchFileStructure(); // Load files and folders on page load
+fetchFileStructure(); 
