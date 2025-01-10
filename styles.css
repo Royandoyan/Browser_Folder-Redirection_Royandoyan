@@ -6,23 +6,28 @@
   justify-content: center;
   flex-direction: column;
 }
+
 .folder {
   font-weight: bold;
   margin-top: 5px;
   text-align: center;
 }
+
 .file {
   font-style: italic;
   margin-top: 5px;
   text-align: center;
 }
+
 .file a {
   color: #007bff;
   text-decoration: none;
 }
+
 .file a:hover {
   text-decoration: underline;
 }
+
 .folder-icon {
   width: 100px;
   height: 100px;
@@ -32,12 +37,14 @@
   display: block;
   margin-bottom: 10px;
 }
+
 .file-icon {
   width: 50px;
   height: 50px;
   margin-bottom: 10px;
   display: block;
 }
+
 .file-type {
   font-size: 14px;
   font-weight: bold;

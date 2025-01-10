@@ -65,12 +65,12 @@ document.getElementById('create-folder-form').addEventListener('submit', async (
 // Handle file upload
 document.getElementById('upload-form').addEventListener('submit', async (e) => {
   e.preventDefault();
-  const fileInput = document.getElementById('fileInput');
+  const fileInput = document.querySelector('input[name="files"]');  // Change to match name='files'
   const formData = new FormData();
 
   // Loop through all files selected
   Array.from(fileInput.files).forEach(file => {
-    formData.append('file', file);
+    formData.append('files', file);  // Append files with the correct key
   });
 
   const response = await fetch('/upload', { method: 'POST', body: formData });
