@@ -5,7 +5,7 @@ const fs = require('fs');
 const WebSocket = require('ws');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3000; // Use dynamic port provided by Render or 3000 for local development
 
 // Middleware to parse JSON
 app.use(express.json());
