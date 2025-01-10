@@ -7,13 +7,13 @@ const WebSocket = require('ws');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Middleware to parse JSON
 app.use(express.json());
 
-// Serve static files
+// Serve static files from the uploads folder
 app.use(express.static(path.join(__dirname, 'uploads')));
-app.use(express.static(path.join(__dirname, 'templates')));
 
-// Configure multer for file uploads
+// Configure multer to handle file uploads
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     const uploadDir = path.join(__dirname, 'uploads');
@@ -23,26 +23,21 @@ const storage = multer.diskStorage({
     cb(null, uploadDir);
   },
   filename: (req, file, cb) => {
-    cb(null, file.originalname);
+    cb(null, file.originalname);  // Save the file with its original name
   }
 });
-const upload = multer({ storage }).array('files');  // For multiple files
+const upload = multer({ storage });
 
-// Route to serve index page
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'templates', 'index.html'));
-});
-
-// Route for file upload
-app.post('/upload', upload, (req, res) => {
-  if (!req.files || req.files.length === 0) {
-    return res.status(400).send('No files uploaded');
+// Route to handle file uploads
+app.post('/upload', upload.single('file'), (req, res) => {
+  if (!req.file) {
+    return res.status(400).send('No file uploaded');
   }
   broadcastUpdate();
-  res.send('Files uploaded successfully');
+  res.send({ message: 'File uploaded successfully', filename: req.file.originalname });
 });
 
-// Route to create folder
+// Route to create folders
 app.post('/create-folder', (req, res) => {
   const folderName = req.query.folderName;
   const folderPath = path.join(__dirname, 'uploads', folderName);
@@ -55,35 +50,21 @@ app.post('/create-folder', (req, res) => {
   }
 });
 
-// Route to fetch file structure
+// Route to get files and folder structure
 app.get('/files', (req, res) => {
   const uploadDir = path.join(__dirname, 'uploads');
-
-  const getFiles = (dirPath) => {
-    return fs.readdirSync(dirPath).map(file => {
-      const fullPath = path.join(dirPath, file);
-      const isDirectory = fs.lstatSync(fullPath).isDirectory();
-      return {
-        name: file,
-        path: fullPath,
-        isDirectory
-      };
-    });
-  };
-
-  if (!fs.existsSync(uploadDir)) {
-    fs.mkdirSync(uploadDir, { recursive: true });
-  }
-
-  res.json(getFiles(uploadDir));
+  const files = fs.readdirSync(uploadDir);
+  res.json(files);
 });
 
+// Set up WebSocket for live updates
 const server = app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
 });
 
-// WebSocket Setup
 const wss = new WebSocket.Server({ server });
+
+// WebSocket message broadcast
 const broadcastUpdate = () => {
   const updateMessage = JSON.stringify({ type: 'update' });
   wss.clients.forEach(client => {

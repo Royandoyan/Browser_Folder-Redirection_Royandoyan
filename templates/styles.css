@@ -16,20 +16,13 @@
   margin-top: 5px;
   text-align: center;
 }
-.file img, .folder img {
-  max-width: 200px;
-  max-height: 200px;
-  display: block;
-  margin-top: 10px;
-  object-fit: cover;  /* Ensure the image fits within the space without distortion */
+.file a {
+  color: #007bff;
+  text-decoration: none;
 }
-
-.file-image {
-  margin-top: 5px;
-  max-width: 200px;  /* Set a max width for image previews */
-  height: auto;
+.file a:hover {
+  text-decoration: underline;
 }
-
 .folder-icon {
   width: 100px;
   height: 100px;
