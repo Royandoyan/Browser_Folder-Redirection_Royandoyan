@@ -41,11 +41,11 @@ async function fetchFileStructure() {
         imgPreview.className = 'file-image';
         fileLink.appendChild(imgPreview);
       } else if (item.name.match(/\.(ppt|pptx)$/i)) {
-        iconPath = 'icons/ppt-icon.png';
+        iconPath = 'templates/ppt.png';
       } else if (item.name.match(/\.(doc|docx)$/i)) {
-        iconPath = 'icons/word-icon.png';
+        iconPath = 'templates/word.png';
       } else if (item.name.match(/\.(xls|xlsx)$/i)) {
-        iconPath = 'icons/excel-icon.png';
+        iconPath = 'templates/xls.png';
       }
 
       if (iconPath) {
