@@ -12,10 +12,13 @@
 }
 
 .file img {
-  width: 150px;
+  width: 150px; /* Maintain a consistent thumbnail width */
   height: auto;
   display: block;
   margin-bottom: 10px;
+  object-fit: cover; /* Ensures the image is scaled proportionally */
+  border: 1px solid #ccc; /* Optional: adds a border for better visibility */
+  border-radius: 5px; /* Optional: adds rounded corners */
 }
 
 .file a {
