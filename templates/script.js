@@ -33,17 +33,30 @@ async function fetchFileStructure() {
       fileLink.href = `/uploads/${item.name}`;
       fileLink.target = '_blank';
 
+      let iconPath = ''; // Path to specific icons
       if (item.name.match(/\.(jpeg|jpg|png|gif)$/i)) {
         const imgPreview = document.createElement('img');
         imgPreview.src = `/uploads/${item.name}`;
         imgPreview.alt = item.name;
         imgPreview.className = 'file-image';
         fileLink.appendChild(imgPreview);
-      } else {
-        fileLink.textContent = item.name;
-        fileLink.className = 'file';
+      } else if (item.name.match(/\.(ppt|pptx)$/i)) {
+        iconPath = 'icons/ppt-icon.png';
+      } else if (item.name.match(/\.(doc|docx)$/i)) {
+        iconPath = 'icons/word-icon.png';
+      } else if (item.name.match(/\.(xls|xlsx)$/i)) {
+        iconPath = 'icons/excel-icon.png';
       }
 
+      if (iconPath) {
+        const iconImg = document.createElement('img');
+        iconImg.src = iconPath;
+        iconImg.alt = item.name;
+        iconImg.className = 'file-icon';
+        element.appendChild(iconImg);
+      }
+
+      fileLink.textContent = item.name;
       element.appendChild(fileLink);
     }
     container.appendChild(element);

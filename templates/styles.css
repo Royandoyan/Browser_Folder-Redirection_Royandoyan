@@ -31,3 +31,11 @@
 .file a:hover {
   text-decoration: underline;
 }
+
+.file-icon {
+  width: 50px; /* Icon size */
+  height: 50px;
+  display: block;
+  margin: 0 auto 10px; /* Center icon with spacing */
+  object-fit: contain;
+}
