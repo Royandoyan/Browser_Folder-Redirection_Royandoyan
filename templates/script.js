@@ -27,7 +27,6 @@ async function fetchFileStructure() {
 
       const folderName = document.createElement('span');
       folderName.textContent = item.name;
-      folderName.className = 'folder';
       element.appendChild(folderName);
     } else {
       const fileLink = document.createElement('a');
@@ -72,7 +71,9 @@ async function fetchFileStructure() {
         element.appendChild(mediaPreview);
       }
 
-      fileLink.textContent = item.name;
+      const fileName = document.createElement('span');
+      fileName.textContent = item.name;
+      fileLink.appendChild(fileName);
       element.appendChild(fileLink);
     }
     container.appendChild(element);
