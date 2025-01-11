@@ -1,53 +1,33 @@
-#file-structure div {
-  margin: 20px 0;
-  display: flex;
-  align-items: center;
-  flex-direction: column;
-}
-
-.folder {
-  font-weight: bold;
-  margin-top: 5px;
-  text-align: center;
-}
-
 .file img {
-  width: 150px; /* Maintain a consistent thumbnail width */
+  width: 300px; /* Larger thumbnail width */
   height: auto;
   display: block;
   margin-bottom: 10px;
-  object-fit: cover; /* Ensures the image is scaled proportionally */
-  border: 1px solid #ccc; /* Optional: adds a border for better visibility */
-  border-radius: 5px; /* Optional: adds rounded corners */
+  object-fit: cover; /* Maintain proportional scaling */
+  border: 2px solid #ccc; /* Add visible border */
+  border-radius: 8px; /* Rounded corners for images */
+}
+
+.folder-icon {
+  width: 100px;
+  height: 100px;
+  background-image: url('folder.png');
+  background-size: contain;
+  background-repeat: no-repeat;
+  display: block;
+  margin-bottom: 10px;
+}
+
+.folder, .file {
+  text-align: center;
+  margin-bottom: 20px;
 }
 
 .file a {
   color: #007bff;
   text-decoration: none;
-  font-style: italic;
 }
 
 .file a:hover {
   text-decoration: underline;
-}
-
-.folder-icon {
-  width: 100px;
-  height: 100px;
-  background-image: url('folder.png');
-  background-size: contain;
-  background-repeat: no-repeat;
-  display: block;
-  margin-bottom: 10px;
-}
-
-
-.folder-icon {
-  width: 100px;
-  height: 100px;
-  background-image: url('folder.png');
-  background-size: contain;
-  background-repeat: no-repeat;
-  display: block;
-  margin-bottom: 10px;
 }

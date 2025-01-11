@@ -9,8 +9,8 @@ const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
 
-// Serve static files
-app.use(express.static(path.join(__dirname, 'uploads')));
+// Serve static files (uploads and templates)
+app.use('/uploads', express.static(path.join(__dirname, 'uploads'))); // Correctly serve uploads
 app.use(express.static(path.join(__dirname, 'templates')));
 
 // Configure multer for file uploads
@@ -65,7 +65,6 @@ app.get('/files', (req, res) => {
       const isDirectory = fs.lstatSync(fullPath).isDirectory();
       return {
         name: file,
-        path: fullPath,
         isDirectory
       };
     });
