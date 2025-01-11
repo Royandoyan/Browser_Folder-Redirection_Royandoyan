@@ -40,3 +40,14 @@
   display: block;
   margin-bottom: 10px;
 }
+
+
+.folder-icon {
+  width: 100px;
+  height: 100px;
+  background-image: url('folder.png');
+  background-size: contain;
+  background-repeat: no-repeat;
+  display: block;
+  margin-bottom: 10px;
+}

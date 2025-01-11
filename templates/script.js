@@ -17,7 +17,6 @@ async function fetchFileStructure() {
 
   data.forEach(item => {
     const element = document.createElement('div');
-
     if (item.isDirectory) {
       const folderIcon = document.createElement('span');
       folderIcon.className = 'folder-icon';
@@ -36,7 +35,6 @@ async function fetchFileStructure() {
         const imgPreview = document.createElement('img');
         imgPreview.src = `/uploads/${item.name}`;
         imgPreview.alt = item.name;
-        imgPreview.className = 'file-image'; // Assigning a class for consistency
         fileLink.appendChild(imgPreview);
       } else {
         fileLink.textContent = item.name;
