@@ -53,17 +53,17 @@ async function fetchFileStructure() {
       // Assign icons for other files
       else if (item.name.match(/\.(ppt|pptx)$/i)) {
         mediaPreview = document.createElement('img');
-        mediaPreview.src = '/templates/ppt.png';
+        mediaPreview.src = 'ppt.png'; // Relative to templates folder
         mediaPreview.alt = 'PowerPoint File';
         mediaPreview.className = 'file-icon';
       } else if (item.name.match(/\.(doc|docx)$/i)) {
         mediaPreview = document.createElement('img');
-        mediaPreview.src = '/templates/word.png';
+        mediaPreview.src = 'doc.png'; // Relative to templates folder
         mediaPreview.alt = 'Word File';
         mediaPreview.className = 'file-icon';
       } else if (item.name.match(/\.(xls|xlsx)$/i)) {
         mediaPreview = document.createElement('img');
-        mediaPreview.src = '/templates/xls.png';
+        mediaPreview.src = 'xls.png'; // Relative to templates folder
         mediaPreview.alt = 'Excel File';
         mediaPreview.className = 'file-icon';
       }

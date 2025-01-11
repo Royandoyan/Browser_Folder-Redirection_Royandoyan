@@ -12,7 +12,7 @@
 .folder-icon {
   width: 100px;
   height: 100px;
-  background-image: url('folder.png');
+  background-image: url('folder.png'); /* Relative to templates folder */
   background-size: contain;
   background-repeat: no-repeat;
   display: block;
