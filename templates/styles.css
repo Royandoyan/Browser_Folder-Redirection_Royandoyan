@@ -1,11 +1,12 @@
-.file img {
-  width: 300px; /* Larger thumbnail width */
+/* General file structure styles */
+.file img, .file-video, .file-icon {
+  width: 300px; /* Uniform size for images and videos */
   height: auto;
   display: block;
   margin-bottom: 10px;
   object-fit: cover; /* Maintain proportional scaling */
-  border: 2px solid #ccc; /* Add visible border */
-  border-radius: 8px; /* Rounded corners for images */
+  border: 2px solid #ccc; /* Add a border */
+  border-radius: 8px; /* Rounded corners */
 }
 
 .folder-icon {
@@ -32,10 +33,13 @@
   text-decoration: underline;
 }
 
-.file-icon {
-  width: 50px; /* Icon size */
-  height: 50px;
+/* Video preview styling */
+.file-video {
+  width: 300px;
+  height: auto;
   display: block;
-  margin: 0 auto 10px; /* Center icon with spacing */
-  object-fit: contain;
+  margin-bottom: 10px;
+  border: 2px solid #ccc;
+  border-radius: 8px;
+  object-fit: cover;
 }

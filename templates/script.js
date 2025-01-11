@@ -1,3 +1,4 @@
+// Establish WebSocket connection for real-time updates
 const ws = new WebSocket(`${window.location.protocol === 'https:' ? 'wss' : 'ws'}://${window.location.host}`);
 
 ws.onmessage = (event) => {
@@ -7,7 +8,7 @@ ws.onmessage = (event) => {
   }
 };
 
-// Fetching and displaying file/folder structure
+// Fetch and display file/folder structure
 async function fetchFileStructure() {
   const response = await fetch('/files');
   const data = await response.json();
@@ -33,27 +34,42 @@ async function fetchFileStructure() {
       fileLink.href = `/uploads/${item.name}`;
       fileLink.target = '_blank';
 
-      let iconPath = ''; // Path to specific icons
+      let mediaPreview = null;
+
+      // Preview images
       if (item.name.match(/\.(jpeg|jpg|png|gif)$/i)) {
-        const imgPreview = document.createElement('img');
-        imgPreview.src = `/uploads/${item.name}`;
-        imgPreview.alt = item.name;
-        imgPreview.className = 'file-image';
-        fileLink.appendChild(imgPreview);
-      } else if (item.name.match(/\.(ppt|pptx)$/i)) {
-        iconPath = '/templates/ppt-icon.png'; // Path to PowerPoint icon
+        mediaPreview = document.createElement('img');
+        mediaPreview.src = `/uploads/${item.name}`;
+        mediaPreview.alt = item.name;
+        mediaPreview.className = 'file-image';
+      } 
+      // Preview videos
+      else if (item.name.match(/\.(mp4|webm|ogg)$/i)) {
+        mediaPreview = document.createElement('video');
+        mediaPreview.src = `/uploads/${item.name}`;
+        mediaPreview.controls = true; // Add playback controls
+        mediaPreview.className = 'file-video';
+      }
+      // Assign icons for other files
+      else if (item.name.match(/\.(ppt|pptx)$/i)) {
+        mediaPreview = document.createElement('img');
+        mediaPreview.src = '/templates/ppt.png';
+        mediaPreview.alt = 'PowerPoint File';
+        mediaPreview.className = 'file-icon';
       } else if (item.name.match(/\.(doc|docx)$/i)) {
-        iconPath = '/templates/word-icon.png'; // Path to Word icon
+        mediaPreview = document.createElement('img');
+        mediaPreview.src = '/templates/word.png';
+        mediaPreview.alt = 'Word File';
+        mediaPreview.className = 'file-icon';
       } else if (item.name.match(/\.(xls|xlsx)$/i)) {
-        iconPath = '/templates/excel-icon.png'; // Path to Excel icon
+        mediaPreview = document.createElement('img');
+        mediaPreview.src = '/templates/xls.png';
+        mediaPreview.alt = 'Excel File';
+        mediaPreview.className = 'file-icon';
       }
 
-      if (iconPath) {
-        const iconImg = document.createElement('img');
-        iconImg.src = iconPath;
-        iconImg.alt = item.name;
-        iconImg.className = 'file-icon';
-        element.appendChild(iconImg);
+      if (mediaPreview) {
+        element.appendChild(mediaPreview);
       }
 
       fileLink.textContent = item.name;
@@ -89,10 +105,11 @@ document.getElementById('upload-form').addEventListener('submit', async (e) => {
   const response = await fetch('/upload', { method: 'POST', body: formData });
   if (response.ok) {
     alert('Files uploaded successfully');
-    fetchFileStructure();
+    fetchFileStructure(); // Refresh the structure to include uploaded files
   } else {
     alert('Failed to upload files');
   }
 });
 
+// Fetch file structure on page load
 fetchFileStructure();
