@@ -5,6 +5,77 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>File Manager</title>
   <link rel="stylesheet" href="styles.css">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f0f4f8;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      flex-direction: column;
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .form-container {
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      width: 300px;
+      text-align: center;
+    }
+
+    .form-container input {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+
+    .form-container button {
+      width: 100%;
+      padding: 10px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    .form-container button:hover {
+      background-color: #0056b3;
+    }
+
+    .form-container a {
+      color: #007bff;
+      text-decoration: none;
+      font-size: 14px;
+    }
+
+    .form-container a:hover {
+      text-decoration: underline;
+    }
+
+    .form-container select {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+  </style>
+
   <script type="module">
     // Import Firebase SDK
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
@@ -107,7 +178,7 @@
 </head>
 <body>
   <!-- Login Form -->
-  <div id="login-form">
+  <div id="login-form" class="form-container">
     <h2>Login Form</h2>
     <form id="login-form-content" onsubmit="event.preventDefault(); loginUser();">
       <input type="email" id="login-email" placeholder="Email" required><br>
@@ -118,7 +189,7 @@
   </div>
 
   <!-- Signup Form -->
-  <div id="signup-form" style="display:none;">
+  <div id="signup-form" class="form-container" style="display:none;">
     <h2>Signup Form</h2>
     <form id="signup-form-content" onsubmit="event.preventDefault(); signupUser();">
       <input type="text" id="name" placeholder="Name" required><br>
