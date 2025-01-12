@@ -1,3 +1,107 @@
+// Firebase Imports (Use the Firebase CDN)
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-auth.js";
+import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-database.js";
+
+// Firebase Configuration
+const firebaseConfig = {
+  apiKey: "AIzaSyAIKjugxiJh9Bd0B32SEd4t9FImRQ9SVK8",
+  authDomain: "browser-redirection.firebaseapp.com",
+  databaseURL: "https://browser-redirection-default-rtdb.firebaseio.com",
+  projectId: "browser-redirection",
+  storageBucket: "browser-redirection.firebasestorage.app",
+  messagingSenderId: "119718481062",
+  appId: "1:119718481062:web:3f57b707f3438fc309f867",
+  measurementId: "G-RG2M2FHGWV"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const auth = getAuth();
+const database = getDatabase(app);
+
+// Show login form initially
+window.onload = function() {
+  showLoginForm();
+};
+
+// Show login form
+window.showLoginForm = function() {
+  document.getElementById('login-form').style.display = 'block';
+  document.getElementById('signup-form').style.display = 'none';
+  document.getElementById('file-manager').style.display = 'none';
+}
+
+// Show signup form
+window.showSignupForm = function() {
+  document.getElementById('login-form').style.display = 'none';
+  document.getElementById('signup-form').style.display = 'block';
+  document.getElementById('file-manager').style.display = 'none';
+}
+
+// Show file manager
+window.showFileManager = function() {
+  document.getElementById('login-form').style.display = 'none';
+  document.getElementById('signup-form').style.display = 'none';
+  document.getElementById('file-manager').style.display = 'block';
+}
+
+// Signup function
+function signupUser() {
+  const name = document.getElementById("name").value;
+  const age = document.getElementById("age").value;
+  const address = document.getElementById("address").value;
+  const gender = document.getElementById("gender").value;
+  const email = document.getElementById("signup-email").value;
+  const password = document.getElementById("signup-password").value;
+
+  createUserWithEmailAndPassword(auth, email, password)
+    .then((userCredential) => {
+      const user = userCredential.user;
+      // Save additional user data to Firebase Realtime Database
+      set(ref(database, 'users/' + user.uid), {
+        name: name,
+        age: age,
+        address: address,
+        gender: gender,
+        email: email
+      }).then(() => {
+        alert("User signed up successfully! Now log in.");
+        showLoginForm();
+      }).catch((error) => {
+        alert("Error saving user data: " + error.message);
+      });
+    })
+    .catch((error) => {
+      const errorCode = error.code;
+      const errorMessage = error.message;
+      alert("Error: " + errorMessage);
+    });
+}
+
+// Attach signupUser to the global window object
+window.signupUser = signupUser;
+
+// Login function
+function loginUser() {
+  const email = document.getElementById("login-email").value;
+  const password = document.getElementById("login-password").value;
+
+  signInWithEmailAndPassword(auth, email, password)
+    .then((userCredential) => {
+      alert("User logged in successfully!");
+      showFileManager();
+    })
+    .catch((error) => {
+      const errorCode = error.code;
+      const errorMessage = error.message;
+      alert("Error: " + errorMessage);
+    });
+}
+
+// Attach loginUser to the global window object
+window.loginUser = loginUser;
+
 // Establish WebSocket connection for real-time updates
 const ws = new WebSocket(`${window.location.protocol === 'https:' ? 'wss' : 'ws'}://${window.location.host}`);
 

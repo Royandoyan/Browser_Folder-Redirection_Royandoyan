@@ -1,42 +1,69 @@
-/* General styling for file/folder previews */
-.file img, .file-video, .file-icon, .folder-icon {
-  width: 80px; /* Match folder icon size */
-  height: 80px;
-  display: block;
-  margin: 0 auto 10px; /* Center align and add space below */
-  object-fit: cover;
-  border: 2px solid #ccc; /* Add border */
-  border-radius: 8px; /* Rounded corners */
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f0f4f8;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  flex-direction: column;
+  overflow: hidden;
 }
 
-/* Style for folder icons */
-.folder-icon {
-  background-image: url('folder.png'); /* Relative to templates folder */
-  background-size: contain;
-  background-repeat: no-repeat;
-}
-
-/* Style for file and folder containers */
-.folder, .file {
-  width: 120px; /* Fixed width for consistent alignment */
-  text-align: center; /* Center align content */
+h2 {
+  text-align: center;
   margin-bottom: 20px;
-  display: inline-block; /* Inline for grid-like layout */
 }
 
-/* Style for file/folder names */
-.folder span, .file span, .file a {
-  display: block; /* Ensure names are below the icons/images */
-  margin-top: 5px; /* Add spacing between icon and name */
-  font-size: 14px; /* Adjust font size */
-  word-wrap: break-word; /* Prevent overflow for long names */
-  text-align: center; /* Center align names */
-  color: #000; /* Default text color */
-}
-
-/* Video preview styling */
-.file-video {
-  border: 2px solid #ccc;
+.form-container {
+  background-color: #fff;
+  padding: 20px;
   border-radius: 8px;
-  object-fit: cover;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  width: 300px;
+  text-align: center;
+}
+
+.form-container input {
+  width: 100%;
+  padding: 10px;
+  margin: 10px 0;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
+.form-container button {
+  width: 100%;
+  padding: 10px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.form-container button:hover {
+  background-color: #0056b3;
+}
+
+.form-container a {
+  color: #007bff;
+  text-decoration: none;
+  font-size: 14px;
+}
+
+.form-container a:hover {
+  text-decoration: underline;
+}
+
+.form-container select {
+  width: 100%;
+  padding: 10px;
+  margin: 10px 0;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
 }
