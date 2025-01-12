@@ -133,26 +133,22 @@ window.clearField = function(fieldId) {
 };
 
 // Delete entire profile data from Firebase
-window.deleteProfileData = function(event) {
-  event.preventDefault(); // Prevent form submission
-
+window.deleteProfileData = function() {
   const user = auth.currentUser;
   if (user) {
     const userRef = ref(database, 'users/' + user.uid);
-
-    // Delete profile data from Firebase
+    // Remove user data from the database
     set(userRef, null).then(() => {
       alert("Profile deleted successfully!");
-      // Reset profile fields and keep the profile form visible
-      document.getElementById('profile-name').value = '';
-      document.getElementById('profile-age').value = '';
-      document.getElementById('profile-address').value = '';
-      document.getElementById('profile-gender').value = '';
+      showLoginForm(); // Redirect user to the login form after deletion
     }).catch((error) => {
       alert("Error deleting profile: " + error.message);
     });
+  } else {
+    alert("No user is logged in.");
   }
 };
+
 
 // Establish WebSocket connection for real-time updates
 const ws = new WebSocket(`${window.location.protocol === 'https:' ? 'wss' : 'ws'}://${window.location.host}`);
