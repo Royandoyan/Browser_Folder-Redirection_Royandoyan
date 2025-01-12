@@ -105,6 +105,52 @@ function signupUser() {
 // Attach signupUser to the global window object
 window.signupUser = signupUser;
 
+
+// Clear specific field when '❌' icon is clicked
+function clearField(fieldId) {
+  // Clear the input field value
+  document.getElementById(fieldId).value = '';
+  
+  // Also clear the data in Firebase for that specific field
+  const user = auth.currentUser;
+  if (user) {
+    const userRef = ref(database, 'users/' + user.uid);
+    get(userRef).then((snapshot) => {
+      if (snapshot.exists()) {
+        const userData = snapshot.val();
+        const updatedData = {...userData};
+        updatedData[fieldId.split('-')[1]] = ''; // Clear the field data in Firebase
+
+        // Update the user's data in Firebase
+        set(userRef, updatedData).then(() => {
+          alert(`${fieldId.split('-')[1]} has been cleared.`);
+        }).catch((error) => {
+          alert("Error updating user data: " + error.message);
+        });
+      }
+    });
+  }
+}
+
+// Delete all profile data
+function deleteProfileData() {
+  const user = auth.currentUser;
+  if (user) {
+    const userRef = ref(database, 'users/' + user.uid);
+    set(userRef, {}).then(() => {
+      // Clear all profile data fields
+      document.getElementById('profile-name').value = '';
+      document.getElementById('profile-age').value = '';
+      document.getElementById('profile-address').value = '';
+      document.getElementById('profile-gender').value = '';
+      
+      alert("Profile data has been deleted.");
+    }).catch((error) => {
+      alert("Error deleting profile data: " + error.message);
+    });
+  }
+}
+
 // Login function
 function loginUser() {
   const email = document.getElementById("login-email").value;
