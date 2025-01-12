@@ -99,14 +99,28 @@ const broadcastUpdate = () => {
 // WebSocket for real-time communication
 wss.on('connection', (ws) => {
   ws.on('message', (message) => {
-    const { type, userId, profile } = JSON.parse(message);
+    console.log('Received message:', message);
+    try {
+      const { type, userId, profile } = JSON.parse(message);
 
-    if (type === 'updateProfile') {
-      // Update user profile in memory
-      if (userId && profile) {
+      if (type === 'updateProfile') {
+        if (!userId || !profile) {
+          throw new Error('UserId and profile are required');
+        }
+
+        // If userId does not exist, throw an error
+        if (!users[userId]) {
+          throw new Error('User not found');
+        }
+
+        // Update user profile in memory
         users[userId] = profile;
         broadcastUpdate();
+        ws.send(JSON.stringify({ success: 'Profile updated successfully' }));
       }
+    } catch (error) {
+      console.error('Error processing WebSocket message:', error);
+      ws.send(JSON.stringify({ error: 'Registration failed. Please try again.' }));
     }
   });
 });
@@ -114,6 +128,11 @@ wss.on('connection', (ws) => {
 // Route to fetch user profile (for initial load)
 app.get('/profile/:userId', (req, res) => {
   const userId = req.params.userId;
-  const profile = users[userId] || {};
+  const profile = users[userId];
+
+  if (!profile) {
+    return res.status(404).send('User profile not found');
+  }
+
   res.json(profile);
 });
