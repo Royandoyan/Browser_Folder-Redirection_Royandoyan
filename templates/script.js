@@ -1,4 +1,3 @@
-
 // Firebase Imports (Use the Firebase CDN)
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-auth.js";
@@ -21,9 +20,26 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth();
 const database = getDatabase(app);
 
+// WebSocket variable declaration (outside of window.onload to avoid hoisting issues)
+let ws;
+
 // Show login form initially
 window.onload = function() {
   showLoginForm();
+
+  // Establish WebSocket connection for real-time updates after the page loads
+  ws = new WebSocket(`${window.location.protocol === 'https:' ? 'wss' : 'ws'}://${window.location.host}`);
+
+  // WebSocket message handler
+  ws.onmessage = (event) => {
+    const message = JSON.parse(event.data);
+    if (message.type === 'update') {
+      fetchFileStructure();
+    } else if (message.type === 'profileDeleted') {
+      alert('A profile has been deleted!');
+      showLoginForm(); // Optionally show login form again after profile deletion
+    }
+  };
 };
 
 // Fetch user data from Firebase and display it in the profile section
@@ -53,7 +69,6 @@ window.showProfile = function() {
     });
   }
 };
-
 
 // Show login form
 window.showLoginForm = function() {
@@ -166,30 +181,6 @@ window.deleteProfileData = function() {
     });
   } else {
     alert("No user is logged in.");
-  }
-};
-
-ws.onmessage = (event) => {
-  const message = JSON.parse(event.data);
-  if (message.type === 'update') {
-    fetchFileStructure(); // Update file structure
-  }
-  else if (message.type === 'profileDeleted') {
-    alert('A profile has been deleted!');
-    // You can update the UI to show the login form again if needed
-    showLoginForm();
-  }
-};
-
-
-
-// Establish WebSocket connection for real-time updates
-const ws = new WebSocket(`${window.location.protocol === 'https:' ? 'wss' : 'ws'}://${window.location.host}`);
-
-ws.onmessage = (event) => {
-  const message = JSON.parse(event.data);
-  if (message.type === 'update') {
-    fetchFileStructure();
   }
 };
 
