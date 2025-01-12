@@ -6,6 +6,10 @@ ws.onmessage = (event) => {
   const message = JSON.parse(event.data);
   if (message.type === 'update') {
     fetchFileStructure(); // Refresh the file structure on update
+  } else if (message.error) {
+    alert(message.error); // Show error if there's one
+  } else if (message.success) {
+    alert(message.success); // Show success message
   }
 };
 
@@ -95,40 +99,7 @@ document.getElementById('create-folder-form')?.addEventListener('submit', async 
   }
 });
 
-// Handle file upload
-document.getElementById('signup')?.addEventListener('submit', async (e) => {
-  e.preventDefault();
-  
-  // Collect form data
-  const formData = new FormData(document.getElementById('signup'));
-
-  // Send registration data to the backend
-  const response = await fetch('/register', {
-    method: 'POST',
-    body: formData
-  });
-
-  if (response.ok) {
-    alert('Registration successful! Redirecting to login...');
-    document.getElementById('signup-form').style.display = 'none'; // Hide signup form
-    document.getElementById('login-form').style.display = 'block'; // Show login form
-  } else {
-    alert('Registration failed. Please try again.');
-  }
-});
-
-// Handle navigation between login and signup
-document.getElementById('signup-link')?.addEventListener('click', () => {
-  document.getElementById('login-form').style.display = 'none';
-  document.getElementById('signup-form').style.display = 'block';
-});
-
-document.getElementById('login-link')?.addEventListener('click', () => {
-  document.getElementById('signup-form').style.display = 'none';
-  document.getElementById('login-form').style.display = 'block';
-});
-
-// Handle user profile update (assuming WebSocket integration)
+// Handle profile update
 const profileForm = document.getElementById('profile-update-form');
 profileForm?.addEventListener('submit', async (e) => {
   e.preventDefault();
@@ -138,21 +109,14 @@ profileForm?.addEventListener('submit', async (e) => {
     address: document.getElementById('profile-address').value,
     gender: document.getElementById('profile-gender').value
   };
-  const userId = "user123"; // Get the actual user ID from session or localStorage
+  
+  const userId = "user123"; // Example user ID. Replace with actual logic
+  
   ws.send(JSON.stringify({
     type: 'updateProfile',
     userId,
     profile
   }));
-});
-
-// Handle profile deletion
-document.getElementById('delete-profile')?.addEventListener('click', async () => {
-  const userId = "user123"; // Get the actual user ID from session or localStorage
-  alert('Profile deleted');
-  // Optionally, send request to backend to delete profile from database
-  // For now, it's just a frontend mock action.
-  fetchFileStructure(); // Refresh file structure or other necessary UI updates
 });
 
 // Fetch file structure on page load
