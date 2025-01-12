@@ -1,3 +1,4 @@
+
 // Firebase Imports (Use the Firebase CDN)
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-auth.js";
@@ -20,26 +21,9 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth();
 const database = getDatabase(app);
 
-// WebSocket variable declaration (outside of window.onload to avoid hoisting issues)
-let ws;
-
 // Show login form initially
 window.onload = function() {
   showLoginForm();
-
-  // Establish WebSocket connection for real-time updates after the page loads
-  ws = new WebSocket(`${window.location.protocol === 'https:' ? 'wss' : 'ws'}://${window.location.host}`);
-
-  // WebSocket message handler
-  ws.onmessage = (event) => {
-    const message = JSON.parse(event.data);
-    if (message.type === 'update') {
-      fetchFileStructure();
-    } else if (message.type === 'profileDeleted') {
-      alert('A profile has been deleted!');
-      showLoginForm(); // Optionally show login form again after profile deletion
-    }
-  };
 };
 
 // Fetch user data from Firebase and display it in the profile section
@@ -69,6 +53,7 @@ window.showProfile = function() {
     });
   }
 };
+
 
 // Show login form
 window.showLoginForm = function() {
@@ -155,58 +140,58 @@ window.clearField = function(fieldId) {
   document.getElementById(fieldId).value = ''; // Clear the value of the input field
 };
 
-// Handle profile deletion with real-time synchronization
 window.deleteProfileData = function() {
   const user = auth.currentUser;
   if (user) {
     const userRef = ref(database, 'users/' + user.uid);
-    // Remove user data from the database (only the profile data)
+    // Remove user data from the database
     set(userRef, null).then(() => {
-      alert("Profile data deleted successfully!");
+      alert("Profile deleted successfully!");
 
-      // Clear only the input fields in the profile form, not the form itself
+      // Clear the input fields in the profile form
       document.getElementById('profile-name').value = '';
       document.getElementById('profile-age').value = '';
       document.getElementById('profile-address').value = '';
       document.getElementById('profile-gender').value = '';
 
-      // Optionally notify all connected clients about the profile deletion
+      // Optionally, show login form again if needed
+      showLoginForm();
+
+      // Notify all clients about profile deletion (WebSocket)
       if (ws.readyState === WebSocket.OPEN) {
-        ws.send(JSON.stringify({ type: 'profileDeleted', userId: user.uid }));
+        ws.send(JSON.stringify({ type: 'profileDeleted' }));
       }
     }).catch((error) => {
-      alert("Error deleting profile data: " + error.message);
+      alert("Error deleting profile: " + error.message);
     });
   } else {
     alert("No user is logged in.");
   }
 };
 
-// WebSocket listener for handling profile deletion event in all browsers
 ws.onmessage = (event) => {
   const message = JSON.parse(event.data);
-  if (message.type === 'profileDeleted') {
+  if (message.type === 'update') {
+    fetchFileStructure(); // Update file structure
+  }
+  else if (message.type === 'profileDeleted') {
     alert('A profile has been deleted!');
-    // You can perform any additional actions here if needed (e.g., clearing data in other clients)
-    // In this case, just alerting other clients that the profile was deleted
+    // You can update the UI to show the login form again if needed
+    showLoginForm();
   }
 };
 
-// WebSocket connection for real-time updates
+
+
+// Establish WebSocket connection for real-time updates
 const ws = new WebSocket(`${window.location.protocol === 'https:' ? 'wss' : 'ws'}://${window.location.host}`);
 
-// Handle WebSocket connection opening (optional)
-ws.onopen = () => {
-  console.log("WebSocket connection established!");
+ws.onmessage = (event) => {
+  const message = JSON.parse(event.data);
+  if (message.type === 'update') {
+    fetchFileStructure();
+  }
 };
-
-// Handle WebSocket errors (optional)
-ws.onerror = (error) => {
-  console.error("WebSocket error:", error);
-};
-
-
-
 
 // Fetch and display file/folder structure
 async function fetchFileStructure() {
