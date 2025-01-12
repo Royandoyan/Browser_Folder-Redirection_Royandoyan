@@ -96,21 +96,24 @@ document.getElementById('create-folder-form')?.addEventListener('submit', async 
 });
 
 // Handle file upload
-document.getElementById('upload-form')?.addEventListener('submit', async (e) => {
+document.getElementById('signup')?.addEventListener('submit', async (e) => {
   e.preventDefault();
-  const fileInput = document.getElementById('fileInput');
-  const formData = new FormData();
+  
+  // Collect form data
+  const formData = new FormData(document.getElementById('signup'));
 
-  Array.from(fileInput.files).forEach(file => {
-    formData.append('files', file);
+  // Send registration data to the backend
+  const response = await fetch('/register', {
+    method: 'POST',
+    body: formData
   });
 
-  const response = await fetch('/upload', { method: 'POST', body: formData });
   if (response.ok) {
-    alert('Files uploaded successfully');
-    fetchFileStructure(); // Refresh the structure to include uploaded files
+    alert('Registration successful! Redirecting to login...');
+    document.getElementById('signup-form').style.display = 'none'; // Hide signup form
+    document.getElementById('login-form').style.display = 'block'; // Show login form
   } else {
-    alert('Failed to upload files');
+    alert('Registration failed. Please try again.');
   }
 });
 
