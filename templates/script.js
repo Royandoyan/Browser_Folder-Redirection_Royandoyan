@@ -35,34 +35,29 @@ async function fetchFileStructure() {
 
       let mediaPreview = null;
 
-      // Preview images
       if (item.name.match(/\.(jpeg|jpg|png|gif)$/i)) {
         mediaPreview = document.createElement('img');
         mediaPreview.src = `/uploads/${item.name}`;
         mediaPreview.alt = item.name;
         mediaPreview.className = 'file-image';
-      } 
-      // Preview videos
-      else if (item.name.match(/\.(mp4|webm|ogg)$/i)) {
+      } else if (item.name.match(/\.(mp4|webm|ogg)$/i)) {
         mediaPreview = document.createElement('video');
         mediaPreview.src = `/uploads/${item.name}`;
-        mediaPreview.controls = true; // Add playback controls
+        mediaPreview.controls = true;
         mediaPreview.className = 'file-video';
-      }
-      // Assign icons for other files
-      else if (item.name.match(/\.(ppt|pptx)$/i)) {
+      } else if (item.name.match(/\.(ppt|pptx)$/i)) {
         mediaPreview = document.createElement('img');
-        mediaPreview.src = 'ppt.png'; // Relative to templates folder
+        mediaPreview.src = 'ppt.png';
         mediaPreview.alt = 'PowerPoint File';
         mediaPreview.className = 'file-icon';
       } else if (item.name.match(/\.(doc|docx)$/i)) {
         mediaPreview = document.createElement('img');
-        mediaPreview.src = 'doc.png'; // Relative to templates folder
+        mediaPreview.src = 'doc.png';
         mediaPreview.alt = 'Word File';
         mediaPreview.className = 'file-icon';
       } else if (item.name.match(/\.(xls|xlsx)$/i)) {
         mediaPreview = document.createElement('img');
-        mediaPreview.src = 'xls.png'; // Relative to templates folder
+        mediaPreview.src = 'xls.png';
         mediaPreview.alt = 'Excel File';
         mediaPreview.className = 'file-icon';
       }
@@ -106,14 +101,11 @@ document.getElementById('upload-form').addEventListener('submit', async (e) => {
   const response = await fetch('/upload', { method: 'POST', body: formData });
   if (response.ok) {
     alert('Files uploaded successfully');
-    fetchFileStructure(); // Refresh the structure to include uploaded files
+    fetchFileStructure();
   } else {
     alert('Failed to upload files');
   }
 });
-
-// Fetch file structure on page load
-fetchFileStructure();
 
 // Firebase Authentication and Database
 import { 
@@ -130,8 +122,8 @@ import {
   remove 
 } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-database.js";
 
-const auth = firebaseAuth; // Firebase Authentication instance
-const db = firebaseDatabase; // Firebase Realtime Database instance
+const auth = firebaseAuth; 
+const db = firebaseDatabase; 
 
 // Signup Form
 document.getElementById('signup').addEventListener('submit', async (e) => {
@@ -139,11 +131,14 @@ document.getElementById('signup').addEventListener('submit', async (e) => {
   const email = document.getElementById('signup-email').value;
   const password = document.getElementById('signup-password').value;
   const name = document.getElementById('name').value;
+  const age = document.getElementById('age').value;
+  const address = document.getElementById('address').value;
+  const gender = document.getElementById('gender').value;
 
   try {
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     const userId = userCredential.user.uid;
-    await set(ref(db, 'users/' + userId), { email, name });
+    await set(ref(db, 'users/' + userId), { email, name, age, address, gender });
     alert('Signup successful!');
     toggleForms('login');
   } catch (error) {
