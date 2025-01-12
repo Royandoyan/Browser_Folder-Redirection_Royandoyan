@@ -128,64 +128,16 @@ document.getElementById('upload-form').addEventListener('submit', async (e) => {
   }
 });
 
-// Handle Sign Up
-document.getElementById('signup').addEventListener('submit', async (e) => {
+// Switch to the Sign Up form
+document.getElementById('signup-link').addEventListener('click', (e) => {
   e.preventDefault();
-  const email = document.getElementById('signup-email').value;
-  const password = document.getElementById('signup-password').value;
-  const name = document.getElementById('name').value;
-  const age = document.getElementById('age').value;
-  const address = document.getElementById('address').value;
-  const gender = document.getElementById('gender').value;
-
-  try {
-    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-    const userId = userCredential.user.uid;
-    await set(ref(db, 'users/' + userId), {
-      name,
-      age,
-      address,
-      gender,
-    });
-    alert('User created successfully');
-    document.getElementById('signup-form').style.display = 'none';
-    document.getElementById('file-manager').style.display = 'block';
-  } catch (error) {
-    alert(error.message);
-  }
+  document.getElementById('login-form').style.display = 'none';
+  document.getElementById('signup-form').style.display = 'block';
 });
 
-// Handle Login
-document.getElementById('login').addEventListener('submit', async (e) => {
+// Switch to the Login form
+document.getElementById('login-link').addEventListener('click', (e) => {
   e.preventDefault();
-  const email = document.getElementById('login-email').value;
-  const password = document.getElementById('login-password').value;
-
-  try {
-    await signInWithEmailAndPassword(auth, email, password);
-    alert('Login successful');
-    document.getElementById('login-form').style.display = 'none';
-    document.getElementById('file-manager').style.display = 'block';
-  } catch (error) {
-    alert(error.message);
-  }
-});
-
-// Listen for authentication state changes
-onAuthStateChanged(auth, (user) => {
-  if (user) {
-    document.getElementById('file-manager').style.display = 'block';
-    document.getElementById('login-form').style.display = 'none';
-    document.getElementById('signup-form').style.display = 'none';
-  } else {
-    document.getElementById('login-form').style.display = 'block';
-    document.getElementById('signup-form').style.display = 'none';
-    document.getElementById('file-manager').style.display = 'none';
-  }
-});
-
-// Handle Sign Out
-document.getElementById('logout').addEventListener('click', async () => {
-  await signOut(auth);
-  alert('Logged out');
+  document.getElementById('signup-form').style.display = 'none';
+  document.getElementById('login-form').style.display = 'block';
 });
