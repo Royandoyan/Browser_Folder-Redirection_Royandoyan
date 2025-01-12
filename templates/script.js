@@ -1,4 +1,3 @@
-
 // Firebase Imports (Use the Firebase CDN)
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-auth.js";
@@ -21,9 +20,32 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth();
 const database = getDatabase(app);
 
+// WebSocket variable declaration
+let ws;
+
 // Show login form initially
 window.onload = function() {
   showLoginForm();
+
+  // Establish WebSocket connection for real-time updates after the page loads
+  ws = new WebSocket(`${window.location.protocol === 'https:' ? 'wss' : 'ws'}://${window.location.host}`);
+
+  // WebSocket message handler
+  ws.onmessage = (event) => {
+    const message = JSON.parse(event.data);
+    if (message.type === 'update') {
+      fetchFileStructure(); // Update file structure
+    } else if (message.type === 'profileDeleted') {
+      alert('A profile has been deleted!');
+      showLoginForm(); // Show login form after profile deletion
+    } else if (message.type === 'fieldCleared') {
+      const { fieldId, userId } = message;
+      if (auth.currentUser && auth.currentUser.uid !== userId) {
+        // Clear the corresponding field in other clients
+        document.getElementById(fieldId).value = '';
+      }
+    }
+  };
 };
 
 // Fetch user data from Firebase and display it in the profile section
@@ -34,10 +56,10 @@ window.showProfile = function() {
     get(userRef).then((snapshot) => {
       if (snapshot.exists()) {
         const userData = snapshot.val();
-        document.getElementById('profile-name').value = userData.name;
-        document.getElementById('profile-age').value = userData.age;
-        document.getElementById('profile-address').value = userData.address;
-        document.getElementById('profile-gender').value = userData.gender;
+        document.getElementById('profile-name').value = userData.name || '';
+        document.getElementById('profile-age').value = userData.age || '';
+        document.getElementById('profile-address').value = userData.address || '';
+        document.getElementById('profile-gender').value = userData.gender || '';
       } else {
         // If no profile data exists (i.e., it was deleted), leave fields empty
         document.getElementById('profile-name').value = '';
@@ -53,7 +75,6 @@ window.showProfile = function() {
     });
   }
 };
-
 
 // Show login form
 window.showLoginForm = function() {
@@ -135,11 +156,24 @@ function loginUser() {
 // Attach loginUser to the global window object
 window.loginUser = loginUser;
 
-// Clear the input field value when the X button is clicked
+// Clear the input field value when the X button is clicked and sync across browsers
 window.clearField = function(fieldId) {
   document.getElementById(fieldId).value = ''; // Clear the value of the input field
+
+  const user = auth.currentUser;
+  if (user) {
+    // Send real-time update to other clients when a field is cleared
+    if (ws.readyState === WebSocket.OPEN) {
+      ws.send(JSON.stringify({
+        type: 'fieldCleared',
+        fieldId: fieldId,
+        userId: user.uid
+      }));
+    }
+  }
 };
 
+// Handle profile deletion with real-time synchronization
 window.deleteProfileData = function() {
   const user = auth.currentUser;
   if (user) {
@@ -154,10 +188,7 @@ window.deleteProfileData = function() {
       document.getElementById('profile-address').value = '';
       document.getElementById('profile-gender').value = '';
 
-      // Optionally, show login form again if needed
-      showLoginForm();
-
-      // Notify all clients about profile deletion (WebSocket)
+      // Notify other connected clients about the deletion
       if (ws.readyState === WebSocket.OPEN) {
         ws.send(JSON.stringify({ type: 'profileDeleted' }));
       }
@@ -169,29 +200,53 @@ window.deleteProfileData = function() {
   }
 };
 
+// WebSocket message handler
 ws.onmessage = (event) => {
   const message = JSON.parse(event.data);
-  if (message.type === 'update') {
-    fetchFileStructure(); // Update file structure
-  }
-  else if (message.type === 'profileDeleted') {
+
+  if (message.type === 'profileDeleted') {
     alert('A profile has been deleted!');
-    // You can update the UI to show the login form again if needed
-    showLoginForm();
+    showLoginForm();  // Show login form in all other windows/tabs
+  } else if (message.type === 'fieldCleared') {
+    const { fieldId, userId } = message;
+    if (auth.currentUser && auth.currentUser.uid !== userId) {
+      // If the message is not from the current user, clear the corresponding field
+      document.getElementById(fieldId).value = '';
+    }
   }
 };
 
-
-
-// Establish WebSocket connection for real-time updates
-const ws = new WebSocket(`${window.location.protocol === 'https:' ? 'wss' : 'ws'}://${window.location.host}`);
-
-ws.onmessage = (event) => {
-  const message = JSON.parse(event.data);
-  if (message.type === 'update') {
+// Handle folder creation
+document.getElementById('create-folder-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const folderName = document.getElementById('folderName').value;
+  const response = await fetch(`/create-folder?folderName=${folderName}`, { method: 'POST' });
+  if (response.ok) {
+    alert('Folder created successfully');
     fetchFileStructure();
+  } else {
+    alert('Failed to create folder');
   }
-};
+});
+
+// Handle file upload
+document.getElementById('upload-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const fileInput = document.getElementById('fileInput');
+  const formData = new FormData();
+
+  Array.from(fileInput.files).forEach(file => {
+    formData.append('files', file);
+  });
+
+  const response = await fetch('/upload', { method: 'POST', body: formData });
+  if (response.ok) {
+    alert('Files uploaded successfully');
+    fetchFileStructure();  // Refresh file structure
+  } else {
+    alert('Failed to upload files');
+  }
+});
 
 // Fetch and display file/folder structure
 async function fetchFileStructure() {
@@ -231,25 +286,8 @@ async function fetchFileStructure() {
       else if (item.name.match(/\.(mp4|webm|ogg)$/i)) {
         mediaPreview = document.createElement('video');
         mediaPreview.src = `/uploads/${item.name}`;
-        mediaPreview.controls = true; // Add playback controls
+        mediaPreview.controls = true;
         mediaPreview.className = 'file-video';
-      }
-      // Assign icons for other files
-      else if (item.name.match(/\.(ppt|pptx)$/i)) {
-        mediaPreview = document.createElement('img');
-        mediaPreview.src = 'ppt.png'; // Relative to templates folder
-        mediaPreview.alt = 'PowerPoint File';
-        mediaPreview.className = 'file-icon';
-      } else if (item.name.match(/\.(doc|docx)$/i)) {
-        mediaPreview = document.createElement('img');
-        mediaPreview.src = 'doc.png'; // Relative to templates folder
-        mediaPreview.alt = 'Word File';
-        mediaPreview.className = 'file-icon';
-      } else if (item.name.match(/\.(xls|xlsx)$/i)) {
-        mediaPreview = document.createElement('img');
-        mediaPreview.src = 'xls.png'; // Relative to templates folder
-        mediaPreview.alt = 'Excel File';
-        mediaPreview.className = 'file-icon';
       }
 
       if (mediaPreview) {
@@ -264,38 +302,6 @@ async function fetchFileStructure() {
     container.appendChild(element);
   });
 }
-
-// Handle folder creation
-document.getElementById('create-folder-form').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const folderName = document.getElementById('folderName').value;
-  const response = await fetch(`/create-folder?folderName=${folderName}`, { method: 'POST' });
-  if (response.ok) {
-    alert('Folder created successfully');
-    fetchFileStructure();
-  } else {
-    alert('Failed to create folder');
-  }
-});
-
-// Handle file upload
-document.getElementById('upload-form').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const fileInput = document.getElementById('fileInput');
-  const formData = new FormData();
-
-  Array.from(fileInput.files).forEach(file => {
-    formData.append('files', file);
-  });
-
-  const response = await fetch('/upload', { method: 'POST', body: formData });
-  if (response.ok) {
-    alert('Files uploaded successfully');
-    fetchFileStructure(); // Refresh the structure to include uploaded files
-  } else {
-    alert('Failed to upload files');
-  }
-});
 
 // Fetch file structure on page load
 fetchFileStructure();
