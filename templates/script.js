@@ -112,6 +112,17 @@ document.getElementById('upload-form').addEventListener('submit', async (e) => {
   }
 });
 
+// Handle navigation between login and signup
+document.getElementById('signup-link').addEventListener('click', () => {
+  document.getElementById('login-form').style.display = 'none';
+  document.getElementById('signup-form').style.display = 'block';
+});
+
+document.getElementById('login-link').addEventListener('click', () => {
+  document.getElementById('signup-form').style.display = 'none';
+  document.getElementById('login-form').style.display = 'block';
+});
+
 // Handle user profile update (assuming WebSocket integration)
 const profileForm = document.getElementById('profile-update-form');
 profileForm?.addEventListener('submit', async (e) => {
@@ -133,7 +144,6 @@ profileForm?.addEventListener('submit', async (e) => {
 // Handle profile deletion
 document.getElementById('delete-profile')?.addEventListener('click', async () => {
   const userId = "user123"; // Get the actual user ID from session or localStorage
-  // You would send the deletion request to the server, which handles the deletion process
   alert('Profile deleted');
   // Optionally, refresh the page after deletion
 });
