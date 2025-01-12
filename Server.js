@@ -51,6 +51,19 @@ app.post('/create-folder', (req, res) => {
   }
 });
 
+// New Route for Profile Deletion
+app.post('/delete-profile', (req, res) => {
+  const profileDataPath = path.join(__dirname, 'uploads', 'profileData.json'); // Example path for profile data
+  if (fs.existsSync(profileDataPath)) {
+    fs.unlinkSync(profileDataPath); // Delete the profile data file
+    broadcastUpdate(); // Notify all clients
+    res.send('Profile deleted successfully');
+  } else {
+    res.status(404).send('Profile not found');
+  }
+});
+
+
 app.get('/files', (req, res) => {
   const uploadDir = path.join(__dirname, 'uploads');
   const getFiles = (dirPath) => {
@@ -69,6 +82,7 @@ const server = app.listen(PORT, () => {
 });
 
 const wss = new WebSocket.Server({ server });
+
 const broadcastUpdate = () => {
   const updateMessage = JSON.stringify({ type: 'update' });
   wss.clients.forEach(client => {

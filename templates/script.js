@@ -154,13 +154,30 @@ window.deleteProfileData = function() {
       document.getElementById('profile-address').value = '';
       document.getElementById('profile-gender').value = '';
 
-      // Optionally, you can also reset other sections of the form if needed
-      // document.getElementById('profile-form').reset(); // Reset the form if you want
+      // Optionally, show login form again if needed
+      showLoginForm();
+
+      // Notify all clients about profile deletion (WebSocket)
+      if (ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({ type: 'profileDeleted' }));
+      }
     }).catch((error) => {
       alert("Error deleting profile: " + error.message);
     });
   } else {
     alert("No user is logged in.");
+  }
+};
+
+ws.onmessage = (event) => {
+  const message = JSON.parse(event.data);
+  if (message.type === 'update') {
+    fetchFileStructure(); // Update file structure
+  }
+  else if (message.type === 'profileDeleted') {
+    alert('A profile has been deleted!');
+    // You can update the UI to show the login form again if needed
+    showLoginForm();
   }
 };
 
