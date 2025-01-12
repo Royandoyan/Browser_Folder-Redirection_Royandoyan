@@ -7,62 +7,21 @@
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <!-- Login Form -->
-  <div id="login-form" class="form-container">
-    <h2>Login</h2>
-    <form id="login">
-      <input type="email" id="login-email" placeholder="Email" required>
-      <input type="password" id="login-password" placeholder="Password" required>
-      <button type="submit">Login</button>
-    </form>
-    <p>Don't have an account? <a href="#" id="signup-link">Sign Up</a></p>
-  </div>
+  <h1>File Manager</h1>
 
-  <!-- Sign Up Form -->
-  <div id="signup-form" class="form-container" style="display: none;">
-    <h2>Sign Up</h2>
-    <form id="signup">
-      <input type="email" id="signup-email" placeholder="Email" required>
-      <input type="password" id="signup-password" placeholder="Password" required>
-      <input type="text" id="name" placeholder="Name" required>
-      <input type="number" id="age" placeholder="Age" required>
-      <input type="text" id="address" placeholder="Address" required>
-      <select id="gender" required>
-        <option value="">Select Gender</option>
-        <option value="Male">Male</option>
-        <option value="Female">Female</option>
-        <option value="Other">Other</option>
-      </select>
-      <button type="submit">Sign Up</button>
-    </form>
-    <p>Already have an account? <a href="#" id="login-link">Login</a></p>
-  </div>
+  <form id="create-folder-form">
+    <input type="text" id="folderName" placeholder="Folder Name" required>
+    <button type="submit">Create Folder</button>
+  </form>
 
-  <!-- File Manager -->
-  <div id="file-manager" style="display: none;">
-    <h2>File Manager</h2>
-    <div id="file-structure"></div>
-    <form id="upload-form">
-      <input type="file" id="fileInput" multiple required>
-      <button type="submit">Upload Files</button>
-    </form>
-    <form id="create-folder-form">
-      <input type="text" id="folderName" placeholder="Folder Name" required>
-      <button type="submit">Create Folder</button>
-    </form>
-    <button id="logout">Logout</button>
-  </div>
+  <form id="upload-form" enctype="multipart/form-data">
+    <input type="file" id="fileInput" accept="*/*" required multiple>
+    <button type="submit">Upload File</button>
+  </form>
 
-  <!-- Profile Form -->
-  <div id="profile-form" style="display: none;">
-    <h2>Profile</h2>
-    <form id="profile-update-form">
-      <input type="text" id="profile-name" placeholder="Name" required>
-      <button type="submit">Update Profile</button>
-    </form>
-    <button id="delete-profile">Delete Profile</button>
-  </div>
+  <h2>Files and Folders:</h2>
+  <div id="file-structure"></div>
 
-  <script src="script.js" type="module"></script>
+  <script src="script.js"></script>
 </body>
 </html>

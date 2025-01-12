@@ -10,11 +10,8 @@ const PORT = process.env.PORT || 3000;
 app.use(express.json());
 
 // Serve static files (uploads and templates)
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads'))); // Correctly serve uploads
 app.use(express.static(path.join(__dirname, 'templates')));
-
-// In-memory store for user profiles (simulate database)
-let users = {};
 
 // Configure multer for file uploads
 const storage = multer.diskStorage({
@@ -80,13 +77,12 @@ app.get('/files', (req, res) => {
   res.json(getFiles(uploadDir));
 });
 
-// WebSocket Setup
 const server = app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
 });
 
+// WebSocket Setup
 const wss = new WebSocket.Server({ server });
-
 const broadcastUpdate = () => {
   const updateMessage = JSON.stringify({ type: 'update' });
   wss.clients.forEach(client => {
@@ -95,44 +91,3 @@ const broadcastUpdate = () => {
     }
   });
 };
-
-// WebSocket for real-time communication
-wss.on('connection', (ws) => {
-  ws.on('message', (message) => {
-    console.log('Received message:', message);
-    try {
-      const { type, userId, profile } = JSON.parse(message);
-
-      if (type === 'updateProfile') {
-        if (!userId || !profile) {
-          throw new Error('UserId and profile are required');
-        }
-
-        // Check if user exists in memory (or create mock user for testing)
-        if (!users[userId]) {
-          users[userId] = { name: 'John Doe', age: 30, address: 'Default Address', gender: 'Male' }; // Create a mock user if not found
-        }
-
-        // Update user profile in memory
-        users[userId] = profile;
-        broadcastUpdate();
-        ws.send(JSON.stringify({ success: 'Profile updated successfully' }));
-      }
-    } catch (error) {
-      console.error('Error processing WebSocket message:', error);
-      ws.send(JSON.stringify({ error: 'Registration failed. Please try again.' }));
-    }
-  });
-});
-
-// Route to fetch user profile (for initial load)
-app.get('/profile/:userId', (req, res) => {
-  const userId = req.params.userId;
-  const profile = users[userId];
-
-  if (!profile) {
-    return res.status(404).send('User profile not found');
-  }
-
-  res.json(profile);
-});
