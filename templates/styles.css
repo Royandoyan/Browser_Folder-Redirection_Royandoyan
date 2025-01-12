@@ -1,3 +1,4 @@
+/* Styles for the layout */
 body {
   font-family: Arial, sans-serif;
   background-color: #f4f4f4;
@@ -18,11 +19,7 @@ body {
   text-align: center;
 }
 
-input[type="email"],
-input[type="password"],
-input[type="text"],
-input[type="number"],
-input[type="file"] {
+input[type="email"], input[type="password"], input[type="text"], input[type="number"], input[type="file"] {
   width: 100%;
   padding: 10px;
   margin: 10px 0;
@@ -80,18 +77,5 @@ a:hover {
 }
 
 .file {
-  background-color: #f8f9fa;
-}
-
-.folder-icon {
-  display: block;
-  margin-bottom: 5px;
-  font-size: 24px;
-  color: #007bff;
-}
-
-.file-image, .file-video {
-  width: 100%;
-  height: auto;
-  margin-bottom: 5px;
+  background-color: #e6ffe6;
 }

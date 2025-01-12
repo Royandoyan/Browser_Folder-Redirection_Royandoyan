@@ -1,113 +1,4 @@
-// Import the necessary Firebase modules
-import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-auth.js";
-import { getDatabase, ref, set, get, update, remove } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-database.js";
-
-// Your web app's Firebase configuration
-const firebaseConfig = {
-  apiKey: "AIzaSyAIKjugxiJh9Bd0B32SEd4t9FImRQ9SVK8",
-  authDomain: "browser-redirection.firebaseapp.com",
-  projectId: "browser-redirection",
-  storageBucket: "browser-redirection.firebasestorage.app",
-  messagingSenderId: "119718481062",
-  appId: "1:119718481062:web:3f57b707f3438fc309f867",
-  measurementId: "G-RG2M2FHGWV"
-};
-
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getDatabase(app);
-
-// Handle Login
-document.getElementById('login').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const email = document.getElementById('login-email').value;
-  const password = document.getElementById('login-password').value;
-
-  try {
-    const userCredential = await signInWithEmailAndPassword(auth, email, password);
-    loadUserProfile(userCredential.user.uid);
-  } catch (error) {
-    alert('Login Failed: ' + error.message);
-  }
-});
-
-// Handle Signup
-document.getElementById('signup').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const email = document.getElementById('signup-email').value;
-  const password = document.getElementById('signup-password').value;
-  const name = document.getElementById('name').value;
-  const age = document.getElementById('age').value;
-  const address = document.getElementById('address').value;
-  const course = document.getElementById('course').value;
-
-  try {
-    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-    const user = userCredential.user;
-
-    // Store profile info in Firebase Realtime Database
-    await set(ref(db, 'users/' + user.uid), {
-      name: name,
-      age: age,
-      address: address,
-      course: course
-    });
-
-    alert('Sign Up Successful');
-    loadUserProfile(user.uid);
-  } catch (error) {
-    alert('Sign Up Failed: ' + error.message);
-  }
-});
-
-// Load user profile and show the file manager
-function loadUserProfile(userId) {
-  const userRef = ref(db, 'users/' + userId);
-  get(userRef).then((snapshot) => {
-    if (snapshot.exists()) {
-      const profile = snapshot.val();
-      console.log('User Profile:', profile);
-
-      // Display user profile information
-      document.getElementById('name').value = profile.name;
-      document.getElementById('age').value = profile.age;
-      document.getElementById('address').value = profile.address;
-      document.getElementById('course').value = profile.course;
-
-      // Show file manager after login
-      document.getElementById('file-manager').style.display = 'block';
-      document.getElementById('login-form').style.display = 'none';
-      document.getElementById('signup-form').style.display = 'none';
-    } else {
-      console.log('No user profile data found');
-    }
-  });
-}
-
-// Toggle between Login and Signup forms
-document.getElementById('signup-link').addEventListener('click', () => {
-  document.getElementById('login-form').style.display = 'none';
-  document.getElementById('signup-form').style.display = 'block';
-});
-
-document.getElementById('login-link').addEventListener('click', () => {
-  document.getElementById('signup-form').style.display = 'none';
-  document.getElementById('login-form').style.display = 'block';
-});
-
-// Sign Out
-onAuthStateChanged(auth, (user) => {
-  if (user) {
-    loadUserProfile(user.uid);
-  } else {
-    document.getElementById('login-form').style.display = 'block';
-    document.getElementById('file-manager').style.display = 'none';
-  }
-});
-
-// WebSocket setup
+// Establish WebSocket connection for real-time updates
 const ws = new WebSocket(`${window.location.protocol === 'https:' ? 'wss' : 'ws'}://${window.location.host}`);
 
 ws.onmessage = (event) => {
@@ -158,6 +49,23 @@ async function fetchFileStructure() {
         mediaPreview.controls = true; // Add playback controls
         mediaPreview.className = 'file-video';
       }
+      // Assign icons for other files
+      else if (item.name.match(/\.(ppt|pptx)$/i)) {
+        mediaPreview = document.createElement('img');
+        mediaPreview.src = 'ppt.png'; // Relative to templates folder
+        mediaPreview.alt = 'PowerPoint File';
+        mediaPreview.className = 'file-icon';
+      } else if (item.name.match(/\.(doc|docx)$/i)) {
+        mediaPreview = document.createElement('img');
+        mediaPreview.src = 'doc.png'; // Relative to templates folder
+        mediaPreview.alt = 'Word File';
+        mediaPreview.className = 'file-icon';
+      } else if (item.name.match(/\.(xls|xlsx)$/i)) {
+        mediaPreview = document.createElement('img');
+        mediaPreview.src = 'xls.png'; // Relative to templates folder
+        mediaPreview.alt = 'Excel File';
+        mediaPreview.className = 'file-icon';
+      }
 
       if (mediaPreview) {
         element.appendChild(mediaPreview);
@@ -204,24 +112,31 @@ document.getElementById('upload-form').addEventListener('submit', async (e) => {
   }
 });
 
-// Handle profile updates
-document.getElementById('profile-update-form').addEventListener('submit', async (e) => {
+// Handle user profile update (assuming WebSocket integration)
+const profileForm = document.getElementById('profile-update-form');
+profileForm?.addEventListener('submit', async (e) => {
   e.preventDefault();
-  const userId = auth.currentUser.uid;
-  const name = document.getElementById('name').value;
-  const age = document.getElementById('age').value;
-  const address = document.getElementById('address').value;
-  const course = document.getElementById('course').value;
-
-  const userRef = ref(db, 'users/' + userId);
-  await update(userRef, { name, age, address, course });
-  alert('Profile updated!');
+  const profile = {
+    name: document.getElementById('profile-name').value,
+    age: document.getElementById('profile-age').value,
+    address: document.getElementById('profile-address').value,
+    gender: document.getElementById('profile-gender').value
+  };
+  const userId = "user123"; // Get the actual user ID from session or localStorage
+  ws.send(JSON.stringify({
+    type: 'updateProfile',
+    userId,
+    profile
+  }));
 });
 
 // Handle profile deletion
-document.getElementById('profile-delete').addEventListener('click', async () => {
-  const userId = auth.currentUser.uid;
-  const userRef = ref(db, 'users/' + userId);
-  await remove(userRef);
-  alert('Profile deleted!');
+document.getElementById('delete-profile')?.addEventListener('click', async () => {
+  const userId = "user123"; // Get the actual user ID from session or localStorage
+  // You would send the deletion request to the server, which handles the deletion process
+  alert('Profile deleted');
+  // Optionally, refresh the page after deletion
 });
+
+// Fetch file structure on page load
+fetchFileStructure();
