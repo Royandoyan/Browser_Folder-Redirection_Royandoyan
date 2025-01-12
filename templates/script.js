@@ -119,5 +119,40 @@ profileForm?.addEventListener('submit', async (e) => {
   }));
 });
 
+// Toggle between login and signup forms
+document.getElementById('signup-link')?.addEventListener('click', (e) => {
+  e.preventDefault();
+  document.getElementById('login-form').style.display = 'none';  // Hide login form
+  document.getElementById('signup-form').style.display = 'block'; // Show signup form
+});
+
+document.getElementById('login-link')?.addEventListener('click', (e) => {
+  e.preventDefault();
+  document.getElementById('signup-form').style.display = 'none';  // Hide signup form
+  document.getElementById('login-form').style.display = 'block';  // Show login form
+});
+
+// Handle login form submission (example)
+document.getElementById('login')?.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const email = document.getElementById('login-email').value;
+  const password = document.getElementById('login-password').value;
+  console.log(`Logging in with: ${email}, ${password}`);
+  alert('Login form submitted!'); // Simulate login submission
+});
+
+// Handle signup form submission (example)
+document.getElementById('signup')?.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const email = document.getElementById('signup-email').value;
+  const password = document.getElementById('signup-password').value;
+  const name = document.getElementById('name').value;
+  const age = document.getElementById('age').value;
+  const address = document.getElementById('address').value;
+  const gender = document.getElementById('gender').value;
+  console.log(`Signing up with: ${email}, ${password}, ${name}, ${age}, ${address}, ${gender}`);
+  alert('Signup form submitted!'); // Simulate signup submission
+});
+
 // Fetch file structure on page load
 fetchFileStructure();
