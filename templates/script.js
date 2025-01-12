@@ -103,6 +103,7 @@ function loginUser() {
 window.loginUser = loginUser;
 
 // Establish WebSocket connection for real-time updates
+// Establish WebSocket connection for real-time updates
 const ws = new WebSocket(`${window.location.protocol === 'https:' ? 'wss' : 'ws'}://${window.location.host}`);
 
 ws.onmessage = (event) => {
