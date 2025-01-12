@@ -104,8 +104,6 @@ function signupUser() {
 // Attach signupUser to the global window object
 window.signupUser = signupUser;
 
-
-
 // Login function
 function loginUser() {
   const email = document.getElementById("login-email").value;
@@ -129,23 +127,27 @@ function loginUser() {
 // Attach loginUser to the global window object
 window.loginUser = loginUser;
 
-
 // Clear the input field value when the X button is clicked
 window.clearField = function(fieldId) {
   document.getElementById(fieldId).value = ''; // Clear the value of the input field
 };
 
 // Delete entire profile data from Firebase
-window.deleteProfileData = function() {
+window.deleteProfileData = function(event) {
+  event.preventDefault(); // Prevent form submission
+
   const user = auth.currentUser;
   if (user) {
-    // Reference to the user's data in Firebase
     const userRef = ref(database, 'users/' + user.uid);
-    
-    // Remove the user's data from Firebase
+
+    // Delete profile data from Firebase
     set(userRef, null).then(() => {
       alert("Profile deleted successfully!");
-      showLoginForm(); // Redirect user to the login form after deletion
+      // Reset profile fields and keep the profile form visible
+      document.getElementById('profile-name').value = '';
+      document.getElementById('profile-age').value = '';
+      document.getElementById('profile-address').value = '';
+      document.getElementById('profile-gender').value = '';
     }).catch((error) => {
       alert("Error deleting profile: " + error.message);
     });
@@ -168,7 +170,7 @@ async function fetchFileStructure() {
   const data = await response.json();
 
   const container = document.getElementById('file-structure');
-  container.innerHTML = ''; 
+  container.innerHTML = '';
 
   data.forEach(item => {
     const element = document.createElement('div');
@@ -195,7 +197,7 @@ async function fetchFileStructure() {
         mediaPreview.src = `/uploads/${item.name}`;
         mediaPreview.alt = item.name;
         mediaPreview.className = 'file-image';
-      } 
+      }
       // Preview videos
       else if (item.name.match(/\.(mp4|webm|ogg)$/i)) {
         mediaPreview = document.createElement('video');

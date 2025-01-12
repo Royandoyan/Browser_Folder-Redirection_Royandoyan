@@ -39,41 +39,40 @@
   </div>
 
   <!-- Profile Form (Visible after login) -->
-  <!-- Profile Form (Visible after login) -->
-<div id="profile-form" style="display:none;">
-  <h1>Profile</h1>
-  <form id="profile-form-details">
-    <p>
-      Name: 
-      <div class="input-container">
-        <input type="text" id="profile-name" readonly>
-        <span class="clear-icon" onclick="clearField('profile-name')">❌</span>
-      </div>
-    </p>
-    <p>
-      Age: 
-      <div class="input-container">
-        <input type="text" id="profile-age" readonly>
-        <span class="clear-icon" onclick="clearField('profile-age')">❌</span>
-      </div>
-    </p>
-    <p>
-      Address: 
-      <div class="input-container">
-        <input type="text" id="profile-address" readonly>
-        <span class="clear-icon" onclick="clearField('profile-address')">❌</span>
-      </div>
-    </p>
-    <p>
-      Gender: 
-      <div class="input-container">
-        <input type="text" id="profile-gender" readonly>
-        <span class="clear-icon" onclick="clearField('profile-gender')">❌</span>
-      </div>
-    </p>
-  </form>
-  <button id="delete-profile-btn" onclick="deleteProfileData()">Delete Entire Profile</button>
-</div>
+  <div id="profile-form" style="display:none;">
+    <h1>Profile</h1>
+    <form id="profile-form-details">
+      <p>
+        Name: 
+        <div class="input-container">
+          <input type="text" id="profile-name" readonly>
+          <span class="clear-icon" onclick="clearField('profile-name')">❌</span>
+        </div>
+      </p>
+      <p>
+        Age: 
+        <div class="input-container">
+          <input type="text" id="profile-age" readonly>
+          <span class="clear-icon" onclick="clearField('profile-age')">❌</span>
+        </div>
+      </p>
+      <p>
+        Address: 
+        <div class="input-container">
+          <input type="text" id="profile-address" readonly>
+          <span class="clear-icon" onclick="clearField('profile-address')">❌</span>
+        </div>
+      </p>
+      <p>
+        Gender: 
+        <div class="input-container">
+          <input type="text" id="profile-gender" readonly>
+          <span class="clear-icon" onclick="clearField('profile-gender')">❌</span>
+        </div>
+      </p>
+    </form>
+    <button type="button" id="delete-profile-btn" onclick="deleteProfileData()">Delete Entire Profile</button>
+  </div>
 
 
   <!-- File Manager (Visible after login) -->
