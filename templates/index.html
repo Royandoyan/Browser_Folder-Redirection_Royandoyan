@@ -75,7 +75,57 @@
       box-sizing: border-box;
     }
   </style>
+</head>
+<body>
+  <!-- Login Form -->
+  <div id="login-form" class="form-container">
+    <h2>Login Form</h2>
+    <form id="login-form-content" onsubmit="event.preventDefault(); loginUser();">
+      <input type="email" id="login-email" placeholder="Email" required><br>
+      <input type="password" id="login-password" placeholder="Password" required><br>
+      <button type="submit">Login</button>
+    </form>
+    <p>Don't have an account? <a href="javascript:void(0);" onclick="showSignupForm()">Sign Up</a></p>
+  </div>
 
+  <!-- Signup Form -->
+  <div id="signup-form" class="form-container" style="display:none;">
+    <h2>Signup Form</h2>
+    <form id="signup-form-content" onsubmit="event.preventDefault(); signupUser();">
+      <input type="text" id="name" placeholder="Name" required><br>
+      <input type="number" id="age" placeholder="Age" required><br>
+      <input type="text" id="address" placeholder="Address" required><br>
+      <select id="gender" required>
+        <option value="" disabled selected>Gender</option>
+        <option value="Male">Male</option>
+        <option value="Female">Female</option>
+        <option value="Other">Other</option>
+      </select><br>
+      <input type="email" id="signup-email" placeholder="Email" required><br>
+      <input type="password" id="signup-password" placeholder="Password" required><br>
+      <button type="submit">Sign Up</button>
+    </form>
+    <p>Already have an account? <a href="javascript:void(0);" onclick="showLoginForm()">Login</a></p>
+  </div>
+
+  <!-- File Manager (Visible after login) -->
+  <div id="file-manager" style="display:none;">
+    <h1>File Manager</h1>
+    <form id="create-folder-form">
+      <input type="text" id="folderName" placeholder="Folder Name" required>
+      <button type="submit">Create Folder</button>
+    </form>
+
+    <form id="upload-form" enctype="multipart/form-data">
+      <input type="file" id="fileInput" accept="*/*" required multiple>
+      <button type="submit">Upload File</button>
+    </form>
+
+    <h2>Files and Folders:</h2>
+    <div id="file-structure"></div>
+  </div>
+
+  <!-- Firebase and JS code -->
   <script type="module">
     // Import Firebase SDK
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
@@ -105,21 +155,21 @@
     };
 
     // Show login form
-    function showLoginForm() {
+    window.showLoginForm = function() {
       document.getElementById('login-form').style.display = 'block';
       document.getElementById('signup-form').style.display = 'none';
       document.getElementById('file-manager').style.display = 'none';
     }
 
     // Show signup form
-    function showSignupForm() {
+    window.showSignupForm = function() {
       document.getElementById('login-form').style.display = 'none';
       document.getElementById('signup-form').style.display = 'block';
       document.getElementById('file-manager').style.display = 'none';
     }
 
     // Show file manager
-    function showFileManager() {
+    window.showFileManager = function() {
       document.getElementById('login-form').style.display = 'none';
       document.getElementById('signup-form').style.display = 'none';
       document.getElementById('file-manager').style.display = 'block';
@@ -175,54 +225,5 @@
         });
     }
   </script>
-</head>
-<body>
-  <!-- Login Form -->
-  <div id="login-form" class="form-container">
-    <h2>Login Form</h2>
-    <form id="login-form-content" onsubmit="event.preventDefault(); loginUser();">
-      <input type="email" id="login-email" placeholder="Email" required><br>
-      <input type="password" id="login-password" placeholder="Password" required><br>
-      <button type="submit">Login</button>
-    </form>
-    <p>Don't have an account? <a href="javascript:void(0);" onclick="showSignupForm()">Sign Up</a></p>
-  </div>
-
-  <!-- Signup Form -->
-  <div id="signup-form" class="form-container" style="display:none;">
-    <h2>Signup Form</h2>
-    <form id="signup-form-content" onsubmit="event.preventDefault(); signupUser();">
-      <input type="text" id="name" placeholder="Name" required><br>
-      <input type="number" id="age" placeholder="Age" required><br>
-      <input type="text" id="address" placeholder="Address" required><br>
-      <select id="gender" required>
-        <option value="" disabled selected>Gender</option>
-        <option value="Male">Male</option>
-        <option value="Female">Female</option>
-        <option value="Other">Other</option>
-      </select><br>
-      <input type="email" id="signup-email" placeholder="Email" required><br>
-      <input type="password" id="signup-password" placeholder="Password" required><br>
-      <button type="submit">Sign Up</button>
-    </form>
-    <p>Already have an account? <a href="javascript:void(0);" onclick="showLoginForm()">Login</a></p>
-  </div>
-
-  <!-- File Manager (Visible after login) -->
-  <div id="file-manager" style="display:none;">
-    <h1>File Manager</h1>
-    <form id="create-folder-form">
-      <input type="text" id="folderName" placeholder="Folder Name" required>
-      <button type="submit">Create Folder</button>
-    </form>
-
-    <form id="upload-form" enctype="multipart/form-data">
-      <input type="file" id="fileInput" accept="*/*" required multiple>
-      <button type="submit">Upload File</button>
-    </form>
-
-    <h2>Files and Folders:</h2>
-    <div id="file-structure"></div>
-  </div>
 </body>
 </html>
