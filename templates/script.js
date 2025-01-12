@@ -155,34 +155,58 @@ window.clearField = function(fieldId) {
   document.getElementById(fieldId).value = ''; // Clear the value of the input field
 };
 
+// Handle profile deletion with real-time synchronization
 window.deleteProfileData = function() {
   const user = auth.currentUser;
   if (user) {
     const userRef = ref(database, 'users/' + user.uid);
-    // Remove user data from the database
+    // Remove user data from the database (only the profile data)
     set(userRef, null).then(() => {
-      alert("Profile deleted successfully!");
+      alert("Profile data deleted successfully!");
 
-      // Clear the input fields in the profile form
+      // Clear only the input fields in the profile form, not the form itself
       document.getElementById('profile-name').value = '';
       document.getElementById('profile-age').value = '';
       document.getElementById('profile-address').value = '';
       document.getElementById('profile-gender').value = '';
 
-      // Optionally, show login form again if needed
-      showLoginForm();
-
-      // Notify all clients about profile deletion (WebSocket)
+      // Optionally notify all connected clients about the profile deletion
       if (ws.readyState === WebSocket.OPEN) {
-        ws.send(JSON.stringify({ type: 'profileDeleted' }));
+        ws.send(JSON.stringify({ type: 'profileDeleted', userId: user.uid }));
       }
     }).catch((error) => {
-      alert("Error deleting profile: " + error.message);
+      alert("Error deleting profile data: " + error.message);
     });
   } else {
     alert("No user is logged in.");
   }
 };
+
+// WebSocket listener for handling profile deletion event in all browsers
+ws.onmessage = (event) => {
+  const message = JSON.parse(event.data);
+  if (message.type === 'profileDeleted') {
+    alert('A profile has been deleted!');
+    // You can perform any additional actions here if needed (e.g., clearing data in other clients)
+    // In this case, just alerting other clients that the profile was deleted
+  }
+};
+
+// WebSocket connection for real-time updates
+const ws = new WebSocket(`${window.location.protocol === 'https:' ? 'wss' : 'ws'}://${window.location.host}`);
+
+// Handle WebSocket connection opening (optional)
+ws.onopen = () => {
+  console.log("WebSocket connection established!");
+};
+
+// Handle WebSocket errors (optional)
+ws.onerror = (error) => {
+  console.error("WebSocket error:", error);
+};
+
+
+
 
 // Fetch and display file/folder structure
 async function fetchFileStructure() {
