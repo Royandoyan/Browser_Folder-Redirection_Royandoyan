@@ -5,10 +5,31 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>File Manager</title>
   <link rel="stylesheet" href="styles.css">
+  <script type="module">
+    // Import the functions you need from the SDKs you need
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-analytics.js";
+    // TODO: Add SDKs for Firebase products that you want to use
+    // https://firebase.google.com/docs/web/setup#available-libraries
+  
+    // Your web app's Firebase configuration
+    // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+    const firebaseConfig = {
+      apiKey: "AIzaSyAIKjugxiJh9Bd0B32SEd4t9FImRQ9SVK8",
+      authDomain: "browser-redirection.firebaseapp.com",
+      projectId: "browser-redirection",
+      storageBucket: "browser-redirection.firebasestorage.app",
+      messagingSenderId: "119718481062",
+      appId: "1:119718481062:web:3f57b707f3438fc309f867",
+      measurementId: "G-RG2M2FHGWV"
+    };
+  
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const analytics = getAnalytics(app);
+  </script>
 </head>
 <body>
-
-  <!-- Login Form -->
   <div id="login-form" class="form-container">
     <h2>Login</h2>
     <form id="login">
@@ -19,47 +40,34 @@
     <p>Don't have an account? <a href="#" id="signup-link">Sign Up</a></p>
   </div>
 
-  <!-- Signup Form -->
   <div id="signup-form" class="form-container" style="display: none;">
     <h2>Sign Up</h2>
     <form id="signup">
       <input type="email" id="signup-email" placeholder="Email" required>
       <input type="password" id="signup-password" placeholder="Password" required>
       <input type="text" id="name" placeholder="Name" required>
-      <input type="number" id="age" placeholder="Age" required>
-      <input type="text" id="address" placeholder="Address" required>
-      <input type="text" id="gender" placeholder="Gender" required>
       <button type="submit">Sign Up</button>
     </form>
     <p>Already have an account? <a href="#" id="login-link">Login</a></p>
   </div>
 
-  <!-- File Manager (hidden until logged in) -->
   <div id="file-manager" style="display: none;">
     <h2>File Manager</h2>
     <div id="file-structure"></div>
-
-    <!-- File Upload Form -->
     <form id="upload-form">
       <input type="file" id="fileInput" multiple required>
       <button type="submit">Upload Files</button>
     </form>
-
-    <!-- Create Folder Form -->
     <form id="create-folder-form">
       <input type="text" id="folderName" placeholder="Folder Name" required>
       <button type="submit">Create Folder</button>
     </form>
   </div>
 
-  <!-- Profile Form -->
   <div id="profile-form" style="display: none;">
     <h2>Profile</h2>
     <form id="profile-update-form">
       <input type="text" id="profile-name" placeholder="Name" required>
-      <input type="number" id="profile-age" placeholder="Age" required>
-      <input type="text" id="profile-address" placeholder="Address" required>
-      <input type="text" id="profile-gender" placeholder="Gender" required>
       <button type="submit">Update Profile</button>
     </form>
     <button id="delete-profile">Delete Profile</button>
