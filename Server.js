@@ -10,7 +10,7 @@ const PORT = process.env.PORT || 3000;
 app.use(express.json());
 
 // Serve static files (uploads and templates)
-app.use('/uploads', express.static(path.join(__dirname, 'uploads'))); // Correctly serve uploads
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use(express.static(path.join(__dirname, 'templates')));
 
 // Configure multer for file uploads
@@ -28,12 +28,9 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage }).array('files');
 
-// Route to serve index page
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'templates', 'index.html'));
-});
+// Routes
+app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'templates', 'index.html')));
 
-// Route for file upload
 app.post('/upload', upload, (req, res) => {
   if (!req.files || req.files.length === 0) {
     return res.status(400).send('No files uploaded');
@@ -42,7 +39,6 @@ app.post('/upload', upload, (req, res) => {
   res.send('Files uploaded successfully');
 });
 
-// Route to create folder
 app.post('/create-folder', (req, res) => {
   const folderName = req.query.folderName;
   const folderPath = path.join(__dirname, 'uploads', folderName);
@@ -55,33 +51,23 @@ app.post('/create-folder', (req, res) => {
   }
 });
 
-// Route to fetch file structure
 app.get('/files', (req, res) => {
   const uploadDir = path.join(__dirname, 'uploads');
-
   const getFiles = (dirPath) => {
     return fs.readdirSync(dirPath).map(file => {
       const fullPath = path.join(dirPath, file);
       const isDirectory = fs.lstatSync(fullPath).isDirectory();
-      return {
-        name: file,
-        isDirectory
-      };
+      return { name: file, isDirectory };
     });
   };
-
-  if (!fs.existsSync(uploadDir)) {
-    fs.mkdirSync(uploadDir, { recursive: true });
-  }
-
   res.json(getFiles(uploadDir));
 });
 
+// WebSocket Setup
 const server = app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
 });
 
-// WebSocket Setup
 const wss = new WebSocket.Server({ server });
 const broadcastUpdate = () => {
   const updateMessage = JSON.stringify({ type: 'update' });
@@ -91,3 +77,13 @@ const broadcastUpdate = () => {
     }
   });
 };
+
+wss.on('connection', (ws) => {
+  console.log('A new client connected');
+  ws.on('message', (message) => {
+    console.log('received: %s', message);
+  });
+  ws.on('close', () => {
+    console.log('A client disconnected');
+  });
+});

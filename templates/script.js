@@ -1,3 +1,4 @@
+
 // Firebase Imports (Use the Firebase CDN)
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-auth.js";
@@ -29,23 +30,30 @@ window.onload = function() {
 window.showProfile = function() {
   const user = auth.currentUser;
   if (user) {
-    const userRef = ref(database, 'users/' + user.uid);  // Reference to the user's data in the database
+    const userRef = ref(database, 'users/' + user.uid);
     get(userRef).then((snapshot) => {
       if (snapshot.exists()) {
         const userData = snapshot.val();
-        document.getElementById('profile-name').value = userData.name; // Use .value for input fields
+        document.getElementById('profile-name').value = userData.name;
         document.getElementById('profile-age').value = userData.age;
         document.getElementById('profile-address').value = userData.address;
         document.getElementById('profile-gender').value = userData.gender;
-
-        // Show profile form
-        document.getElementById('profile-form').style.display = 'block';
+      } else {
+        // If no profile data exists (i.e., it was deleted), leave fields empty
+        document.getElementById('profile-name').value = '';
+        document.getElementById('profile-age').value = '';
+        document.getElementById('profile-address').value = '';
+        document.getElementById('profile-gender').value = '';
       }
+
+      // Show profile form
+      document.getElementById('profile-form').style.display = 'block';
     }).catch((error) => {
       alert("Error fetching user data: " + error.message);
     });
   }
 };
+
 
 // Show login form
 window.showLoginForm = function() {
@@ -132,7 +140,6 @@ window.clearField = function(fieldId) {
   document.getElementById(fieldId).value = ''; // Clear the value of the input field
 };
 
-// Delete entire profile data from Firebase
 window.deleteProfileData = function() {
   const user = auth.currentUser;
   if (user) {
@@ -140,7 +147,15 @@ window.deleteProfileData = function() {
     // Remove user data from the database
     set(userRef, null).then(() => {
       alert("Profile deleted successfully!");
-      showLoginForm(); // Redirect user to the login form after deletion
+
+      // Clear the input fields in the profile form
+      document.getElementById('profile-name').value = '';
+      document.getElementById('profile-age').value = '';
+      document.getElementById('profile-address').value = '';
+      document.getElementById('profile-gender').value = '';
+
+      // Optionally, you can also reset other sections of the form if needed
+      // document.getElementById('profile-form').reset(); // Reset the form if you want
     }).catch((error) => {
       alert("Error deleting profile: " + error.message);
     });
@@ -148,6 +163,7 @@ window.deleteProfileData = function() {
     alert("No user is logged in.");
   }
 };
+
 
 
 // Establish WebSocket connection for real-time updates
