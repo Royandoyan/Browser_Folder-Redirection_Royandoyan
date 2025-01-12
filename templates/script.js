@@ -1,10 +1,11 @@
 // Establish WebSocket connection for real-time updates
 const ws = new WebSocket(`${window.location.protocol === 'https:' ? 'wss' : 'ws'}://${window.location.host}`);
 
+// WebSocket message handler for real-time updates
 ws.onmessage = (event) => {
   const message = JSON.parse(event.data);
   if (message.type === 'update') {
-    fetchFileStructure();
+    fetchFileStructure(); // Refresh the file structure on update
   }
 };
 
@@ -14,7 +15,7 @@ async function fetchFileStructure() {
   const data = await response.json();
 
   const container = document.getElementById('file-structure');
-  container.innerHTML = ''; 
+  container.innerHTML = ''; // Clear the existing content
 
   data.forEach(item => {
     const element = document.createElement('div');
@@ -46,10 +47,10 @@ async function fetchFileStructure() {
       else if (item.name.match(/\.(mp4|webm|ogg)$/i)) {
         mediaPreview = document.createElement('video');
         mediaPreview.src = `/uploads/${item.name}`;
-        mediaPreview.controls = true; // Add playback controls
+        mediaPreview.controls = true;
         mediaPreview.className = 'file-video';
       }
-      // Assign icons for other files
+      // Assign icons for other file types
       else if (item.name.match(/\.(ppt|pptx)$/i)) {
         mediaPreview = document.createElement('img');
         mediaPreview.src = 'ppt.png'; // Relative to templates folder
@@ -76,25 +77,26 @@ async function fetchFileStructure() {
       fileLink.appendChild(fileName);
       element.appendChild(fileLink);
     }
+
     container.appendChild(element);
   });
 }
 
 // Handle folder creation
-document.getElementById('create-folder-form').addEventListener('submit', async (e) => {
+document.getElementById('create-folder-form')?.addEventListener('submit', async (e) => {
   e.preventDefault();
   const folderName = document.getElementById('folderName').value;
   const response = await fetch(`/create-folder?folderName=${folderName}`, { method: 'POST' });
   if (response.ok) {
     alert('Folder created successfully');
-    fetchFileStructure();
+    fetchFileStructure(); // Refresh the structure to include the new folder
   } else {
     alert('Failed to create folder');
   }
 });
 
 // Handle file upload
-document.getElementById('upload-form').addEventListener('submit', async (e) => {
+document.getElementById('upload-form')?.addEventListener('submit', async (e) => {
   e.preventDefault();
   const fileInput = document.getElementById('fileInput');
   const formData = new FormData();
@@ -113,12 +115,12 @@ document.getElementById('upload-form').addEventListener('submit', async (e) => {
 });
 
 // Handle navigation between login and signup
-document.getElementById('signup-link').addEventListener('click', () => {
+document.getElementById('signup-link')?.addEventListener('click', () => {
   document.getElementById('login-form').style.display = 'none';
   document.getElementById('signup-form').style.display = 'block';
 });
 
-document.getElementById('login-link').addEventListener('click', () => {
+document.getElementById('login-link')?.addEventListener('click', () => {
   document.getElementById('signup-form').style.display = 'none';
   document.getElementById('login-form').style.display = 'block';
 });
@@ -145,7 +147,9 @@ profileForm?.addEventListener('submit', async (e) => {
 document.getElementById('delete-profile')?.addEventListener('click', async () => {
   const userId = "user123"; // Get the actual user ID from session or localStorage
   alert('Profile deleted');
-  // Optionally, refresh the page after deletion
+  // Optionally, send request to backend to delete profile from database
+  // For now, it's just a frontend mock action.
+  fetchFileStructure(); // Refresh file structure or other necessary UI updates
 });
 
 // Fetch file structure on page load
