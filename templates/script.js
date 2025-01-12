@@ -1,4 +1,29 @@
-// Establish WebSocket connection for real-time updates
+// Import the functions you need from the SDKs you need
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
+import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-analytics.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-auth.js";
+import { getDatabase, ref, set, get, remove } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAIKjugxiJh9Bd0B32SEd4t9FImRQ9SVK8",
+  authDomain: "browser-redirection.firebaseapp.com",
+  projectId: "browser-redirection",
+  storageBucket: "browser-redirection.firebasestorage.app",
+  messagingSenderId: "119718481062",
+  appId: "1:119718481062:web:3f57b707f3438fc309f867",
+  measurementId: "G-RG2M2FHGWV"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getDatabase(app);
+const analytics = getAnalytics(app);
+
+// Export Firebase objects for other use
+export { auth, db };
+
+// Handle WebSocket connection for real-time updates
 const ws = new WebSocket(`${window.location.protocol === 'https:' ? 'wss' : 'ws'}://${window.location.host}`);
 
 ws.onmessage = (event) => {
@@ -12,19 +37,16 @@ ws.onmessage = (event) => {
 async function fetchFileStructure() {
   const response = await fetch('/files');
   const data = await response.json();
-
   const container = document.getElementById('file-structure');
-  container.innerHTML = ''; 
+  container.innerHTML = '';
 
   data.forEach(item => {
     const element = document.createElement('div');
     element.className = item.isDirectory ? 'folder' : 'file';
-
     if (item.isDirectory) {
       const folderIcon = document.createElement('span');
       folderIcon.className = 'folder-icon';
       element.appendChild(folderIcon);
-
       const folderName = document.createElement('span');
       folderName.textContent = item.name;
       element.appendChild(folderName);
@@ -32,7 +54,6 @@ async function fetchFileStructure() {
       const fileLink = document.createElement('a');
       fileLink.href = `/uploads/${item.name}`;
       fileLink.target = '_blank';
-
       let mediaPreview = null;
 
       if (item.name.match(/\.(jpeg|jpg|png|gif)$/i)) {
@@ -107,25 +128,7 @@ document.getElementById('upload-form').addEventListener('submit', async (e) => {
   }
 });
 
-// Firebase Authentication and Database
-import { 
-  createUserWithEmailAndPassword, 
-  signInWithEmailAndPassword, 
-  onAuthStateChanged, 
-  signOut 
-} from "https://www.gstatic.com/firebasejs/11.1.0/firebase-auth.js";
-
-import { 
-  ref, 
-  set, 
-  get, 
-  remove 
-} from "https://www.gstatic.com/firebasejs/11.1.0/firebase-database.js";
-
-const auth = firebaseAuth; 
-const db = firebaseDatabase; 
-
-// Signup Form
+// Handle Sign Up
 document.getElementById('signup').addEventListener('submit', async (e) => {
   e.preventDefault();
   const email = document.getElementById('signup-email').value;
@@ -138,15 +141,21 @@ document.getElementById('signup').addEventListener('submit', async (e) => {
   try {
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     const userId = userCredential.user.uid;
-    await set(ref(db, 'users/' + userId), { email, name, age, address, gender });
-    alert('Signup successful!');
-    toggleForms('login');
+    await set(ref(db, 'users/' + userId), {
+      name,
+      age,
+      address,
+      gender,
+    });
+    alert('User created successfully');
+    document.getElementById('signup-form').style.display = 'none';
+    document.getElementById('file-manager').style.display = 'block';
   } catch (error) {
-    alert(`Error: ${error.message}`);
+    alert(error.message);
   }
 });
 
-// Login Form
+// Handle Login
 document.getElementById('login').addEventListener('submit', async (e) => {
   e.preventDefault();
   const email = document.getElementById('login-email').value;
@@ -154,70 +163,29 @@ document.getElementById('login').addEventListener('submit', async (e) => {
 
   try {
     await signInWithEmailAndPassword(auth, email, password);
-    alert('Login successful!');
-    toggleForms('fileManager');
-    fetchUserProfile();
+    alert('Login successful');
+    document.getElementById('login-form').style.display = 'none';
+    document.getElementById('file-manager').style.display = 'block';
   } catch (error) {
-    alert(`Error: ${error.message}`);
+    alert(error.message);
   }
 });
 
-// Fetch User Profile
-async function fetchUserProfile() {
-  const userId = auth.currentUser.uid;
-  const userProfile = await get(ref(db, 'users/' + userId));
-  if (userProfile.exists()) {
-    const data = userProfile.val();
-    document.getElementById('profile-name').value = data.name || '';
-  }
-}
-
-// Update Profile
-document.getElementById('profile-update-form').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const userId = auth.currentUser.uid;
-  const name = document.getElementById('profile-name').value;
-
-  try {
-    await set(ref(db, 'users/' + userId), { name, email: auth.currentUser.email });
-    alert('Profile updated successfully!');
-  } catch (error) {
-    alert(`Error: ${error.message}`);
-  }
-});
-
-// Delete Profile
-document.getElementById('delete-profile').addEventListener('click', async () => {
-  const userId = auth.currentUser.uid;
-
-  try {
-    await remove(ref(db, 'users/' + userId));
-    await signOut(auth);
-    alert('Profile deleted and signed out!');
-    toggleForms('login');
-  } catch (error) {
-    alert(`Error: ${error.message}`);
-  }
-});
-
-// Handle Authentication State
+// Listen for authentication state changes
 onAuthStateChanged(auth, (user) => {
   if (user) {
-    toggleForms('fileManager');
-    fetchUserProfile();
+    document.getElementById('file-manager').style.display = 'block';
+    document.getElementById('login-form').style.display = 'none';
+    document.getElementById('signup-form').style.display = 'none';
   } else {
-    toggleForms('login');
+    document.getElementById('login-form').style.display = 'block';
+    document.getElementById('signup-form').style.display = 'none';
+    document.getElementById('file-manager').style.display = 'none';
   }
 });
 
-// Toggle Forms
-function toggleForms(formType) {
-  const forms = ['login-form', 'signup-form', 'file-manager', 'profile-form'];
-  forms.forEach(formId => {
-    document.getElementById(formId).style.display = formId === formType + '-form' ? 'block' : 'none';
-  });
-}
-
-// Navigation Between Forms
-document.getElementById('signup-link').addEventListener('click', () => toggleForms('signup'));
-document.getElementById('login-link').addEventListener('click', () => toggleForms('login'));
+// Handle Sign Out
+document.getElementById('logout').addEventListener('click', async () => {
+  await signOut(auth);
+  alert('Logged out');
+});
