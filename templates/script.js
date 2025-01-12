@@ -20,61 +20,6 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth();
 const database = getDatabase(app);
 
-// Clear specific field when '❌' icon is clicked
-function clearField(fieldId) {
-  // Show confirmation prompt
-  if (confirm(`Are you sure you want to delete the ${fieldId.split('-')[1]} information?`)) {
-    // Clear the input field value
-    document.getElementById(fieldId).value = '';
-    
-    // Also clear the data in Firebase for that specific field
-    const user = auth.currentUser;
-    if (user) {
-      const userRef = ref(database, 'users/' + user.uid);
-      get(userRef).then((snapshot) => {
-        if (snapshot.exists()) {
-          const userData = snapshot.val();
-          const updatedData = { ...userData };
-          updatedData[fieldId.split('-')[1]] = ''; // Clear the field data in Firebase
-
-          // Update the user's data in Firebase
-          set(userRef, updatedData).then(() => {
-            alert(`${fieldId.split('-')[1]} has been cleared.`);
-          }).catch((error) => {
-            alert("Error updating user data: " + error.message);
-          });
-        }
-      });
-    }
-  } else {
-    alert("Action cancelled.");
-  }
-}
-
-// Delete all profile data
-function deleteProfileData() {
-  // Show confirmation prompt
-  if (confirm("Are you sure you want to delete all your profile information?")) {
-    const user = auth.currentUser;
-    if (user) {
-      const userRef = ref(database, 'users/' + user.uid);
-      set(userRef, {}).then(() => {
-        // Clear all profile data fields
-        document.getElementById('profile-name').value = '';
-        document.getElementById('profile-age').value = '';
-        document.getElementById('profile-address').value = '';
-        document.getElementById('profile-gender').value = '';
-        
-        alert("Your profile information has been deleted.");
-      }).catch((error) => {
-        alert("Error deleting profile data: " + error.message);
-      });
-    }
-  } else {
-    alert("Action cancelled.");
-  }
-}
-
 // Show login form initially
 window.onload = function() {
   showLoginForm();
@@ -159,6 +104,8 @@ function signupUser() {
 // Attach signupUser to the global window object
 window.signupUser = signupUser;
 
+
+
 // Login function
 function loginUser() {
   const email = document.getElementById("login-email").value;
@@ -182,9 +129,28 @@ function loginUser() {
 // Attach loginUser to the global window object
 window.loginUser = loginUser;
 
-// WebSocket and File Manager Logic...
-// Your existing file manager logic here...
 
+// Clear the input field value when the X button is clicked
+window.clearField = function(fieldId) {
+  document.getElementById(fieldId).value = ''; // Clear the value of the input field
+};
+
+// Delete entire profile data from Firebase
+window.deleteProfileData = function() {
+  const user = auth.currentUser;
+  if (user) {
+    // Reference to the user's data in Firebase
+    const userRef = ref(database, 'users/' + user.uid);
+    
+    // Remove the user's data from Firebase
+    set(userRef, null).then(() => {
+      alert("Profile deleted successfully!");
+      showLoginForm(); // Redirect user to the login form after deletion
+    }).catch((error) => {
+      alert("Error deleting profile: " + error.message);
+    });
+  }
+};
 
 // Establish WebSocket connection for real-time updates
 const ws = new WebSocket(`${window.location.protocol === 'https:' ? 'wss' : 'ws'}://${window.location.host}`);
