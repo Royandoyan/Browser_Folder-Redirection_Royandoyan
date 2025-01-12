@@ -143,17 +143,14 @@ document.getElementById('signup')?.addEventListener('submit', async (e) => {
   
   // Simulate signup process, replace with actual signup logic
   alert('Sign Up Successful!');
-  
-  // Show the file manager and profile forms after successful signup
-  document.getElementById('signup-form').style.display = 'none';
-  document.getElementById('file-manager').style.display = 'block';
-  document.getElementById('profile-form').style.display = 'block';
 
-  // Populate profile form with signup details
-  document.getElementById('profile-name').value = name;
-  document.getElementById('profile-age').value = age;
-  document.getElementById('profile-address').value = address;
-  document.getElementById('profile-gender').value = gender;
+  // Hide the signup form and show the login form after successful signup
+  document.getElementById('signup-form').style.display = 'none';
+  document.getElementById('login-form').style.display = 'block';
+
+  // Optionally, you can populate the login form with the user's signup details
+  // document.getElementById('login-email').value = email;
+  // document.getElementById('login-password').value = password;
 });
 
 // Fetch file structure on page load
