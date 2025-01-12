@@ -1,7 +1,7 @@
 // Firebase Imports (Use the Firebase CDN)
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-auth.js";
-import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-database.js";
+import { getDatabase, ref, set, get } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-database.js";
 
 // Firebase Configuration
 const firebaseConfig = {
@@ -25,26 +25,49 @@ window.onload = function() {
   showLoginForm();
 };
 
+// Fetch user data from Firebase and display it in the profile section
+// Fetch user data from Firebase and display it in the profile section
+window.showProfile = function() {
+  const user = auth.currentUser;
+  if (user) {
+    const userRef = ref(database, 'users/' + user.uid);  // Reference to the user's data in the database
+    get(userRef).then((snapshot) => {
+      if (snapshot.exists()) {
+        const userData = snapshot.val();
+        document.getElementById('profile-name').value = userData.name; // Use .value for input fields
+        document.getElementById('profile-age').value = userData.age;
+        document.getElementById('profile-address').value = userData.address;
+        document.getElementById('profile-gender').value = userData.gender;
+
+        // Show profile form
+        document.getElementById('profile-form').style.display = 'block';
+      }
+    }).catch((error) => {
+      alert("Error fetching user data: " + error.message);
+    });
+  }
+};
+
 // Show login form
 window.showLoginForm = function() {
   document.getElementById('login-form').style.display = 'block';
   document.getElementById('signup-form').style.display = 'none';
   document.getElementById('file-manager').style.display = 'none';
-}
+};
 
 // Show signup form
 window.showSignupForm = function() {
   document.getElementById('login-form').style.display = 'none';
   document.getElementById('signup-form').style.display = 'block';
   document.getElementById('file-manager').style.display = 'none';
-}
+};
 
 // Show file manager
 window.showFileManager = function() {
   document.getElementById('login-form').style.display = 'none';
   document.getElementById('signup-form').style.display = 'none';
   document.getElementById('file-manager').style.display = 'block';
-}
+};
 
 // Signup function
 function signupUser() {
@@ -89,8 +112,11 @@ function loginUser() {
 
   signInWithEmailAndPassword(auth, email, password)
     .then((userCredential) => {
-      alert("User logged in successfully!");
-      showFileManager();
+      const user = userCredential.user;
+      alert("Login successful!");
+      // Show profile and file manager after successful login
+      showProfile();
+      showFileManager(); // Show both profile and file manager at the same time
     })
     .catch((error) => {
       const errorCode = error.code;
@@ -102,7 +128,6 @@ function loginUser() {
 // Attach loginUser to the global window object
 window.loginUser = loginUser;
 
-// Establish WebSocket connection for real-time updates
 // Establish WebSocket connection for real-time updates
 const ws = new WebSocket(`${window.location.protocol === 'https:' ? 'wss' : 'ws'}://${window.location.host}`);
 
