@@ -94,7 +94,7 @@ h2 {
 }
 
 .form-container button:hover {
-  background-color: #0056b3;
+  background-color: #000000;
 }
 
 .form-container a {
@@ -166,7 +166,7 @@ h2 {
 }
 
 #file-manager button:hover {
-  background-color: #0056b3;
+  background-color: #000000;
 }
 
 #file-manager h2 {
@@ -233,7 +233,7 @@ h2 {
 #profile-form button {
   width: 100%;
   padding: 10px;
-  background-color: #007bff;
+  background-color: #000000;
   color: white;
   border: none;
   border-radius: 4px;
@@ -242,7 +242,7 @@ h2 {
 }
 
 #profile-form button:hover {
-  background-color: #0056b3;
+  background-color: #000000;
 }
 
 /* File Manager Styling */
@@ -284,7 +284,7 @@ h2 {
 #file-manager button {
   width: 100%;
   padding: 10px;
-  background-color: #007bff;
+  background-color: #000000;
   color: white;
   border: none;
   border-radius: 4px;
