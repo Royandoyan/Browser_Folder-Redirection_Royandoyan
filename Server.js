@@ -32,67 +32,48 @@ const upload = multer({ storage }).array('files');
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'templates', 'index.html')));
 
 app.post('/upload', upload, (req, res) => {
-  try {
-    if (!req.files || req.files.length === 0) {
-      return res.status(400).json({ error: 'No files uploaded' });
-    }
-    broadcastUpdate();
-    res.json({ message: 'Files uploaded successfully' });
-  } catch (error) {
-    console.error('Error during file upload:', error);
-    res.status(500).json({ error: 'Internal Server Error' });
+  if (!req.files || req.files.length === 0) {
+    return res.status(400).send('No files uploaded');
   }
+  broadcastUpdate();
+  res.send('Files uploaded successfully');
 });
 
 app.post('/create-folder', (req, res) => {
-  try {
-    const folderName = req.query.folderName;
-    const folderPath = path.join(__dirname, 'uploads', folderName);
-    if (!fs.existsSync(folderPath)) {
-      fs.mkdirSync(folderPath, { recursive: true });
-      broadcastUpdate();
-      res.json({ message: 'Folder created successfully' });
-    } else {
-      res.status(400).json({ error: 'Folder already exists' });
-    }
-  } catch (error) {
-    console.error('Error creating folder:', error);
-    res.status(500).json({ error: 'Internal Server Error' });
+  const folderName = req.query.folderName;
+  const folderPath = path.join(__dirname, 'uploads', folderName);
+  if (!fs.existsSync(folderPath)) {
+    fs.mkdirSync(folderPath, { recursive: true });
+    broadcastUpdate();
+    res.send('Folder created successfully');
+  } else {
+    res.send('Folder already exists');
   }
 });
 
 // New Route for Profile Deletion
 app.post('/delete-profile', (req, res) => {
-  try {
-    const profileDataPath = path.join(__dirname, 'uploads', 'profileData.json');
-    if (fs.existsSync(profileDataPath)) {
-      fs.unlinkSync(profileDataPath); // Delete the profile data file
-      broadcastUpdate(); // Notify all clients
-      res.json({ message: 'Profile deleted successfully' });
-    } else {
-      res.status(404).json({ error: 'Profile not found' });
-    }
-  } catch (error) {
-    console.error('Error deleting profile:', error);
-    res.status(500).json({ error: 'Internal Server Error' });
+  const profileDataPath = path.join(__dirname, 'uploads', 'profileData.json'); // Example path for profile data
+  if (fs.existsSync(profileDataPath)) {
+    fs.unlinkSync(profileDataPath); // Delete the profile data file
+    broadcastUpdate(); // Notify all clients
+    res.send('Profile deleted successfully');
+  } else {
+    res.status(404).send('Profile not found');
   }
 });
 
+
 app.get('/files', (req, res) => {
-  try {
-    const uploadDir = path.join(__dirname, 'uploads');
-    const getFiles = (dirPath) => {
-      return fs.readdirSync(dirPath).map(file => {
-        const fullPath = path.join(dirPath, file);
-        const isDirectory = fs.lstatSync(fullPath).isDirectory();
-        return { name: file, isDirectory };
-      });
-    };
-    res.json(getFiles(uploadDir));
-  } catch (error) {
-    console.error('Error fetching files:', error);
-    res.status(500).json({ error: 'Internal Server Error' });
-  }
+  const uploadDir = path.join(__dirname, 'uploads');
+  const getFiles = (dirPath) => {
+    return fs.readdirSync(dirPath).map(file => {
+      const fullPath = path.join(dirPath, file);
+      const isDirectory = fs.lstatSync(fullPath).isDirectory();
+      return { name: file, isDirectory };
+    });
+  };
+  res.json(getFiles(uploadDir));
 });
 
 // WebSocket Setup
