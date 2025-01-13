@@ -118,7 +118,9 @@ h2 {
 
 /* File Manager Styling */
 #file-manager {
-  position: absolute;
+  position: Center;
+  margin-top: 150px;
+  margin-right: 350px;
   top: 20px; /* Move it from the top */
   right: 20px; /* Move it to the right */
   width: 50vw; /* Set width to half the viewport width (50% of screen width) */
