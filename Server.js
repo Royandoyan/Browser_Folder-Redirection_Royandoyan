@@ -8,15 +8,13 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
-
-// Serve static files (uploads and templates)
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use(express.static(path.join(__dirname, 'templates')));
 
 // Configure multer for file uploads
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    const uploadDir = path.join(__dirname, 'uploads');
+    const uploadDir = path.join(__dirname, 'uploads', req.body.folder || '');
     if (!fs.existsSync(uploadDir)) {
       fs.mkdirSync(uploadDir, { recursive: true });
     }
@@ -28,9 +26,12 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage }).array('files');
 
-// Routes
-app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'templates', 'index.html')));
+// Serve index page
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'templates', 'index.html'));
+});
 
+// File upload route
 app.post('/upload', upload, (req, res) => {
   if (!req.files || req.files.length === 0) {
     return res.status(400).send('No files uploaded');
@@ -39,6 +40,7 @@ app.post('/upload', upload, (req, res) => {
   res.send('Files uploaded successfully');
 });
 
+// Folder creation route
 app.post('/create-folder', (req, res) => {
   const folderName = req.query.folderName;
   const folderPath = path.join(__dirname, 'uploads', folderName);
@@ -51,38 +53,36 @@ app.post('/create-folder', (req, res) => {
   }
 });
 
-// New Route for Profile Deletion
-app.post('/delete-profile', (req, res) => {
-  const profileDataPath = path.join(__dirname, 'uploads', 'profileData.json'); // Example path for profile data
-  if (fs.existsSync(profileDataPath)) {
-    fs.unlinkSync(profileDataPath); // Delete the profile data file
-    broadcastUpdate(); // Notify all clients
-    res.send('Profile deleted successfully');
-  } else {
-    res.status(404).send('Profile not found');
-  }
-});
-
-
+// Fetch file structure route
 app.get('/files', (req, res) => {
-  const uploadDir = path.join(__dirname, 'uploads');
+  const folder = req.query.folder || '';
+  const targetDir = path.join(__dirname, 'uploads', folder);
+
   const getFiles = (dirPath) => {
     return fs.readdirSync(dirPath).map(file => {
       const fullPath = path.join(dirPath, file);
       const isDirectory = fs.lstatSync(fullPath).isDirectory();
-      return { name: file, isDirectory };
+      return {
+        name: file,
+        isDirectory
+      };
     });
   };
-  res.json(getFiles(uploadDir));
+
+  if (!fs.existsSync(targetDir)) {
+    fs.mkdirSync(targetDir, { recursive: true });
+  }
+
+  res.json(getFiles(targetDir));
 });
 
-// WebSocket Setup
+// Start server
 const server = app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
 });
 
+// WebSocket setup
 const wss = new WebSocket.Server({ server });
-
 const broadcastUpdate = () => {
   const updateMessage = JSON.stringify({ type: 'update' });
   wss.clients.forEach(client => {
@@ -91,13 +91,3 @@ const broadcastUpdate = () => {
     }
   });
 };
-
-wss.on('connection', (ws) => {
-  console.log('A new client connected');
-  ws.on('message', (message) => {
-    console.log('received: %s', message);
-  });
-  ws.on('close', () => {
-    console.log('A client disconnected');
-  });
-});
