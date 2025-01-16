@@ -1,4 +1,4 @@
-/*const express = require('express');
+const express = require('express');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
@@ -7,7 +7,7 @@ const WebSocket = require('ws');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-app.use(express.jsson());
+app.use(express.json());
 
 // Serve static files (uploads and templates)
 app.use('/uploads', express.static(path.join(__dirname, 'uploads'))); // Correctly serve uploads
@@ -91,24 +91,3 @@ const broadcastUpdate = () => {
     }
   });
 };
-*/
-
-
-
-const express = require("express");
-const path = require("path");
-const app = express();
-
-// Serve static files from the "templates" directory
-app.use(express.static(path.join(__dirname, "templates")));
-
-// Define a route for the root URL
-app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "templates", "index.html"));
-});
-
-// Start the server
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
-});

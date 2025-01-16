@@ -1,4 +1,4 @@
-/* General reset 
+/* General reset */
 body {
   font-family: Arial, sans-serif;
   margin: 0;
@@ -13,7 +13,7 @@ h1 {
   color: #444;
 }
 
-/* Container layout 
+/* Container layout */
 .container {
   max-width: 960px;
   margin: 0 auto;
@@ -60,7 +60,7 @@ button:hover {
   background-color: #0056b3;
 }
 
-/* File and folder grid 
+/* File and folder grid */
 .file-container {
   margin-top: 20px;
 }
@@ -72,50 +72,50 @@ button:hover {
   justify-content: center;
 }
 
-/* General styling for file/folder previews 
+/* General styling for file/folder previews */
 .file img, .file-video, .file-icon, .folder-icon {
-  width: 80px; /* Match folder icon size 
+  width: 80px; /* Match folder icon size */
   height: 80px;
   display: block;
-  margin: 0 auto 10px; /* Center align and add space below 
+  margin: 0 auto 10px; /* Center align and add space below */
   object-fit: cover;
-  border: 2px solid #ccc; /* Add border 
-  border-radius: 8px; /* Rounded corners 
+  border: 2px solid #ccc; /* Add border */
+  border-radius: 8px; /* Rounded corners */
 }
 
-/* Style for folder icons 
+/* Style for folder icons */
 .folder-icon {
-  background-image: url('folder.png'); /* Relative to templates folder 
+  background-image: url('folder.png'); /* Relative to templates folder */
   background-size: contain;
   background-repeat: no-repeat;
 }
 
-/* Style for file and folder containers 
+/* Style for file and folder containers */
 .folder, .file {
-  width: 120px; /* Fixed width for consistent alignment 
-  text-align: center; /* Center align content 
+  width: 120px; /* Fixed width for consistent alignment */
+  text-align: center; /* Center align content */
   margin-bottom: 20px;
-  display: inline-block; /* Inline for grid-like layout 
+  display: inline-block; /* Inline for grid-like layout */
 }
 
-/* Style for file/folder names 
+/* Style for file/folder names */
 .folder span, .file span, .file a {
-  display: block; /* Ensure names are below the icons/images 
-  margin-top: 5px; /* Add spacing between icon and name 
-  font-size: 14px; /* Adjust font size 
-  word-wrap: break-word; /* Prevent overflow for long names 
-  text-align: center; /* Center align names
-  color: #000; /* Default text color 
+  display: block; /* Ensure names are below the icons/images */
+  margin-top: 5px; /* Add spacing between icon and name */
+  font-size: 14px; /* Adjust font size */
+  word-wrap: break-word; /* Prevent overflow for long names */
+  text-align: center; /* Center align names */
+  color: #000; /* Default text color */
 }
 
-/* Video preview styling 
+/* Video preview styling */
 .file-video {
   border: 2px solid #ccc;
   border-radius: 8px;
   object-fit: cover;
 }
 
-/* Hover effects for files and folders 
+/* Hover effects for files and folders */
 .folder:hover, .file:hover {
   transform: translateY(-5px);
   transition: transform 0.2s ease-in-out;
@@ -123,49 +123,4 @@ button:hover {
 
 button:hover {
   background-color: #0056b3;
-}
-*/
-
-body {
-  font-family: Arial, sans-serif;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh;
-  background-color: #f4f4f4;
-}
-
-#app {
-  width: 90%;
-  max-width: 600px;
-  background: white;
-  padding: 20px;
-  border-radius: 10px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
-
-#folder-actions {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 20px;
-}
-
-#folders {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.folder {
-  padding: 10px;
-  background: #e0e0e0;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: background 0.3s;
-}
-
-.folder:hover {
-  background: #d0d0d0;
 }
