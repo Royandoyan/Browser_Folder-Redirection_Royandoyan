@@ -39,98 +39,24 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>File Manager</title>
   <link rel="stylesheet" href="styles.css">
+  <title>File Sync App</title>
 </head>
 <body>
-
- 
-  <div id="login-form" class="form-container">
-    <h2>Login Form</h2>
-    <form id="login-form-content" onsubmit="event.preventDefault(); loginUser();">
-      <input type="email" id="login-email" placeholder="Email" required><br>
-      <input type="password" id="login-password" placeholder="Password" required><br>
-      <button type="submit">Login</button>
-    </form>
-    <p>Don't have an account? <a href="javascript:void(0);" onclick="showSignupForm()">Sign Up</a></p>
-  </div>
-
-  <div id="signup-form" class="form-container" style="display:none;">
-    <h2>Signup Form</h2>
-    <form id="signup-form-content" onsubmit="event.preventDefault(); signupUser();">
-      <input type="text" id="name" placeholder="Name" required><br>
-      <input type="number" id="age" placeholder="Age" required><br>
-      <input type="text" id="address" placeholder="Address" required><br>
-      <select id="gender" required>
-        <option value="" disabled selected>Gender</option>
-        <option value="Male">Male</option>
-        <option value="Female">Female</option>
-        <option value="Other">Other</option>
-      </select><br>
-      <input type="email" id="signup-email" placeholder="Email" required><br>
-      <input type="password" id="signup-password" placeholder="Password" required><br>
-      <button type="submit">Sign Up</button>
-    </form>
-    <p>Already have an account? <a href="javascript:void(0);" onclick="showLoginForm()">Login</a></p>
-  </div>
-
-  <div id="profile-form" style="display:none;">
-    <h1>Profile</h1>
-    <form id="profile-form-details">
-      <p>
-        Name: 
-        <div class="input-container">
-          <input type="text" id="profile-name" readonly>
-          <span class="clear-icon" onclick="clearField('profile-name')">❌</span>
-        </div>
-      </p>
-      <p>
-        Age: 
-        <div class="input-container">
-          <input type="text" id="profile-age" readonly>
-          <span class="clear-icon" onclick="clearField('profile-age')">❌</span>
-        </div>
-      </p>
-      <p>
-        Address: 
-        <div class="input-container">
-          <input type="text" id="profile-address" readonly>
-          <span class="clear-icon" onclick="clearField('profile-address')">❌</span>
-        </div>
-      </p>
-      <p>
-        Gender: 
-        <div class="input-container">
-          <input type="text" id="profile-gender" readonly>
-          <span class="clear-icon" onclick="clearField('profile-gender')">❌</span>
-        </div>
-      </p>
-    </form>
-    <button onclick="deleteProfileData()">Delete Profile</button>
-  </div>
-
- <!-- File Manager (Visible after login) -->
- <div id="file-manager" ><!--style="display:-->
-  <h1>File Manager</h1>
-  <!-- Create Folder Form -->
-<form id="create-folder-form" onsubmit="event.preventDefault(); createFolder();">
-  <input type="text" id="folderName" placeholder="Folder Name" required>
-  <button type="submit">Create Folder</button>
-</form>
-
-
-  <form id="upload-form" enctype="multipart/form-data">
-    <input type="file" id="fileInput" accept="*/*" required multiple>
-    <button type="submit">Upload File</button>
-  </form>
-
-  <div id="file-structure"></div> <!-- This will display the file structure -->
-</div>
-
-<!-- Firebase and JS code -->
-<script type="module" src="script.js"></script>
-<!-- This should be placed after your HTML elements -->
-</body>
+  <header>
+    <h1>File Synchronization App</h1>
+    <input type="text" id="folderNameInput" placeholder="Folder Name" />
+    <button onclick="createFolder()">Create Folder</button>
+    <input type="file" id="fileInput" />
+    <button onclick="uploadFile()">Upload File</button>
+    <div id="realTimeUpdates"></div>
+  </header>
+  <main>
+    <div id="folders"></div>
+    <div id="files"></div>
+  </main>
+  <script type="module" src="script.js"></script>
 </body>
 </html>
+
 
