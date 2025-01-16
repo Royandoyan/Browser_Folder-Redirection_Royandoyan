@@ -394,22 +394,26 @@ async function fetchFileStructure() {
   });
 }
 
-// Handle folder creation
 document.getElementById('create-folder-form').addEventListener('submit', async (e) => {
-  e.preventDefault();
+  e.preventDefault(); // Prevent the default form submission behavior
   const folderName = document.getElementById('folderName').value;
-  const response = await fetch(`/create-folder?folderName=${folderName}`, { method: 'POST' });
-  if (response.ok) {
-    alert('Folder created successfully');
-    fetchFileStructure();
-  } else {
-    alert('Failed to create folder');
+
+  try {
+    const response = await fetch(`/create-folder?folderName=${folderName}`, { method: 'POST' });
+    if (response.ok) {
+      alert('Folder created successfully');
+      fetchFileStructure();
+    } else {
+      alert('Failed to create folder');
+    }
+  } catch (error) {
+    console.error('Error creating folder:', error);
+    alert('An error occurred while creating the folder');
   }
 });
 
-// Handle file upload
 document.getElementById('upload-form').addEventListener('submit', async (e) => {
-  e.preventDefault();
+  e.preventDefault(); // Prevent the default form submission behavior
   const fileInput = document.getElementById('fileInput');
   const formData = new FormData();
 
@@ -417,12 +421,17 @@ document.getElementById('upload-form').addEventListener('submit', async (e) => {
     formData.append('files', file);
   });
 
-  const response = await fetch('/upload', { method: 'POST', body: formData });
-  if (response.ok) {
-    alert('Files uploaded successfully');
-    fetchFileStructure(); // Refresh the structure to include uploaded files
-  } else {
-    alert('Failed to upload files');
+  try {
+    const response = await fetch('/upload', { method: 'POST', body: formData });
+    if (response.ok) {
+      alert('Files uploaded successfully');
+      fetchFileStructure();
+    } else {
+      alert('Failed to upload files');
+    }
+  } catch (error) {
+    console.error('Error uploading files:', error);
+    alert('An error occurred while uploading files');
   }
 });
 

@@ -138,12 +138,16 @@ app.post('/upload', upload, (req, res) => {
 
 app.post('/create-folder', (req, res) => {
   const folderName = req.query.folderName;
+  console.log('Requested folder creation:', folderName);
   const folderPath = path.join(__dirname, 'uploads', folderName);
+
   if (!fs.existsSync(folderPath)) {
     fs.mkdirSync(folderPath, { recursive: true });
+    console.log('Folder created:', folderPath);
     broadcastUpdate();
     res.send('Folder created successfully');
   } else {
+    console.log('Folder already exists:', folderPath);
     res.send('Folder already exists');
   }
 });

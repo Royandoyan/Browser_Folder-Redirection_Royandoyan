@@ -112,10 +112,12 @@
  <!-- File Manager (Visible after login) -->
  <div id="file-manager" ><!--style="display:-->
   <h1>File Manager</h1>
-  <form id="create-folder-form">
-    <input type="text" id="folderName" placeholder="Folder Name" required>
-    <button type="submit">Create Folder</button>
-  </form>
+  <!-- Create Folder Form -->
+<form id="create-folder-form" onsubmit="event.preventDefault(); createFolder();">
+  <input type="text" id="folderName" placeholder="Folder Name" required>
+  <button type="submit">Create Folder</button>
+</form>
+
 
   <form id="upload-form" enctype="multipart/form-data">
     <input type="file" id="fileInput" accept="*/*" required multiple>
