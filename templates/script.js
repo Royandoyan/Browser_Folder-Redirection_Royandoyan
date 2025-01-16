@@ -116,7 +116,19 @@ document.getElementById('upload-form').addEventListener('submit', async (e) => {
 fetchFileStructure();
 */
 
-/*
+
+
+
+
+
+
+
+
+
+
+
+
+
 // Firebase Imports (Use the Firebase CDN)
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-auth.js";
@@ -299,7 +311,6 @@ ws.onmessage = (event) => {
   }
 };
 
-*/
 
 // Establish WebSocket connection for real-time updates
 const ws = new WebSocket(`${window.location.protocol === 'https:' ? 'wss' : 'ws'}://${window.location.host}`);
