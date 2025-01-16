@@ -122,64 +122,95 @@ fetchFileStructure();
 
 
 
+// Import the functions you need from the SDKs you need
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
+import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-analytics.js";
 
-
-const ws = new WebSocket("ws://localhost:8080");
-
-ws.onopen = () => console.log("WebSocket connected");
-
-ws.onmessage = (event) => {
-  const update = JSON.parse(event.data);
-  handleUpdate(update);
+// Your web app's Firebase configuration
+const firebaseConfig = {
+  apiKey: "AIzaSyAIKjugxiJh9Bd0B32SEd4t9FImRQ9SVK8",
+  authDomain: "browser-redirection.firebaseapp.com",
+  databaseURL: "https://browser-redirection-default-rtdb.firebaseio.com",
+  projectId: "browser-redirection",
+  storageBucket: "browser-redirection.appspot.com",  // Make sure to correct this if needed
+  messagingSenderId: "119718481062",
+  appId: "1:119718481062:web:3f57b707f3438fc309f867",
+  measurementId: "G-RG2M2FHGWV"
 };
 
-// Create a folder
-async function createFolder() {
-  const folderName = document.getElementById("folderNameInput").value;
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
 
-  if (!folderName) {
-    alert("Enter a folder name");
-    return;
+
+// DOM Elements
+const folderNameInput = document.getElementById("folder-name");
+const createFolderButton = document.getElementById("create-folder");
+const fileUploadInput = document.getElementById("file-upload");
+const uploadFilesButton = document.getElementById("upload-files");
+const foldersDiv = document.getElementById("folders");
+
+// Folder Collection Reference
+const foldersCollection = db.collection("folders");
+
+// Create Folder
+createFolderButton.addEventListener("click", async () => {
+  const folderName = folderNameInput.value.trim();
+  if (folderName) {
+    await foldersCollection.add({
+      name: folderName,
+      parentID: null,
+      isDeleted: false,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+    });
+    folderNameInput.value = "";
   }
+});
 
-  try {
-    const response = await fetch("/create-folder", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ folderName }),
+// Render Folders
+const renderFolders = async () => {
+  foldersDiv.innerHTML = "";
+  const snapshot = await foldersCollection
+    .where("parentID", "==", null)
+    .where("isDeleted", "==", false)
+    .get();
+
+  snapshot.forEach((doc) => {
+    const folder = doc.data();
+    const folderDiv = document.createElement("div");
+    folderDiv.className = "folder";
+    folderDiv.textContent = folder.name;
+    foldersDiv.appendChild(folderDiv);
+
+    // Folder click event
+    folderDiv.addEventListener("click", () => {
+      console.log(`Clicked folder: ${folder.name}`);
+      // Add logic to show nested folders/files
     });
 
-    const data = await response.json();
-    console.log("Folder created:", data);
-  } catch (error) {
-    console.error("Error creating folder:", error);
+    // Delete Folder
+    const deleteButton = document.createElement("button");
+    deleteButton.textContent = "Delete";
+    folderDiv.appendChild(deleteButton);
+    deleteButton.addEventListener("click", async () => {
+      await foldersCollection.doc(doc.id).update({ isDeleted: true });
+    });
+  });
+};
+
+// Real-Time Listener
+foldersCollection.onSnapshot(() => {
+  renderFolders();
+});
+
+// Upload Files
+uploadFilesButton.addEventListener("click", () => {
+  const files = fileUploadInput.files;
+  if (files.length > 0) {
+    console.log("Files to upload:", files);
+    // Add file upload logic here (e.g., upload to Firebase Storage)
   }
-}
+});
 
-// Upload a file
-async function uploadFile() {
-  const fileInput = document.getElementById("fileInput");
-  const file = fileInput.files[0];
-
-  if (!file) {
-    alert("Select a file to upload");
-    return;
-  }
-
-  try {
-    const formData = new FormData();
-    formData.append("file", file);
-
-    const response = await fetch("/upload", { method: "POST", body: formData });
-    const result = await response.text();
-    console.log(result);
-  } catch (error) {
-    console.error("Error uploading file:", error);
-  }
-}
-
-// Handle real-time updates
-function handleUpdate(update) {
-  const updatesDiv = document.getElementById("realTimeUpdates");
-  updatesDiv.innerText = JSON.stringify(update, null, 2);
-}
+// Initial Render
+renderFolders();

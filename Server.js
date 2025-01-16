@@ -92,127 +92,23 @@ const broadcastUpdate = () => {
   });
 };
 */
+
+
+
 const express = require("express");
-const cors = require("cors");
 const path = require("path");
-const multer = require("multer");
-const admin = require("firebase-admin");
-const WebSocket = require("ws");
-
-// Firebase Admin SDK setup
-const serviceAccount = require("./path/to/firebase-service-account.json"); // Update with your Firebase service account JSON path
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
-  databaseURL: "https://your-database-url.firebaseio.com", // Replace with your Firebase Realtime Database URL
-  storageBucket: "your-firebase-storage-bucket", // Replace with your Firebase Storage bucket name
-});
-
-const db = admin.firestore();
-const bucket = admin.storage().bucket();
-
 const app = express();
-const PORT = process.env.PORT || 3000;
 
-// Middleware
-app.use(cors());
+// Serve static files from the "templates" directory
 app.use(express.static(path.join(__dirname, "templates")));
-app.use(express.json());
 
-// WebSocket Server
-const wss = new WebSocket.Server({ port: 8080 });
-wss.on("connection", (ws) => {
-  console.log("WebSocket connection established");
-
-  ws.on("message", (message) => {
-    const data = JSON.parse(message);
-    console.log("Received:", data);
-
-    // Broadcast to all connected clients
-    wss.clients.forEach((client) => {
-      if (client.readyState === WebSocket.OPEN) {
-        client.send(JSON.stringify(data));
-      }
-    });
-  });
-});
-
-// Multer setup for file uploads
-const storage = multer.memoryStorage();
-const upload = multer({ storage });
-
-// Routes
+// Define a route for the root URL
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "templates", "index.html"));
 });
 
-// Create folder
-app.post("/create-folder", async (req, res) => {
-  const { folderName, parentID = null } = req.body;
-
-  if (!folderName) {
-    return res.status(400).send("Folder name is required");
-  }
-
-  try {
-    const folderRef = db.collection("folders").doc();
-    await folderRef.set({
-      id: folderRef.id,
-      name: folderName,
-      parentID,
-      isDeleted: false,
-    });
-
-    res.status(200).send({ message: "Folder created", folder: folderRef.id });
-    broadcastUpdate({ type: "create-folder", folder: { id: folderRef.id, name: folderName, parentID } });
-  } catch (error) {
-    res.status(500).send(error.message);
-  }
-});
-
-// Upload file
-app.post("/upload", upload.single("file"), async (req, res) => {
-  const { folderID } = req.body;
-
-  if (!req.file || !folderID) {
-    return res.status(400).send("File and folderID are required");
-  }
-
-  try {
-    const blob = bucket.file(req.file.originalname);
-    const blobStream = blob.createWriteStream({
-      metadata: { contentType: req.file.mimetype },
-    });
-
-    blobStream.on("error", (err) => res.status(500).send(err.message));
-    blobStream.on("finish", async () => {
-      const fileUrl = `https://storage.googleapis.com/${bucket.name}/${blob.name}`;
-      await db.collection("files").add({
-        name: req.file.originalname,
-        folderID,
-        url: fileUrl,
-        isDeleted: false,
-      });
-
-      res.status(200).send("File uploaded successfully");
-      broadcastUpdate({ type: "upload-file", file: { name: req.file.originalname, folderID, url: fileUrl } });
-    });
-
-    blobStream.end(req.file.buffer);
-  } catch (error) {
-    res.status(500).send(error.message);
-  }
-});
-
-// Helper function to broadcast updates
-function broadcastUpdate(update) {
-  wss.clients.forEach((client) => {
-    if (client.readyState === WebSocket.OPEN) {
-      client.send(JSON.stringify(update));
-    }
-  });
-}
-
-// Start server
+// Start the server
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`Server is running at http://localhost:${PORT}`);
+  console.log(`Server is running on http://localhost:${PORT}`);
 });
