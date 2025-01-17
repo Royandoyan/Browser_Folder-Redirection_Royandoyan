@@ -1,9 +1,8 @@
 const express = require("express");
 const path = require("path");
 const { initializeApp } = require("firebase/app");
-const { getFirestore, collection, addDoc, updateDoc, doc, query, where, onSnapshot, getDocs } = require("firebase/firestore");
+const { getFirestore, collection, addDoc, updateDoc, doc, getDocs, query, where } = require("firebase/firestore");
 const bodyParser = require("body-parser");
-const fileUpload = require("express-fileupload"); // File upload handling
 
 const app = express();
 const port = 3000;
@@ -28,7 +27,6 @@ const db = getFirestore(firebaseApp);
 app.use(express.static(path.join(__dirname, 'templates'))); // Serve static files from 'templates' folder
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(fileUpload()); // For file upload handling
 
 // Serve the HTML page
 app.get('/', (req, res) => {
@@ -37,10 +35,9 @@ app.get('/', (req, res) => {
 
 // Real-time folder management
 app.get("/folders", async (req, res) => {
-  const snapshot = await onSnapshot(collection(db, "folders"), (snapshot) => {
-    const folders = snapshot.docs.map(doc => doc.data()).filter(folder => folder.isDeleted === false && folder.parentId === null);
-    res.json(folders);
-  });
+  const snapshot = await getDocs(query(collection(db, "folders"), where("parentId", "==", null), where("isDeleted", "==", false)));
+  const folders = snapshot.docs.map(doc => doc.data());
+  res.json(folders);
 });
 
 // Folder creation

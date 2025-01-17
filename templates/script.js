@@ -14,6 +14,7 @@ const firebaseConfig = {
   measurementId: "G-RG2M2FHGWV"
 };
 
+// Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const storage = getStorage(app);
@@ -24,7 +25,7 @@ let currentFolderPath = "Root";
 // Load folders from Firestore
 async function loadFolders() {
   const folderList = document.getElementById("folderList");
-  folderList.innerHTML = "";
+  folderList.innerHTML = ""; // Clear the list
 
   const folderRef = collection(db, "folders");
   const snapshot = await getDocs(query(folderRef, where("parentId", "==", null), where("isDeleted", "==", false)));
@@ -38,10 +39,26 @@ async function loadFolders() {
       currentFolderId = doc.id;
       currentFolderPath = folder.name;
       document.getElementById("folderPath").textContent = currentFolderPath;
-      loadFolders();
+      loadFiles(); // Load files for this folder
     };
 
     folderList.appendChild(li);
+  });
+}
+
+// Load files from Firestore for the current folder
+async function loadFiles() {
+  const fileList = document.getElementById("fileList");
+  fileList.innerHTML = ""; // Clear the list
+
+  const fileRef = collection(db, "files");
+  const snapshot = await getDocs(query(fileRef, where("folderId", "==", currentFolderId), where("isDeleted", "==", false)));
+
+  snapshot.forEach(doc => {
+    const file = doc.data();
+    const li = document.createElement("li");
+    li.innerHTML = `${file.name} <a href="${file.url}" target="_blank">Download</a>`;
+    fileList.appendChild(li);
   });
 }
 
@@ -61,30 +78,41 @@ async function createFolder() {
   loadFolders();
 }
 
+// Mark folder as deleted
+async function deleteFolder(folderId) {
+  const folderRef = doc(db, "folders", folderId);
+  await updateDoc(folderRef, { isDeleted: true });
+
+  alert("Folder deleted successfully!");
+  loadFolders();
+}
+
 // Handle file upload
 async function uploadFiles() {
-  const files = document.getElementById("fileInput").files;
-  if (files.length === 0) return alert("Please select files to upload!");
+  const fileInput = document.getElementById("fileInput");
+  const files = fileInput.files;
+  if (!files.length) return alert("Please select a file!");
 
-  for (let file of files) {
-    // Upload file to Firebase Storage
+  for (let i = 0; i < files.length; i++) {
+    const file = files[i];
     const fileRef = ref(storage, `files/${file.name}`);
     await uploadBytes(fileRef, file);
-
-    // Get file URL and store it in Firestore
-    const fileUrl = await getDownloadURL(fileRef);
+    const fileURL = await getDownloadURL(fileRef);
 
     await addDoc(collection(db, "files"), {
       name: file.name,
-      url: fileUrl,
-      folderId: currentFolderId || null,
+      folderId: currentFolderId,
+      url: fileURL,
       createdAt: new Date(),
+      isDeleted: false,
     });
   }
 
   alert("Files uploaded successfully!");
+  loadFiles();
 }
 
-window.onload = () => {
+// Event listeners
+document.addEventListener("DOMContentLoaded", function() {
   loadFolders();
-};
+});
