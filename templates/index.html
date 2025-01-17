@@ -1,49 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>File Upload and Folder Management</title>
-  <link rel="stylesheet" href="styles.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File Manager</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-
-<h1>File Upload & Folder Management</h1>
-
-<!-- Create folder -->
-<div>
-  <input type="text" id="folderName" placeholder="Enter folder name">
-  <button onclick="createFolder()">Create Folder</button>
-</div>
-
-<!-- Breadcrumb to show folder path -->
-<div id="breadcrumb">
-  <h2 id="folderPath">Root</h2>
-</div>
-
-<!-- File upload and delete section -->
-<div id="uploadSection">
-  <h3>Upload Files</h3>
-  <input type="file" id="fileInput" multiple>
-  <button onclick="uploadFiles()">Upload</button>
-  <button onclick="deleteFolder()">Delete Folder</button> <!-- Delete Folder Button -->
-</div>
-
-<!-- Folders and files display -->
-<h2>Folders</h2>
-<div id="folderList"></div>
-
-<h2>Uploaded Files</h2>
-<ul id="fileList"></ul>
-
-<!-- Import script.js as a module -->
-<script type="module">
-  import { createFolder, uploadFiles, deleteFolder } from './script.js';
-
-  // Initialize the page by loading folders
-  window.onload = () => {
-    loadFolders();
-  };
-</script>
+    <h1>File Manager</h1>
+    <div>
+        <input type="text" id="folderName" placeholder="Folder Name">
+        <button onclick="createFolder()">Create Folder</button>
+    </div>
+    <h2 id="folderPath">Home</h2>
+    <div id="folderList"></div>
+    <button onclick="deleteFolder()">Delete Folder</button>
+    <script type="module" src="script.js"></script>
 </body>
 </html>

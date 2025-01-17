@@ -19,57 +19,40 @@ const firebaseConfig = {
   measurementId: "G-RG2M2FHGWV"
 };
 
-// Initialize Firebase
 const firebaseApp = initializeApp(firebaseConfig);
 const db = getFirestore(firebaseApp);
 
 // Middleware
-app.use(express.static(path.join(__dirname, 'templates'))); // Serve static files from 'templates' folder
+app.use(express.static(path.join(__dirname, 'templates')));
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
 
-// Serve the HTML page
+// Serve the frontend
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'templates', 'index.html')); // Correct path to index.html
+    res.sendFile(path.join(__dirname, 'templates', 'index.html'));
 });
 
-// Real-time folder management
+// Get folders
 app.get("/folders", async (req, res) => {
-  const snapshot = await getDocs(query(collection(db, "folders"), where("parentId", "==", null), where("isDeleted", "==", false)));
-  const folders = snapshot.docs.map(doc => doc.data());
-  res.json(folders);
+    const { parentId, isDeleted } = req.query;
+    const snapshot = await getDocs(query(collection(db, "folders"), where("parentId", "==", parentId || null), where("isDeleted", "==", isDeleted === "true")));
+    res.json(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
 });
 
-// Folder creation
+// Create folder
 app.post("/create-folder", async (req, res) => {
-  const folderName = req.body.folderName;
-  const parentId = req.body.parentId || null;
-  if (folderName) {
-    await addDoc(collection(db, "folders"), {
-      name: folderName,
-      createdAt: new Date(),
-      isDeleted: false,
-      parentId: parentId
-    });
+    const { folderName, parentId } = req.body;
+    if (!folderName) return res.status(400).send({ error: "Folder name is required!" });
+    await addDoc(collection(db, "folders"), { name: folderName, createdAt: new Date(), isDeleted: false, parentId: parentId || null });
     res.send({ message: "Folder created successfully!" });
-  } else {
-    res.status(400).send({ error: "Folder name is required!" });
-  }
 });
 
 // Mark folder as deleted
 app.post("/delete-folder", async (req, res) => {
-  const folderId = req.body.folderId;
-  if (folderId) {
-    const folderRef = doc(db, "folders", folderId);
-    await updateDoc(folderRef, { isDeleted: true });
+    const { folderId } = req.body;
+    if (!folderId) return res.status(400).send({ error: "Folder ID is required!" });
+    await updateDoc(doc(db, "folders", folderId), { isDeleted: true });
     res.send({ message: "Folder deleted successfully!" });
-  } else {
-    res.status(400).send({ error: "Folder ID is required!" });
-  }
 });
 
-// Server listening
-app.listen(port, () => {
-  console.log(`Server running on http://localhost:${port}`);
-});
+// Start server
+app.listen(port, () => console.log(`Server running on http://localhost:${port}`));
