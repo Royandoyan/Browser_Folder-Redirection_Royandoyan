@@ -4,21 +4,21 @@ import { getFirestore, collection, addDoc, getDocs, query, where, updateDoc, doc
 const firebaseConfig = {
   apiKey: "AIzaSyAIKjugxiJh9Bd0B32SEd4t9FImRQ9SVK8",
   authDomain: "browser-redirection.firebaseapp.com",
-  databaseURL: "https://browser-redirection-default-rtdb.firebaseio.com",
   projectId: "browser-redirection",
-  storageBucket: "browser-redirection.firebasestorage.app",
+  storageBucket: "browser-redirection.appspot.com",
   messagingSenderId: "119718481062",
   appId: "1:119718481062:web:3f57b707f3438fc309f867",
   measurementId: "G-RG2M2FHGWV"
 };
 
+// Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 let currentFolderId = null;
 
 // Load folders dynamically
-async function loadFolders() {
+function loadFolders() {
     const folderList = document.getElementById("folderList");
     folderList.innerHTML = "";
     const folderRef = collection(db, "folders");
@@ -41,16 +41,32 @@ async function loadFolders() {
 async function createFolder() {
     const folderName = document.getElementById("folderName").value;
     if (!folderName) return alert("Please enter a folder name!");
-    await addDoc(collection(db, "folders"), { name: folderName, createdAt: new Date(), isDeleted: false, parentId: currentFolderId || null });
-    document.getElementById("folderName").value = "";
+
+    try {
+        await addDoc(collection(db, "folders"), {
+            name: folderName,
+            createdAt: new Date(),
+            isDeleted: false,
+            parentId: currentFolderId || null
+        });
+        document.getElementById("folderName").value = "";
+        console.log("Folder created successfully!");
+    } catch (error) {
+        console.error("Error creating folder: ", error);
+    }
 }
 
 // Delete a folder
 async function deleteFolder() {
     if (!currentFolderId) return alert("No folder selected!");
-    await updateDoc(doc(db, "folders", currentFolderId), { isDeleted: true });
-    alert("Folder moved to trash!");
-    loadFolders();
+
+    try {
+        await updateDoc(doc(db, "folders", currentFolderId), { isDeleted: true });
+        alert("Folder moved to trash!");
+        loadFolders();
+    } catch (error) {
+        console.error("Error deleting folder: ", error);
+    }
 }
 
 // Navigate inside a folder
@@ -59,6 +75,10 @@ function navigateToFolder(folderId, folderName) {
     document.getElementById("folderPath").textContent = folderName;
     loadFolders();
 }
+
+// Attach event listeners
+document.getElementById("createFolderBtn").addEventListener("click", createFolder);
+document.getElementById("deleteFolderBtn").addEventListener("click", deleteFolder);
 
 // Initialize the page
 window.onload = () => loadFolders();
