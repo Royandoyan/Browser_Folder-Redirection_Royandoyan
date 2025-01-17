@@ -1,3 +1,18 @@
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.0/firebase-app.js";
+import { getFirestore, collection, addDoc, query, where, onSnapshot } from "https://www.gstatic.com/firebasejs/9.6.0/firebase-firestore.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/9.6.0/firebase-auth.js";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.6.0/firebase-storage.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAIKjugxiJh9Bd0B32SEd4t9FImRQ9SVK8",
+  authDomain: "browser-redirection.firebaseapp.com",
+  projectId: "browser-redirection",
+  storageBucket: "browser-redirection.appspot.com",
+  messagingSenderId: "119718481062",
+  appId: "1:119718481062:web:3f57b707f3438fc309f867",
+  measurementId: "G-RG2M2FHGWV"
+};
+
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
@@ -29,8 +44,8 @@ document.getElementById("signupBtn").addEventListener("click", async () => {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       await addDoc(collection(db, "users"), { fullName, age, address, email, uid: userCredential.user.uid });
       alert("Account created successfully!");
-      document.getElementById("fileManager").style.display = "none";
-      document.getElementById("authContainer").style.display = "block";  // Show the Sign In form after successful Sign Up
+      document.getElementById("signupForm").style.display = "none";
+      document.getElementById("signinForm").style.display = "block";  // Show the Sign In form after successful Sign Up
   } catch (error) {
       console.error("Error signing up: ", error);
   }
@@ -96,7 +111,6 @@ function navigateToFolder(folderId, folderName) {
   currentFolderId = folderId;
   document.getElementById("folderPath").textContent = folderName;
   loadFolders();  // Reload folders for the current folder
-  loadFiles();    // Reload files for the current folder
 }
 
 // Load folders dynamically
@@ -162,19 +176,5 @@ document.getElementById("uploadFileBtn").addEventListener("change", async (e) =>
       loadFiles(); // Reload files after upload
   } catch (error) {
       console.error("Error uploading file: ", error);
-  }
-});
-
-// Check Auth State
-auth.onAuthStateChanged(user => {
-  if (user) {
-    // User is signed in, show file manager and load folders
-    toggleAuthUI(true);
-    loadFolders(); // Load folders if the user is logged in
-  } else {
-    // User is signed out, ensure the File Manager is hidden and the Login form is displayed
-    toggleAuthUI(false);
-    document.getElementById("fileManager").style.display = "none"; // Hide File Manager
-    document.getElementById("authContainer").style.display = "block"; // Show Login form
   }
 });
