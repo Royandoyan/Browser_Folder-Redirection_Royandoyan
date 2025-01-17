@@ -79,8 +79,8 @@ app.post("/upload-file", async (req, res) => {
   const file = req.files.file; // Assumes you are using a file upload library like `express-fileupload`
   const folderId = req.body.folderId || null;
   if (file) {
-    const fileRef = ref(storage, `folders/${folderId ? folderId : "root"}/${file.name}`);
-    await uploadBytes(fileRef, file.data);
+    const fileRef = ref(storage, `folders/${currentFolderId || "root"}/${file.name}`);
+await uploadBytes(fileRef, file);
     const fileUrl = await getDownloadURL(fileRef);
     await addDoc(collection(db, "files"), {
       name: file.name,
