@@ -1,5 +1,5 @@
 const express = require("express");
-const path = require("path");
+const path = require("path");  // Keep only one instance of this line
 const { initializeApp } = require("firebase/app");
 const { getFirestore } = require("firebase/firestore");
 const { getStorage, ref, uploadBytes, getDownloadURL } = require("firebase/storage");
@@ -21,7 +21,6 @@ const firebaseConfig = {
   measurementId: "G-RG2M2FHGWV"
 };
 
-
 // Initialize Firebase
 const firebaseApp = initializeApp(firebaseConfig);
 const db = getFirestore(firebaseApp);
@@ -33,7 +32,6 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 // Serve the HTML page
-const path = require('path');
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'templates', 'index.html'));
 });
