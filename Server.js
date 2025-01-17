@@ -1,9 +1,8 @@
 const express = require("express");
 const path = require("path");
 const { initializeApp } = require("firebase/app");
-const { getFirestore } = require("firebase/firestore");
+const { getFirestore, collection, addDoc, updateDoc, doc, query, where, onSnapshot, getDocs } = require("firebase/firestore");
 const { getStorage, ref, uploadBytes, getDownloadURL } = require("firebase/storage");
-const { addDoc, collection, onSnapshot } = require("firebase/firestore");
 const bodyParser = require("body-parser");
 
 const app = express();
@@ -36,24 +35,60 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'templates', 'index.html')); // Correct path to index.html
 });
 
-// Real-time folder and file management
+// Real-time folder management (non-deleted folders, parentID=null)
 app.get("/folders", async (req, res) => {
   const snapshot = await onSnapshot(collection(db, "folders"), (snapshot) => {
-    const folders = snapshot.docs.map(doc => doc.data());
+    const folders = snapshot.docs.map(doc => doc.data()).filter(folder => folder.isDeleted === false && folder.parentId === null);
     res.json(folders);
   });
 });
 
+// Folder creation with isDeleted flag
 app.post("/create-folder", async (req, res) => {
   const folderName = req.body.folderName;
+  const parentId = req.body.parentId || null; // Default to null for root folders
   if (folderName) {
     await addDoc(collection(db, "folders"), {
       name: folderName,
-      createdAt: new Date()
+      createdAt: new Date(),
+      isDeleted: false,
+      parentId: parentId
     });
     res.send({ message: "Folder created successfully!" });
   } else {
     res.status(400).send({ error: "Folder name is required!" });
+  }
+});
+
+// Mark folder as deleted
+app.post("/delete-folder", async (req, res) => {
+  const folderId = req.body.folderId;
+  if (folderId) {
+    const folderRef = doc(db, "folders", folderId);
+    await updateDoc(folderRef, { isDeleted: true });
+    res.send({ message: "Folder deleted successfully!" });
+  } else {
+    res.status(400).send({ error: "Folder ID is required!" });
+  }
+});
+
+// File upload handler
+app.post("/upload-file", async (req, res) => {
+  const file = req.files.file; // Assumes you are using a file upload library like `express-fileupload`
+  const folderId = req.body.folderId || null;
+  if (file) {
+    const fileRef = ref(storage, `folders/${folderId ? folderId : "root"}/${file.name}`);
+    await uploadBytes(fileRef, file.data);
+    const fileUrl = await getDownloadURL(fileRef);
+    await addDoc(collection(db, "files"), {
+      name: file.name,
+      url: fileUrl,
+      folderId: folderId,
+      createdAt: new Date()
+    });
+    res.send({ message: "File uploaded successfully!" });
+  } else {
+    res.status(400).send({ error: "No file provided!" });
   }
 });
 
