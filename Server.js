@@ -4,6 +4,7 @@ const { initializeApp } = require("firebase/app");
 const { getFirestore, collection, addDoc, updateDoc, doc, query, where, onSnapshot, getDocs } = require("firebase/firestore");
 const { getStorage, ref, uploadBytes, getDownloadURL } = require("firebase/storage");
 const bodyParser = require("body-parser");
+const fileUpload = require("express-fileupload"); // Added for handling file uploads
 
 const app = express();
 const port = 3000;
@@ -29,6 +30,7 @@ const storage = getStorage(firebaseApp);
 app.use(express.static(path.join(__dirname, 'templates'))); // Serve static files from 'templates' folder
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use(fileUpload()); // Added for file upload
 
 // Serve the HTML page
 app.get('/', (req, res) => {
