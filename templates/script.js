@@ -1,6 +1,8 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.0/firebase-app.js";
 import { getFirestore, collection, addDoc, getDocs, query, where, onSnapshot, updateDoc, doc } from "https://www.gstatic.com/firebasejs/9.6.0/firebase-firestore.js";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.6.0/firebase-storage.js";
 
+// Firebase configuration
 const firebaseConfig = {
   apiKey: "AIzaSyAIKjugxiJh9Bd0B32SEd4t9FImRQ9SVK8",
   authDomain: "browser-redirection.firebaseapp.com",
@@ -14,6 +16,7 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+const storage = getStorage(app);
 
 let currentFolderId = null;
 let currentFolderPath = "Root";
@@ -25,7 +28,7 @@ async function loadFolders() {
 
   const folderRef = collection(db, "folders");
   const snapshot = await getDocs(query(folderRef, where("parentId", "==", null), where("isDeleted", "==", false)));
-  
+
   snapshot.forEach(doc => {
     const folder = doc.data();
     const li = document.createElement("div");
@@ -35,7 +38,7 @@ async function loadFolders() {
       currentFolderId = doc.id;
       currentFolderPath = folder.name;
       document.getElementById("folderPath").textContent = currentFolderPath;
-      loadFolders(); 
+      loadFolders();
     };
 
     folderList.appendChild(li);
@@ -53,7 +56,7 @@ async function createFolder() {
     isDeleted: false,
     parentId: currentFolderId || null,
   });
-  
+
   alert("Folder created successfully!");
   loadFolders();
 }
@@ -64,10 +67,16 @@ async function uploadFiles() {
   if (files.length === 0) return alert("Please select files to upload!");
 
   for (let file of files) {
-    // Store file info in Firestore
+    // Upload file to Firebase Storage
+    const fileRef = ref(storage, `files/${file.name}`);
+    await uploadBytes(fileRef, file);
+
+    // Get file URL and store it in Firestore
+    const fileUrl = await getDownloadURL(fileRef);
+
     await addDoc(collection(db, "files"), {
       name: file.name,
-      url: "",  // Assuming you use storage, or keep it empty for now
+      url: fileUrl,
       folderId: currentFolderId || null,
       createdAt: new Date(),
     });
