@@ -1,5 +1,5 @@
 const express = require("express");
-const path = require("path");  // Keep only one instance of this line
+const path = require("path");
 const { initializeApp } = require("firebase/app");
 const { getFirestore } = require("firebase/firestore");
 const { getStorage, ref, uploadBytes, getDownloadURL } = require("firebase/storage");
@@ -27,13 +27,13 @@ const db = getFirestore(firebaseApp);
 const storage = getStorage(firebaseApp);
 
 // Middleware
-app.use(express.static("public"));
+app.use(express.static(path.join(__dirname, 'templates'))); // Serve static files from 'templates' folder
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 // Serve the HTML page
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'templates', 'index.html'));
+    res.sendFile(path.join(__dirname, 'templates', 'index.html')); // Correct path to index.html
 });
 
 // Real-time folder and file management

@@ -1,3 +1,8 @@
+// Import necessary Firebase modules
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.0/firebase-app.js";
+import { getFirestore, collection, addDoc, getDocs, query, where } from "https://www.gstatic.com/firebasejs/9.6.0/firebase-firestore.js";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.6.0/firebase-storage.js";
+
 // Firebase configuration
 const firebaseConfig = {
   apiKey: "AIzaSyAIKjugxiJh9Bd0B32SEd4t9FImRQ9SVK8",
@@ -10,19 +15,20 @@ const firebaseConfig = {
   measurementId: "G-RG2M2FHGWV"
 };
 
-const app = firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
-const storage = firebase.storage();
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const storage = getStorage(app);
 
 // Create Folder
 async function createFolder() {
   const folderName = document.getElementById("folderName").value;
   if (!folderName) return alert("Please enter a folder name!");
 
-  const folderRef = db.collection("folders").doc();
-  await folderRef.set({
+  const folderRef = collection(db, "folders");
+  await addDoc(folderRef, {
     name: folderName,
-    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+    createdAt: new Date(),
   });
 
   document.getElementById("folderName").value = "";
@@ -35,7 +41,8 @@ async function loadFolders() {
   const folderList = document.getElementById("folderList");
   folderList.innerHTML = "";
 
-  const snapshot = await db.collection("folders").get();
+  const folderRef = collection(db, "folders");
+  const snapshot = await getDocs(folderRef);
   snapshot.forEach(doc => {
     const folder = doc.data();
     const li = document.createElement("li");
@@ -50,24 +57,24 @@ async function uploadFiles() {
   if (files.length === 0) return alert("Please select files to upload!");
 
   const folderName = prompt("Enter the folder name to upload files:");
-  const folderRef = db.collection("folders").where("name", "==", folderName);
+  const folderRef = query(collection(db, "folders"), where("name", "==", folderName));
 
-  const folderSnapshot = await folderRef.get();
+  const folderSnapshot = await getDocs(folderRef);
   if (folderSnapshot.empty) return alert("Folder not found!");
 
   const folderDoc = folderSnapshot.docs[0];
   const folderId = folderDoc.id;
 
   for (let file of files) {
-    const fileRef = storage.ref(`files/${folderId}/${file.name}`);
-    await fileRef.put(file);
+    const fileRef = ref(storage, `files/${folderId}/${file.name}`);
+    await uploadBytes(fileRef, file);
 
-    const fileUrl = await fileRef.getDownloadURL();
-    await db.collection("files").add({
+    const fileUrl = await getDownloadURL(fileRef);
+    await addDoc(collection(db, "files"), {
       folderId: folderId,
       name: file.name,
       url: fileUrl,
-      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+      createdAt: new Date(),
     });
   }
 
@@ -80,7 +87,8 @@ async function loadFiles() {
   const fileList = document.getElementById("fileList");
   fileList.innerHTML = "";
 
-  const snapshot = await db.collection("files").get();
+  const fileRef = collection(db, "files");
+  const snapshot = await getDocs(fileRef);
   snapshot.forEach(doc => {
     const file = doc.data();
     const li = document.createElement("li");
