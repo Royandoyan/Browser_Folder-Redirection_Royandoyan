@@ -162,33 +162,46 @@ document.getElementById("uploadFileBtn").addEventListener("change", async (e) =>
 
   const fileRef = ref(storage, `files/${currentFolderId}/${file.name}`); // Save file in the current folder
   try {
+      // Upload file to Firebase Storage
       const snapshot = await uploadBytes(fileRef, file);
+      
+      // Get the download URL for the uploaded file
       const fileUrl = await getDownloadURL(snapshot.ref);
       
       // Save file metadata in Firestore
       await addDoc(collection(db, "files"), {
           name: file.name,
           url: fileUrl,
-          folderId: currentFolderId
+          folderId: currentFolderId,
+          createdAt: new Date(),  // Adding timestamp for file creation
       });
 
       alert("File uploaded successfully!");
       loadFiles(); // Reload files after upload
   } catch (error) {
       console.error("Error uploading file: ", error);
+      alert("Failed to upload file. Please try again.");
   }
 });
 
 // Check Auth State
-// Check Auth State
 auth.onAuthStateChanged(user => {
-  toggleAuthUI(!!user);
   if (user) {
+    // User is signed in, show file manager and load folders
+    toggleAuthUI(true);
     loadFolders(); // Load folders if the user is logged in
   } else {
-    // Ensure that File Manager is hidden and Login form is displayed when not logged in
-    document.getElementById("fileManager").style.display = "none";
-    document.getElementById("authContainer").style.display = "block"; // Show login form
+    // User is signed out, ensure the File Manager is hidden and the Login form is displayed
+    toggleAuthUI(false);
+    document.getElementById("fileManager").style.display = "none"; // Hide File Manager
+    document.getElementById("authContainer").style.display = "block"; // Show Login form
   }
 });
+
+// Toggle UI Based on Auth State
+function toggleAuthUI(isAuthenticated) {
+  document.getElementById("authContainer").style.display = isAuthenticated ? "none" : "block";
+  document.getElementById("fileManager").style.display = isAuthenticated ? "block" : "none";
+}
+
 
