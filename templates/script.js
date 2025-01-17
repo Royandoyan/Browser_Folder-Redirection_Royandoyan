@@ -1,17 +1,3 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.0/firebase-app.js";
-import { getFirestore, collection, addDoc, query, where, onSnapshot } from "https://www.gstatic.com/firebasejs/9.6.0/firebase-firestore.js";
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/9.6.0/firebase-auth.js";
-import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.6.0/firebase-storage.js";
-
-const firebaseConfig = {
-  apiKey: "AIzaSyAIKjugxiJh9Bd0B32SEd4t9FImRQ9SVK8",
-  authDomain: "browser-redirection.firebaseapp.com",
-  projectId: "browser-redirection",
-  storageBucket: "browser-redirection.appspot.com",
-  messagingSenderId: "119718481062",
-  appId: "1:119718481062:web:3f57b707f3438fc309f867"
-};
-
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
@@ -162,25 +148,20 @@ document.getElementById("uploadFileBtn").addEventListener("change", async (e) =>
 
   const fileRef = ref(storage, `files/${currentFolderId}/${file.name}`); // Save file in the current folder
   try {
-      // Upload file to Firebase Storage
       const snapshot = await uploadBytes(fileRef, file);
-      
-      // Get the download URL for the uploaded file
       const fileUrl = await getDownloadURL(snapshot.ref);
       
       // Save file metadata in Firestore
       await addDoc(collection(db, "files"), {
           name: file.name,
           url: fileUrl,
-          folderId: currentFolderId,
-          createdAt: new Date(),  // Adding timestamp for file creation
+          folderId: currentFolderId
       });
 
       alert("File uploaded successfully!");
       loadFiles(); // Reload files after upload
   } catch (error) {
       console.error("Error uploading file: ", error);
-      alert("Failed to upload file. Please try again.");
   }
 });
 
@@ -197,11 +178,3 @@ auth.onAuthStateChanged(user => {
     document.getElementById("authContainer").style.display = "block"; // Show Login form
   }
 });
-
-// Toggle UI Based on Auth State
-function toggleAuthUI(isAuthenticated) {
-  document.getElementById("authContainer").style.display = isAuthenticated ? "none" : "block";
-  document.getElementById("fileManager").style.display = isAuthenticated ? "block" : "none";
-}
-
-
