@@ -21,11 +21,12 @@
   <h2 id="folderPath">Root</h2>
 </div>
 
-<!-- File upload section -->
+<!-- File upload and delete section -->
 <div id="uploadSection">
   <h3>Upload Files</h3>
   <input type="file" id="fileInput" multiple>
   <button onclick="uploadFiles()">Upload</button>
+  <button onclick="deleteFolder()">Delete Folder</button> <!-- Delete Folder Button -->
 </div>
 
 <!-- Folders and files display -->
@@ -35,7 +36,7 @@
 <h2>Uploaded Files</h2>
 <ul id="fileList"></ul>
 
-<!-- Correctly linking the script -->
+<!-- Script should be loaded at the end of body -->
 <script type="module" src="script.js"></script>
 
 </body>

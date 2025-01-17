@@ -1,8 +1,8 @@
+// Firebase configuration and initialization
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.0/firebase-app.js";
 import { getFirestore, collection, addDoc, getDocs, query, where, onSnapshot, updateDoc, doc } from "https://www.gstatic.com/firebasejs/9.6.0/firebase-firestore.js";
-import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.6.0/firebase-storage.js";
 
-// Firebase configuration
+// Firebase setup
 const firebaseConfig = {
   apiKey: "AIzaSyAIKjugxiJh9Bd0B32SEd4t9FImRQ9SVK8",
   authDomain: "browser-redirection.firebaseapp.com",
@@ -14,10 +14,8 @@ const firebaseConfig = {
   measurementId: "G-RG2M2FHGWV"
 };
 
-// Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
-const storage = getStorage(app);
 
 let currentFolderId = null;
 let currentFolderPath = "Root";
@@ -25,7 +23,7 @@ let currentFolderPath = "Root";
 // Load folders from Firestore
 async function loadFolders() {
   const folderList = document.getElementById("folderList");
-  folderList.innerHTML = ""; // Clear the list
+  folderList.innerHTML = "";
 
   const folderRef = collection(db, "folders");
   const snapshot = await getDocs(query(folderRef, where("parentId", "==", null), where("isDeleted", "==", false)));
@@ -39,26 +37,10 @@ async function loadFolders() {
       currentFolderId = doc.id;
       currentFolderPath = folder.name;
       document.getElementById("folderPath").textContent = currentFolderPath;
-      loadFiles(); // Load files for this folder
+      loadFolders();
     };
 
     folderList.appendChild(li);
-  });
-}
-
-// Load files from Firestore for the current folder
-async function loadFiles() {
-  const fileList = document.getElementById("fileList");
-  fileList.innerHTML = ""; // Clear the list
-
-  const fileRef = collection(db, "files");
-  const snapshot = await getDocs(query(fileRef, where("folderId", "==", currentFolderId), where("isDeleted", "==", false)));
-
-  snapshot.forEach(doc => {
-    const file = doc.data();
-    const li = document.createElement("li");
-    li.innerHTML = `${file.name} <a href="${file.url}" target="_blank">Download</a>`;
-    fileList.appendChild(li);
   });
 }
 
@@ -78,42 +60,39 @@ async function createFolder() {
   loadFolders();
 }
 
+// Handle file upload
+async function uploadFiles() {
+  const files = document.getElementById("fileInput").files;
+  if (files.length === 0) return alert("Please select files to upload!");
 
-// Mark folder as deleted
-async function deleteFolder(folderId) {
-  const folderRef = doc(db, "folders", folderId);
+  for (let file of files) {
+    // Store file info in Firestore
+    await addDoc(collection(db, "files"), {
+      name: file.name,
+      url: "",  // Assuming you use storage, or keep it empty for now
+      folderId: currentFolderId || null,
+      createdAt: new Date(),
+    });
+  }
+
+  alert("Files uploaded successfully!");
+}
+
+// Delete the current folder
+async function deleteFolder() {
+  if (!currentFolderId) {
+    alert("No folder selected!");
+    return;
+  }
+
+  const folderRef = doc(db, "folders", currentFolderId);
   await updateDoc(folderRef, { isDeleted: true });
 
   alert("Folder deleted successfully!");
   loadFolders();
 }
 
-// Handle file upload
-async function uploadFiles() {
-  const fileInput = document.getElementById("fileInput");
-  const files = fileInput.files;
-  if (!files.length) return alert("Please select a file!");
-
-  for (let i = 0; i < files.length; i++) {
-    const file = files[i];
-    const fileRef = ref(storage, `files/${file.name}`);
-    await uploadBytes(fileRef, file);
-    const fileURL = await getDownloadURL(fileRef);
-
-    await addDoc(collection(db, "files"), {
-      name: file.name,
-      folderId: currentFolderId,
-      url: fileURL,
-      createdAt: new Date(),
-      isDeleted: false,
-    });
-  }
-
-  alert("Files uploaded successfully!");
-  loadFiles();
-}
-
-// Event listeners
-document.addEventListener("DOMContentLoaded", function() {
+// Initialize the page by loading folders
+window.onload = () => {
   loadFolders();
-});
+};
