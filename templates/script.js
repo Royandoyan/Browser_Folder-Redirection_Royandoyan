@@ -20,82 +20,84 @@ let currentFolderId = null;
 
 // Toggle between Sign In and Sign Up Forms
 document.getElementById("showSignup").addEventListener("click", () => {
-    document.getElementById("signinForm").style.display = "none";
-    document.getElementById("signupForm").style.display = "block";
+  document.getElementById("signinForm").style.display = "none";
+  document.getElementById("signupForm").style.display = "block";
 });
 
 document.getElementById("showSignin").addEventListener("click", () => {
-    document.getElementById("signupForm").style.display = "none";
-    document.getElementById("signinForm").style.display = "block";
+  document.getElementById("signupForm").style.display = "none";
+  document.getElementById("signinForm").style.display = "block";
 });
 
 // Sign Up
 document.getElementById("signupBtn").addEventListener("click", async () => {
-    const fullName = document.getElementById("fullName").value;
-    const age = document.getElementById("age").value;
-    const address = document.getElementById("address").value;
-    const email = document.getElementById("signupEmail").value;
-    const password = document.getElementById("signupPassword").value;
+  const fullName = document.getElementById("fullName").value;
+  const age = document.getElementById("age").value;
+  const address = document.getElementById("address").value;
+  const email = document.getElementById("signupEmail").value;
+  const password = document.getElementById("signupPassword").value;
 
-    try {
-        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        await addDoc(collection(db, "users"), { fullName, age, address, email, uid: userCredential.user.uid });
-        alert("Account created successfully!");
-        toggleAuthUI(true);
-    } catch (error) {
-        console.error("Error signing up: ", error);
-    }
+  try {
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      await addDoc(collection(db, "users"), { fullName, age, address, email, uid: userCredential.user.uid });
+      alert("Account created successfully!");
+      // Keep File Manager hidden until Sign In is successful
+      document.getElementById("fileManager").style.display = "none";
+      document.getElementById("authContainer").style.display = "block";  // Show the Sign In form after successful Sign Up
+  } catch (error) {
+      console.error("Error signing up: ", error);
+  }
 });
 
 // Sign In
 document.getElementById("signinBtn").addEventListener("click", async () => {
-    const email = document.getElementById("signinEmail").value;
-    const password = document.getElementById("signinPassword").value;
+  const email = document.getElementById("signinEmail").value;
+  const password = document.getElementById("signinPassword").value;
 
-    try {
-        await signInWithEmailAndPassword(auth, email, password);
-        alert("Signed in successfully!");
-        toggleAuthUI(true);
-    } catch (error) {
-        console.error("Error signing in: ", error);
-    }
+  try {
+      await signInWithEmailAndPassword(auth, email, password);
+      alert("Signed in successfully!");
+      toggleAuthUI(true);  // Only show File Manager after Sign In
+  } catch (error) {
+      console.error("Error signing in: ", error);
+  }
 });
 
 // Logout
 document.getElementById("logoutBtn").addEventListener("click", async () => {
-    await signOut(auth);
-    toggleAuthUI(false);
+  await signOut(auth);
+  toggleAuthUI(false);  // Hide File Manager on Logout
 });
 
 // Toggle UI Based on Auth State
 function toggleAuthUI(isAuthenticated) {
-    document.getElementById("authContainer").style.display = isAuthenticated ? "none" : "block";
-    document.getElementById("fileManager").style.display = isAuthenticated ? "block" : "none";
+  document.getElementById("authContainer").style.display = isAuthenticated ? "none" : "block";
+  document.getElementById("fileManager").style.display = isAuthenticated ? "block" : "none";
 }
 
 // Load folders dynamically
 function loadFolders() {
-    const folderList = document.getElementById("folderList");
-    folderList.innerHTML = "";
-    const q = query(collection(db, "folders"), where("parentId", "==", currentFolderId), where("isDeleted", "==", false));
+  const folderList = document.getElementById("folderList");
+  folderList.innerHTML = "";
+  const q = query(collection(db, "folders"), where("parentId", "==", currentFolderId), where("isDeleted", "==", false));
 
-    onSnapshot(q, (snapshot) => {
-        folderList.innerHTML = "";
-        snapshot.forEach(doc => {
-            const folder = doc.data();
-            const div = document.createElement("div");
-            div.classList.add("folder");
-            div.textContent = folder.name;
-            div.onclick = () => navigateToFolder(doc.id, folder.name);
-            folderList.appendChild(div);
-        });
-    });
+  onSnapshot(q, (snapshot) => {
+      folderList.innerHTML = "";
+      snapshot.forEach(doc => {
+          const folder = doc.data();
+          const div = document.createElement("div");
+          div.classList.add("folder");
+          div.textContent = folder.name;
+          div.onclick = () => navigateToFolder(doc.id, folder.name);
+          folderList.appendChild(div);
+      });
+  });
 
-    loadFiles();
+  loadFiles();
 }
 
 // Check Auth State
 auth.onAuthStateChanged(user => {
-    toggleAuthUI(!!user);
-    if (user) loadFolders();
+  toggleAuthUI(!!user);
+  if (user) loadFolders();
 });
