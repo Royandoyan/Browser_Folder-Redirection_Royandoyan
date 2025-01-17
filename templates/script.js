@@ -1,6 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.0/firebase-app.js";
-import { getFirestore, collection, addDoc, getDocs, query, where, updateDoc, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/9.6.0/firebase-firestore.js";
-import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.6.0/firebase-storage.js";
+import { getFirestore, collection, addDoc, query, where, onSnapshot } from "https://www.gstatic.com/firebasejs/9.6.0/firebase-firestore.js";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/9.6.0/firebase-auth.js";
 
 const firebaseConfig = {
@@ -15,12 +14,22 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
-const storage = getStorage(app);
 const auth = getAuth();
 
 let currentFolderId = null;
 
-// Signup
+// Toggle between Sign In and Sign Up Forms
+document.getElementById("showSignup").addEventListener("click", () => {
+    document.getElementById("signinForm").style.display = "none";
+    document.getElementById("signupForm").style.display = "block";
+});
+
+document.getElementById("showSignin").addEventListener("click", () => {
+    document.getElementById("signupForm").style.display = "none";
+    document.getElementById("signinForm").style.display = "block";
+});
+
+// Sign Up
 document.getElementById("signupBtn").addEventListener("click", async () => {
     const fullName = document.getElementById("fullName").value;
     const age = document.getElementById("age").value;
@@ -38,7 +47,7 @@ document.getElementById("signupBtn").addEventListener("click", async () => {
     }
 });
 
-// Signin
+// Sign In
 document.getElementById("signinBtn").addEventListener("click", async () => {
     const email = document.getElementById("signinEmail").value;
     const password = document.getElementById("signinPassword").value;
@@ -58,11 +67,10 @@ document.getElementById("logoutBtn").addEventListener("click", async () => {
     toggleAuthUI(false);
 });
 
-// UI toggle for auth
+// Toggle UI Based on Auth State
 function toggleAuthUI(isAuthenticated) {
     document.getElementById("authContainer").style.display = isAuthenticated ? "none" : "block";
     document.getElementById("fileManager").style.display = isAuthenticated ? "block" : "none";
-    document.getElementById("logoutBtn").style.display = isAuthenticated ? "block" : "none";
 }
 
 // Load folders dynamically
@@ -86,12 +94,7 @@ function loadFolders() {
     loadFiles();
 }
 
-// Attach event listeners
-document.getElementById("createFolderBtn").addEventListener("click", createFolder);
-document.getElementById("deleteFolderBtn").addEventListener("click", deleteFolder);
-document.getElementById("uploadFileBtn").addEventListener("click", uploadFile);
-
-// Check auth state
+// Check Auth State
 auth.onAuthStateChanged(user => {
     toggleAuthUI(!!user);
     if (user) loadFolders();

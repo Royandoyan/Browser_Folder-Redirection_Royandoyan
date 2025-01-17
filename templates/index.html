@@ -11,7 +11,17 @@
 
     <!-- Authentication Section -->
     <div id="authContainer">
-        <div id="signupForm">
+        <!-- Sign In Form -->
+        <div id="signinForm">
+            <h2>Sign In</h2>
+            <input type="email" id="signinEmail" placeholder="Email">
+            <input type="password" id="signinPassword" placeholder="Password">
+            <button id="signinBtn">Sign In</button>
+            <p>Don't have an account? <a href="#" id="showSignup">Sign Up</a></p>
+        </div>
+
+        <!-- Sign Up Form (Hidden by Default) -->
+        <div id="signupForm" style="display: none;">
             <h2>Sign Up</h2>
             <input type="text" id="fullName" placeholder="Full Name">
             <input type="number" id="age" placeholder="Age">
@@ -19,20 +29,15 @@
             <input type="email" id="signupEmail" placeholder="Email">
             <input type="password" id="signupPassword" placeholder="Password">
             <button id="signupBtn">Sign Up</button>
+            <p>Already have an account? <a href="#" id="showSignin">Sign In</a></p>
         </div>
-
-        <div id="signinForm">
-            <h2>Sign In</h2>
-            <input type="email" id="signinEmail" placeholder="Email">
-            <input type="password" id="signinPassword" placeholder="Password">
-            <button id="signinBtn">Sign In</button>
-        </div>
-
-        <button id="logoutBtn" style="display:none;">Logout</button>
     </div>
 
+    <!-- File Manager (Hidden Until Logged In) -->
     <div id="fileManager" style="display: none;">
         <h2 id="folderPath">Home</h2>
+        <button id="logoutBtn">Logout</button>
+
         <div>
             <input type="text" id="folderName" placeholder="Folder Name">
             <button id="createFolderBtn">Create Folder</button>

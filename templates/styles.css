@@ -59,3 +59,22 @@ input {
   border-radius: 10px;
   box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.2);
 }
+
+#signupForm, #signinForm {
+  background: white;
+  padding: 20px;
+  width: 300px;
+  margin: auto;
+  border-radius: 10px;
+  box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+p {
+  margin-top: 10px;
+}
+
+a {
+  color: blue;
+  text-decoration: none;
+  cursor: pointer;
+}
