@@ -15,7 +15,11 @@
   <button onclick="createFolder()">Create Folder</button>
 </div>
 
-<div>
+<div id="breadcrumb">
+  <h2 id="folderPath">Root</h2> <!-- To show the current folder path -->
+</div>
+
+<div id="uploadSection">
   <h3>Upload Files</h3>
   <input type="file" id="fileInput" multiple>
   <button onclick="uploadFiles()">Upload</button>
