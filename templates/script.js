@@ -21,87 +21,104 @@ const storage = getStorage(app);
 
 let currentFolderId = null;
 
-// Toggle between Sign In and Sign Up Forms
-document.getElementById("showSignup").addEventListener("click", () => {
-  document.getElementById("signinForm").style.display = "none";
-  document.getElementById("signupForm").style.display = "block";
-});
-
-document.getElementById("showSignin").addEventListener("click", () => {
-  document.getElementById("signupForm").style.display = "none";
-  document.getElementById("signinForm").style.display = "block";
-});
-
-// Sign Up
-document.getElementById("signupBtn").addEventListener("click", async () => {
-  const fullName = document.getElementById("fullName").value;
-  const age = document.getElementById("age").value;
-  const address = document.getElementById("address").value;
-  const email = document.getElementById("signupEmail").value;
-  const password = document.getElementById("signupPassword").value;
-
-  try {
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      await addDoc(collection(db, "users"), { fullName, age, address, email, uid: userCredential.user.uid });
-      alert("Account created successfully!");
-      document.getElementById("signupForm").style.display = "none";
-      document.getElementById("signinForm").style.display = "block";  // Show the Sign In form after successful Sign Up
-  } catch (error) {
-      console.error("Error signing up: ", error);
-  }
-});
-
-// Sign In
+// Sign Up and Sign In logic
 document.getElementById("signinBtn").addEventListener("click", async () => {
-  const email = document.getElementById("signinEmail").value;
-  const password = document.getElementById("signinPassword").value;
+    const email = document.getElementById("signinEmail").value;
+    const password = document.getElementById("signinPassword").value;
+    try {
+        await signInWithEmailAndPassword(auth, email, password);
+        document.getElementById("authContainer").style.display = "none";
+        document.getElementById("fileManager").style.display = "block";
+        loadFolders();
+    } catch (error) {
+        alert(error.message);
+    }
+});
+
+document.getElementById("signupBtn").addEventListener("click", async () => {
+    const email = document.getElementById("signupEmail").value;
+    const password = document.getElementById("signupPassword").value;
+    try {
+        await createUserWithEmailAndPassword(auth, email, password);
+        alert("Account created successfully!");
+        document.getElementById("signupForm").style.display = "none";
+        document.getElementById("signinForm").style.display = "block";
+    } catch (error) {
+        alert(error.message);
+    }
+});
+
+document.getElementById("logoutBtn").addEventListener("click", () => {
+    signOut(auth).then(() => {
+        document.getElementById("authContainer").style.display = "block";
+        document.getElementById("fileManager").style.display = "none";
+    }).catch((error) => {
+        alert(error.message);
+    });
+});
+
+// File Upload with Success/Error Handling
+document.getElementById("uploadFileBtn").addEventListener("click", async () => {
+  const fileInput = document.getElementById("fileInput");
+  const file = fileInput.files[0];
+
+  if (!file || !currentFolderId) {
+    alert("Please select a file and ensure you have a folder selected.");
+    return;
+  }
+
+  // Show upload progress
+  const uploadStatus = document.getElementById("uploadStatus");
+  uploadStatus.textContent = "Uploading... Please wait.";
+
+  const fileRef = ref(storage, `files/${currentFolderId}/${file.name}`); // Store in the selected folder
 
   try {
-      await signInWithEmailAndPassword(auth, email, password);
-      alert("Signed in successfully!");
-      toggleAuthUI(true);  // Only show File Manager after Sign In
+    // Upload file to Firebase Storage
+    const snapshot = await uploadBytes(fileRef, file);
+    const fileUrl = await getDownloadURL(snapshot.ref); // Get the download URL for the uploaded file
+
+    // Store file metadata in Firestore under the selected folder
+    await addDoc(collection(db, "files"), {
+      name: file.name,
+      url: fileUrl,
+      folderId: currentFolderId,
+      createdAt: new Date()
+    });
+
+    uploadStatus.textContent = "Upload successful!";
+    loadFiles(); // Reload files to show the newly uploaded one
   } catch (error) {
-      console.error("Error signing in: ", error);
+    uploadStatus.textContent = "Upload failed. Please try again.";
+    console.error("Error uploading file:", error);
   }
 });
 
-// Logout
-document.getElementById("logoutBtn").addEventListener("click", async () => {
-  await signOut(auth);
-  toggleAuthUI(false);  // Hide File Manager on Logout
-});
-
-// Toggle UI Based on Auth State
-function toggleAuthUI(isAuthenticated) {
-  document.getElementById("authContainer").style.display = isAuthenticated ? "none" : "block";
-  document.getElementById("fileManager").style.display = isAuthenticated ? "block" : "none";
-}
-
-// Load files (if required)
+// Function to load files for the current folder
 function loadFiles() {
   const fileList = document.getElementById("fileList");
-  fileList.innerHTML = "";
+  fileList.innerHTML = ""; // Clear the current file list
 
   if (!currentFolderId) return; // No folder selected
 
-  const fileRef = collection(db, "files"); // Assuming you have a collection for files
+  const fileRef = collection(db, "files"); // Reference to Firestore 'files' collection
   const q = query(fileRef, where("folderId", "==", currentFolderId));
 
   onSnapshot(q, (snapshot) => {
+    fileList.innerHTML = ""; // Clear previous files
     snapshot.forEach(doc => {
       const file = doc.data();
       const div = document.createElement("div");
       div.classList.add("file");
       div.textContent = file.name;
-      div.onclick = () => viewFileDetails(file.url);
+      div.onclick = () => viewFileDetails(file.url); // On click, show file URL
       fileList.appendChild(div);
     });
   });
 }
 
-// View file details without opening
+// Function to view file details (display file URL or other metadata)
 function viewFileDetails(url) {
-  // Display file details like URL or other properties
   const fileDetails = document.getElementById("fileDetails");
   fileDetails.innerHTML = `<p>File URL: <a href="${url}" target="_blank">${url}</a></p>`;
 }
@@ -152,29 +169,5 @@ document.getElementById("createFolderBtn").addEventListener("click", async () =>
       loadFolders(); // Reload folders after creating a new one
   } catch (error) {
       console.error("Error creating folder: ", error);
-  }
-});
-
-// Upload File
-document.getElementById("uploadFileBtn").addEventListener("change", async (e) => {
-  const file = e.target.files[0];
-  if (!file || !currentFolderId) return;
-
-  const fileRef = ref(storage, `files/${currentFolderId}/${file.name}`); // Save file in the current folder
-  try {
-      const snapshot = await uploadBytes(fileRef, file);
-      const fileUrl = await getDownloadURL(snapshot.ref);
-      
-      // Save file metadata in Firestore
-      await addDoc(collection(db, "files"), {
-          name: file.name,
-          url: fileUrl,
-          folderId: currentFolderId
-      });
-
-      alert("File uploaded successfully!");
-      loadFiles(); // Reload files after upload
-  } catch (error) {
-      console.error("Error uploading file: ", error);
   }
 });
