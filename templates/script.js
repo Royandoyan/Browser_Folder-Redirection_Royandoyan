@@ -75,6 +75,8 @@ async function uploadFiles() {
     });
   }
 
+  
+
   alert("Files uploaded successfully!");
 }
 
