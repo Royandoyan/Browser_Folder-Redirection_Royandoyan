@@ -36,7 +36,14 @@
 <h2>Uploaded Files</h2>
 <ul id="fileList"></ul>
 
-<!-- Script should be loaded at the end of body -->
-<script type="module" src="script.js"></script>
+<!-- Import script.js as a module -->
+<script type="module">
+  import { createFolder, uploadFiles, deleteFolder } from './script.js';
+
+  // Initialize the page by loading folders
+  window.onload = () => {
+    loadFolders();
+  };
+</script>
 </body>
 </html>

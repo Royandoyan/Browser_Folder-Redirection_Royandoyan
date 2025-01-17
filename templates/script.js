@@ -45,7 +45,7 @@ async function loadFolders() {
 }
 
 // Create a folder
-export async function createFolder() {
+async function createFolder() {
   const folderName = document.getElementById("folderName").value;
   if (!folderName) return alert("Please enter a folder name!");
 
@@ -61,7 +61,7 @@ export async function createFolder() {
 }
 
 // Handle file upload
-export async function uploadFiles() {
+async function uploadFiles() {
   const files = document.getElementById("fileInput").files;
   if (files.length === 0) return alert("Please select files to upload!");
 
@@ -79,7 +79,7 @@ export async function uploadFiles() {
 }
 
 // Delete the current folder
-export async function deleteFolder() {
+async function deleteFolder() {
   if (!currentFolderId) {
     alert("No folder selected!");
     return;
