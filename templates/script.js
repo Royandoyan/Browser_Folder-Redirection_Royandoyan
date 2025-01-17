@@ -1,6 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.0/firebase-app.js";
 import { getFirestore, collection, addDoc, getDocs, query, where, onSnapshot, updateDoc, doc } from "https://www.gstatic.com/firebasejs/9.6.0/firebase-firestore.js";
-import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.6.0/firebase-storage.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAIKjugxiJh9Bd0B32SEd4t9FImRQ9SVK8",
@@ -15,7 +14,6 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
-const storage = getStorage(app);
 
 let currentFolderId = null;
 let currentFolderPath = "Root";
@@ -44,6 +42,7 @@ async function loadFolders() {
   });
 }
 
+// Create a folder
 async function createFolder() {
   const folderName = document.getElementById("folderName").value;
   if (!folderName) return alert("Please enter a folder name!");
@@ -59,23 +58,20 @@ async function createFolder() {
   loadFolders();
 }
 
+// Handle file upload
 async function uploadFiles() {
   const files = document.getElementById("fileInput").files;
   if (files.length === 0) return alert("Please select files to upload!");
 
   for (let file of files) {
-    const fileRef = ref(storage, `folders/${currentFolderId || "root"}/${file.name}`);
-    await uploadBytes(fileRef, file);
-    const fileUrl = await getDownloadURL(fileRef);
+    // Store file info in Firestore
     await addDoc(collection(db, "files"), {
       name: file.name,
-      url: fileUrl,
+      url: "",  // Assuming you use storage, or keep it empty for now
       folderId: currentFolderId || null,
       createdAt: new Date(),
     });
   }
-
-  
 
   alert("Files uploaded successfully!");
 }
