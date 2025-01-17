@@ -155,7 +155,7 @@ document.getElementById("createFolderBtn").addEventListener("click", async () =>
   }
 });
 
-// File upload handler
+// Upload File
 document.getElementById("uploadFileBtn").addEventListener("change", async (e) => {
   const file = e.target.files[0];
   if (!file || !currentFolderId) return;
@@ -164,7 +164,7 @@ document.getElementById("uploadFileBtn").addEventListener("change", async (e) =>
   try {
       const snapshot = await uploadBytes(fileRef, file);
       const fileUrl = await getDownloadURL(snapshot.ref);
-
+      
       // Save file metadata in Firestore
       await addDoc(collection(db, "files"), {
           name: file.name,
@@ -180,6 +180,7 @@ document.getElementById("uploadFileBtn").addEventListener("change", async (e) =>
 });
 
 // Check Auth State
+// Check Auth State
 auth.onAuthStateChanged(user => {
   toggleAuthUI(!!user);
   if (user) {
@@ -190,3 +191,4 @@ auth.onAuthStateChanged(user => {
     document.getElementById("authContainer").style.display = "block"; // Show login form
   }
 });
+
