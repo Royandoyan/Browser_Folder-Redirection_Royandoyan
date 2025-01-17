@@ -1,6 +1,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.0/firebase-app.js";
 import { getFirestore, collection, addDoc, query, where, onSnapshot } from "https://www.gstatic.com/firebasejs/9.6.0/firebase-firestore.js";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/9.6.0/firebase-auth.js";
+import { getStorage, ref, uploadBytes } from "https://www.gstatic.com/firebasejs/9.6.0/firebase-storage.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAIKjugxiJh9Bd0B32SEd4t9FImRQ9SVK8",
@@ -15,6 +16,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth();
+const storage = getStorage(app);
 
 let currentFolderId = null;
 
@@ -74,9 +76,9 @@ function toggleAuthUI(isAuthenticated) {
   document.getElementById("authContainer").style.display = isAuthenticated ? "none" : "block";
   document.getElementById("fileManager").style.display = isAuthenticated ? "block" : "none";
 }
+
 // Load files (if required)
 function loadFiles() {
-  // Define how to load and display files in the selected folder
   const fileList = document.getElementById("fileList");
   fileList.innerHTML = "";
   // You can add code here to fetch files for the folder and display them
@@ -109,6 +111,41 @@ function loadFolders() {
 
   loadFiles();  // Load files for the current folder
 }
+
+// Create Folder
+document.getElementById("createFolderBtn").addEventListener("click", async () => {
+  const folderName = document.getElementById("folderName").value;
+  if (folderName.trim() === "") {
+    alert("Folder name is required");
+    return;
+  }
+
+  try {
+      await addDoc(collection(db, "folders"), {
+          name: folderName,
+          parentId: currentFolderId,
+          isDeleted: false
+      });
+      alert("Folder created successfully!");
+      loadFolders(); // Reload folders after creating a new one
+  } catch (error) {
+      console.error("Error creating folder: ", error);
+  }
+});
+
+// Upload File
+document.getElementById("uploadFileBtn").addEventListener("change", async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  const fileRef = ref(storage, `files/${file.name}`);
+  try {
+      await uploadBytes(fileRef, file);
+      alert("File uploaded successfully!");
+  } catch (error) {
+      console.error("Error uploading file: ", error);
+  }
+});
 
 // Check Auth State
 auth.onAuthStateChanged(user => {
