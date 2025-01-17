@@ -21,7 +21,7 @@ const db = getFirestore(app);
 const storage = getStorage(app);
 
 // Create Folder
-async function createFolder() {
+window.createFolder = async function createFolder() {
   const folderName = document.getElementById("folderName").value;
   if (!folderName) return alert("Please enter a folder name!");
 
@@ -37,7 +37,7 @@ async function createFolder() {
 }
 
 // Load Folders
-async function loadFolders() {
+window.loadFolders = async function loadFolders() {
   const folderList = document.getElementById("folderList");
   folderList.innerHTML = "";
 
@@ -52,7 +52,7 @@ async function loadFolders() {
 }
 
 // Upload Files
-async function uploadFiles() {
+window.uploadFiles = async function uploadFiles() {
   const files = document.getElementById("fileInput").files;
   if (files.length === 0) return alert("Please select files to upload!");
 
@@ -83,7 +83,7 @@ async function uploadFiles() {
 }
 
 // Load Files
-async function loadFiles() {
+window.loadFiles = async function loadFiles() {
   const fileList = document.getElementById("fileList");
   fileList.innerHTML = "";
 
@@ -98,5 +98,5 @@ async function loadFiles() {
 }
 
 // Initial Load
-loadFolders();
-loadFiles();
+window.loadFolders();
+window.loadFiles();
