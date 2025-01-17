@@ -74,6 +74,20 @@ function toggleAuthUI(isAuthenticated) {
   document.getElementById("authContainer").style.display = isAuthenticated ? "none" : "block";
   document.getElementById("fileManager").style.display = isAuthenticated ? "block" : "none";
 }
+// Load files (if required)
+function loadFiles() {
+  // Define how to load and display files in the selected folder
+  const fileList = document.getElementById("fileList");
+  fileList.innerHTML = "";
+  // You can add code here to fetch files for the folder and display them
+}
+
+// Navigate to a specific folder
+function navigateToFolder(folderId, folderName) {
+  currentFolderId = folderId;
+  document.getElementById("folderPath").textContent = folderName;
+  loadFolders();  // Reload folders for the current folder
+}
 
 // Load folders dynamically
 function loadFolders() {
@@ -93,7 +107,7 @@ function loadFolders() {
       });
   });
 
-  loadFiles();
+  loadFiles();  // Load files for the current folder
 }
 
 // Check Auth State
