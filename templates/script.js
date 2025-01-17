@@ -1,5 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.0/firebase-app.js";
 import { getFirestore, collection, addDoc, getDocs, query, where, updateDoc, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/9.6.0/firebase-firestore.js";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.6.0/firebase-storage.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAIKjugxiJh9Bd0B32SEd4t9FImRQ9SVK8",
@@ -14,6 +15,7 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+const storage = getStorage(app); // Firebase Storage
 
 let currentFolderId = null;
 
@@ -35,6 +37,8 @@ function loadFolders() {
             folderList.appendChild(div);
         });
     });
+
+    loadFiles(); // Load files inside the selected folder
 }
 
 // Create a folder
@@ -76,9 +80,57 @@ function navigateToFolder(folderId, folderName) {
     loadFolders();
 }
 
+// Upload a file inside the selected folder
+async function uploadFile() {
+    const fileInput = document.getElementById("fileInput");
+    const file = fileInput.files[0];
+    if (!file) return alert("Please select a file to upload!");
+    if (!currentFolderId) return alert("Please select a folder first!");
+
+    const fileRef = ref(storage, `folders/${currentFolderId}/${file.name}`);
+    
+    try {
+        await uploadBytes(fileRef, file); // Upload file to Firebase Storage
+        const fileURL = await getDownloadURL(fileRef); // Get file URL
+        await addDoc(collection(db, "files"), {
+            name: file.name,
+            url: fileURL,
+            folderId: currentFolderId,
+            uploadedAt: new Date()
+        });
+
+        alert("File uploaded successfully!");
+        loadFiles(); // Refresh file list
+    } catch (error) {
+        console.error("Error uploading file: ", error);
+    }
+}
+
+// Load files inside the selected folder
+function loadFiles() {
+    const fileList = document.getElementById("fileList");
+    fileList.innerHTML = "";
+    if (!currentFolderId) return;
+
+    const filesRef = collection(db, "files");
+    const q = query(filesRef, where("folderId", "==", currentFolderId));
+
+    onSnapshot(q, (snapshot) => {
+        fileList.innerHTML = "";
+        snapshot.forEach(doc => {
+            const file = doc.data();
+            const div = document.createElement("div");
+            div.classList.add("file");
+            div.innerHTML = `<a href="${file.url}" target="_blank">${file.name}</a>`;
+            fileList.appendChild(div);
+        });
+    });
+}
+
 // Attach event listeners
 document.getElementById("createFolderBtn").addEventListener("click", createFolder);
 document.getElementById("deleteFolderBtn").addEventListener("click", deleteFolder);
+document.getElementById("uploadFileBtn").addEventListener("click", uploadFile);
 
 // Initialize the page
 window.onload = () => loadFolders();
