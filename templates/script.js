@@ -1,6 +1,6 @@
 // Import necessary Firebase modules
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.0/firebase-app.js";
-import { getFirestore, collection, addDoc, getDocs, query, where } from "https://www.gstatic.com/firebasejs/9.6.0/firebase-firestore.js";
+import { getFirestore, collection, addDoc, getDocs, query, where, doc, updateDoc } from "https://www.gstatic.com/firebasejs/9.6.0/firebase-firestore.js";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.6.0/firebase-storage.js";
 
 // Firebase configuration
@@ -20,13 +20,16 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const storage = getStorage(app);
 
+// Current selected folder ID
+let selectedFolderId = null;
+
 // Create Folder
 window.createFolder = async function createFolder() {
   const folderName = document.getElementById("folderName").value;
   if (!folderName) return alert("Please enter a folder name!");
 
   const folderRef = collection(db, "folders");
-  await addDoc(folderRef, {
+  const folderDoc = await addDoc(folderRef, {
     name: folderName,
     createdAt: new Date(),
   });
@@ -45,8 +48,16 @@ window.loadFolders = async function loadFolders() {
   const snapshot = await getDocs(folderRef);
   snapshot.forEach(doc => {
     const folder = doc.data();
-    const li = document.createElement("li");
+    const li = document.createElement("div");
+    li.classList.add("folder");
     li.textContent = folder.name;
+
+    // When folder is clicked, set it as the selected folder
+    li.onclick = () => {
+      selectedFolderId = doc.id;
+      alert(`Folder "${folder.name}" selected! You can now upload files here.`);
+    };
+
     folderList.appendChild(li);
   });
 }
@@ -56,22 +67,22 @@ window.uploadFiles = async function uploadFiles() {
   const files = document.getElementById("fileInput").files;
   if (files.length === 0) return alert("Please select files to upload!");
 
-  const folderName = prompt("Enter the folder name to upload files:");
-  const folderRef = query(collection(db, "folders"), where("name", "==", folderName));
-
-  const folderSnapshot = await getDocs(folderRef);
-  if (folderSnapshot.empty) return alert("Folder not found!");
-
-  const folderDoc = folderSnapshot.docs[0];
-  const folderId = folderDoc.id;
+  // If no folder is selected, ask the user where to upload
+  if (!selectedFolderId) {
+    const uploadOutside = confirm("Do you want to upload files outside of any folder?");
+    if (!uploadOutside) return alert("Please select a folder first!");
+    selectedFolderId = null; // Uploading outside any folder
+  }
 
   for (let file of files) {
-    const fileRef = ref(storage, `files/${folderId}/${file.name}`);
+    const folderPath = selectedFolderId ? `folders/${selectedFolderId}/` : "outside/";
+
+    const fileRef = ref(storage, `${folderPath}${file.name}`);
     await uploadBytes(fileRef, file);
 
     const fileUrl = await getDownloadURL(fileRef);
     await addDoc(collection(db, "files"), {
-      folderId: folderId,
+      folderId: selectedFolderId,
       name: file.name,
       url: fileUrl,
       createdAt: new Date(),
