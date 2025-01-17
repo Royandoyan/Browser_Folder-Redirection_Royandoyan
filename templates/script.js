@@ -78,6 +78,7 @@ async function createFolder() {
   loadFolders();
 }
 
+
 // Mark folder as deleted
 async function deleteFolder(folderId) {
   const folderRef = doc(db, "folders", folderId);
