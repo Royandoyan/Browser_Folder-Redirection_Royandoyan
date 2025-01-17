@@ -19,7 +19,7 @@ const db = getFirestore(app);
 const auth = getAuth();
 const storage = getStorage(app);
 
-let currentFolderId = null;
+let currentFolderId = null; // Track the currently opened folder ID
 
 // Sign Up and Sign In logic
 document.getElementById("signinBtn").addEventListener("click", async () => {
@@ -82,7 +82,7 @@ document.getElementById("uploadFileBtn").addEventListener("click", async () => {
     await addDoc(collection(db, "files"), {
       name: file.name,
       url: fileUrl,
-      folderId: currentFolderId,
+      folderId: currentFolderId, // Linking the file to the folder using currentFolderId
       createdAt: new Date()
     });
 
@@ -127,7 +127,7 @@ function viewFileDetails(url) {
 function navigateToFolder(folderId, folderName) {
   currentFolderId = folderId;
   document.getElementById("folderPath").textContent = folderName;
-  loadFolders();  // Reload folders for the current folder
+  loadFiles();  // Load files for the selected folder
 }
 
 // Load folders dynamically
@@ -162,7 +162,7 @@ document.getElementById("createFolderBtn").addEventListener("click", async () =>
   try {
       await addDoc(collection(db, "folders"), {
           name: folderName,
-          parentId: currentFolderId,
+          parentId: currentFolderId, // Set parentId to the current folder's id
           isDeleted: false
       });
       alert("Folder created successfully!");
