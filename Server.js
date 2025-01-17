@@ -33,8 +33,9 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 // Serve the HTML page
-app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "index.html"));
+const path = require('path');
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'templates', 'index.html'));
 });
 
 // Real-time folder and file management
