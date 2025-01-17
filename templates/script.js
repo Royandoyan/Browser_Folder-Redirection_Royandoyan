@@ -1,7 +1,17 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.0/firebase-app.js";
 import { getFirestore, collection, addDoc, getDocs, query, where, updateDoc, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/9.6.0/firebase-firestore.js";
 
-const firebaseConfig = { /* Your Firebase Config */ };
+const firebaseConfig = {
+  apiKey: "AIzaSyAIKjugxiJh9Bd0B32SEd4t9FImRQ9SVK8",
+  authDomain: "browser-redirection.firebaseapp.com",
+  databaseURL: "https://browser-redirection-default-rtdb.firebaseio.com",
+  projectId: "browser-redirection",
+  storageBucket: "browser-redirection.firebasestorage.app",
+  messagingSenderId: "119718481062",
+  appId: "1:119718481062:web:3f57b707f3438fc309f867",
+  measurementId: "G-RG2M2FHGWV"
+};
+
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
