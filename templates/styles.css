@@ -22,15 +22,22 @@ button:hover {
   background-color: #0056b3;
 }
 
-#folderList {
+input {
+  display: block;
+  margin: 10px auto;
+  padding: 8px;
+  width: 80%;
+}
+
+#folderList, #fileList {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
   margin-top: 20px;
 }
 
-.folder {
-  background-color: #fff;
+.folder, .file {
+  background-color: white;
   padding: 15px;
   margin: 10px;
   border-radius: 5px;
@@ -40,6 +47,15 @@ button:hover {
   text-align: center;
 }
 
-.folder:hover {
+.folder:hover, .file:hover {
   background-color: #ddd;
+}
+
+#authContainer {
+  background: white;
+  padding: 20px;
+  width: 300px;
+  margin: auto;
+  border-radius: 10px;
+  box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.2);
 }

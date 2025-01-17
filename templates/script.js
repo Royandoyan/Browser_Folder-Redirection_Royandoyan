@@ -1,6 +1,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.0/firebase-app.js";
 import { getFirestore, collection, addDoc, getDocs, query, where, updateDoc, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/9.6.0/firebase-firestore.js";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.6.0/firebase-storage.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/9.6.0/firebase-auth.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAIKjugxiJh9Bd0B32SEd4t9FImRQ9SVK8",
@@ -8,24 +9,68 @@ const firebaseConfig = {
   projectId: "browser-redirection",
   storageBucket: "browser-redirection.appspot.com",
   messagingSenderId: "119718481062",
-  appId: "1:119718481062:web:3f57b707f3438fc309f867",
-  measurementId: "G-RG2M2FHGWV"
+  appId: "1:119718481062:web:3f57b707f3438fc309f867"
 };
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
-const storage = getStorage(app); // Firebase Storage
+const storage = getStorage(app);
+const auth = getAuth();
 
 let currentFolderId = null;
+
+// Signup
+document.getElementById("signupBtn").addEventListener("click", async () => {
+    const fullName = document.getElementById("fullName").value;
+    const age = document.getElementById("age").value;
+    const address = document.getElementById("address").value;
+    const email = document.getElementById("signupEmail").value;
+    const password = document.getElementById("signupPassword").value;
+
+    try {
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        await addDoc(collection(db, "users"), { fullName, age, address, email, uid: userCredential.user.uid });
+        alert("Account created successfully!");
+        toggleAuthUI(true);
+    } catch (error) {
+        console.error("Error signing up: ", error);
+    }
+});
+
+// Signin
+document.getElementById("signinBtn").addEventListener("click", async () => {
+    const email = document.getElementById("signinEmail").value;
+    const password = document.getElementById("signinPassword").value;
+
+    try {
+        await signInWithEmailAndPassword(auth, email, password);
+        alert("Signed in successfully!");
+        toggleAuthUI(true);
+    } catch (error) {
+        console.error("Error signing in: ", error);
+    }
+});
+
+// Logout
+document.getElementById("logoutBtn").addEventListener("click", async () => {
+    await signOut(auth);
+    toggleAuthUI(false);
+});
+
+// UI toggle for auth
+function toggleAuthUI(isAuthenticated) {
+    document.getElementById("authContainer").style.display = isAuthenticated ? "none" : "block";
+    document.getElementById("fileManager").style.display = isAuthenticated ? "block" : "none";
+    document.getElementById("logoutBtn").style.display = isAuthenticated ? "block" : "none";
+}
 
 // Load folders dynamically
 function loadFolders() {
     const folderList = document.getElementById("folderList");
     folderList.innerHTML = "";
-    const folderRef = collection(db, "folders");
-    const q = query(folderRef, where("parentId", "==", currentFolderId), where("isDeleted", "==", false));
-    
+    const q = query(collection(db, "folders"), where("parentId", "==", currentFolderId), where("isDeleted", "==", false));
+
     onSnapshot(q, (snapshot) => {
         folderList.innerHTML = "";
         snapshot.forEach(doc => {
@@ -38,93 +83,7 @@ function loadFolders() {
         });
     });
 
-    loadFiles(); // Load files inside the selected folder
-}
-
-// Create a folder
-async function createFolder() {
-    const folderName = document.getElementById("folderName").value;
-    if (!folderName) return alert("Please enter a folder name!");
-
-    try {
-        await addDoc(collection(db, "folders"), {
-            name: folderName,
-            createdAt: new Date(),
-            isDeleted: false,
-            parentId: currentFolderId || null
-        });
-        document.getElementById("folderName").value = "";
-        console.log("Folder created successfully!");
-    } catch (error) {
-        console.error("Error creating folder: ", error);
-    }
-}
-
-// Delete a folder
-async function deleteFolder() {
-    if (!currentFolderId) return alert("No folder selected!");
-
-    try {
-        await updateDoc(doc(db, "folders", currentFolderId), { isDeleted: true });
-        alert("Folder moved to trash!");
-        loadFolders();
-    } catch (error) {
-        console.error("Error deleting folder: ", error);
-    }
-}
-
-// Navigate inside a folder
-function navigateToFolder(folderId, folderName) {
-    currentFolderId = folderId;
-    document.getElementById("folderPath").textContent = folderName;
-    loadFolders();
-}
-
-// Upload a file inside the selected folder
-async function uploadFile() {
-    const fileInput = document.getElementById("fileInput");
-    const file = fileInput.files[0];
-    if (!file) return alert("Please select a file to upload!");
-    if (!currentFolderId) return alert("Please select a folder first!");
-
-    const fileRef = ref(storage, `folders/${currentFolderId}/${file.name}`);
-    
-    try {
-        await uploadBytes(fileRef, file); // Upload file to Firebase Storage
-        const fileURL = await getDownloadURL(fileRef); // Get file URL
-        await addDoc(collection(db, "files"), {
-            name: file.name,
-            url: fileURL,
-            folderId: currentFolderId,
-            uploadedAt: new Date()
-        });
-
-        alert("File uploaded successfully!");
-        loadFiles(); // Refresh file list
-    } catch (error) {
-        console.error("Error uploading file: ", error);
-    }
-}
-
-// Load files inside the selected folder
-function loadFiles() {
-    const fileList = document.getElementById("fileList");
-    fileList.innerHTML = "";
-    if (!currentFolderId) return;
-
-    const filesRef = collection(db, "files");
-    const q = query(filesRef, where("folderId", "==", currentFolderId));
-
-    onSnapshot(q, (snapshot) => {
-        fileList.innerHTML = "";
-        snapshot.forEach(doc => {
-            const file = doc.data();
-            const div = document.createElement("div");
-            div.classList.add("file");
-            div.innerHTML = `<a href="${file.url}" target="_blank">${file.name}</a>`;
-            fileList.appendChild(div);
-        });
-    });
+    loadFiles();
 }
 
 // Attach event listeners
@@ -132,5 +91,8 @@ document.getElementById("createFolderBtn").addEventListener("click", createFolde
 document.getElementById("deleteFolderBtn").addEventListener("click", deleteFolder);
 document.getElementById("uploadFileBtn").addEventListener("click", uploadFile);
 
-// Initialize the page
-window.onload = () => loadFolders();
+// Check auth state
+auth.onAuthStateChanged(user => {
+    toggleAuthUI(!!user);
+    if (user) loadFolders();
+});

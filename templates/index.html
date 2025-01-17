@@ -4,25 +4,48 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>File Manager</title>
-    <link rel="icon" href="favicon.ico" type="image/x-icon">
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <h1>File Manager</h1>
-    <div>
-        <input type="text" id="folderName" placeholder="Folder Name">
-        <button id="createFolderBtn">Create Folder</button>
-    </div>
-    <h2 id="folderPath">Home</h2>
-    <div id="folderList"></div>
-    <button id="deleteFolderBtn">Delete Folder</button>
 
-    <!-- File Upload Section -->
-    <div>
-        <input type="file" id="fileInput">
-        <button id="uploadFileBtn">Upload File</button>
+    <!-- Authentication Section -->
+    <div id="authContainer">
+        <div id="signupForm">
+            <h2>Sign Up</h2>
+            <input type="text" id="fullName" placeholder="Full Name">
+            <input type="number" id="age" placeholder="Age">
+            <input type="text" id="address" placeholder="Address">
+            <input type="email" id="signupEmail" placeholder="Email">
+            <input type="password" id="signupPassword" placeholder="Password">
+            <button id="signupBtn">Sign Up</button>
+        </div>
+
+        <div id="signinForm">
+            <h2>Sign In</h2>
+            <input type="email" id="signinEmail" placeholder="Email">
+            <input type="password" id="signinPassword" placeholder="Password">
+            <button id="signinBtn">Sign In</button>
+        </div>
+
+        <button id="logoutBtn" style="display:none;">Logout</button>
     </div>
-    <div id="fileList"></div> <!-- Display uploaded files -->
+
+    <div id="fileManager" style="display: none;">
+        <h2 id="folderPath">Home</h2>
+        <div>
+            <input type="text" id="folderName" placeholder="Folder Name">
+            <button id="createFolderBtn">Create Folder</button>
+        </div>
+        <div id="folderList"></div>
+        <button id="deleteFolderBtn">Delete Folder</button>
+
+        <div>
+            <input type="file" id="fileInput">
+            <button id="uploadFileBtn">Upload File</button>
+        </div>
+        <div id="fileList"></div>
+    </div>
 
     <script type="module" src="script.js"></script>
 </body>
