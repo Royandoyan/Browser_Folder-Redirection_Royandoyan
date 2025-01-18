@@ -1,51 +1,51 @@
-// server.js
-
 const express = require('express');
-const bodyParser = require('body-parser');
+const multer = require('multer'); // Import multer for file uploads
 const cors = require('cors');
-const upload = require('upload.io');
-const multer = require('multer');
+const bodyParser = require('body-parser');
+const { initializeApp } = require('firebase-admin/app');
+const { getFirestore } = require('firebase-admin/firestore');
+const admin = require('firebase-admin');
 
 const app = express();
 const port = process.env.PORT || 3000;
 
+// Firebase initialization
+admin.initializeApp();
+const db = getFirestore();
+
 app.use(cors());
 app.use(bodyParser.json());
 
-// Setup multer for file handling
-const storage = multer.memoryStorage();
-const uploadMiddleware = multer({ storage: storage });
+// Set up multer for file upload handling
+const storage = multer.memoryStorage(); // Use memory storage for uploading files
+const upload = multer({ storage: storage });
 
-// Upload.io API key (from Upload.io)
-const uploadIoClient = upload({
-    publicKey: 'public_G22nhXS4Z4biETXGSrSV42HFA3Gz',  // Your API key
-    secretKey: 'secret_G22nhXS6Gy49Y8tkxtbt7wtwEGi2', // Your secret key
-});
-
-// File upload API (client-side Firebase SDK will handle Firestore)
-app.post('/upload-file', uploadMiddleware.single('file'), async (req, res) => {
-    const { folderId, userId } = req.body;
-    const file = req.file;
-
-    if (!file) {
+// Upload endpoint for handling file uploads
+app.post('/upload-file', upload.single('file'), async (req, res) => {
+    if (!req.file) {
         return res.status(400).json({ message: 'No file uploaded' });
     }
 
+    // Here you would interact with Firebase or another database to save metadata
     try {
-        // Upload to Upload.io
-        const uploadResponse = await uploadIoClient.upload(file.buffer, {
-            filename: file.originalname,
-            tags: ['user_file', userId],
+        // Example of saving metadata to Firestore (you can modify this as needed)
+        await db.collection('files').add({
+            filename: req.file.originalname,
+            size: req.file.size,
+            mimeType: req.file.mimetype,
+            uploadDate: new Date(),
         });
 
-        // Here, we just return the file URL, the client-side Firebase SDK will handle saving it to Firestore.
         res.status(200).json({
             message: 'File uploaded successfully',
-            fileURL: uploadResponse.url
+            fileDetails: {
+                filename: req.file.originalname,
+                size: req.file.size,
+                mimeType: req.file.mimetype,
+            },
         });
     } catch (error) {
-        console.error('Error uploading file:', error);
-        res.status(500).json({ message: 'Failed to upload file', error: error.message });
+        res.status(500).json({ message: 'Error uploading file', error: error.message });
     }
 });
 
