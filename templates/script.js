@@ -1,5 +1,6 @@
+// script.js
 import { initializeApp } from "firebase/app";
-import { getFirestore, collection, addDoc, query, where, getDocs, updateDoc, doc } from "firebase/firestore";
+import { getFirestore, collection, addDoc, query, where, getDocs } from "firebase/firestore";
 import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "firebase/auth";
 
 const firebaseConfig = {
@@ -12,7 +13,6 @@ const firebaseConfig = {
   appId: "1:119718481062:web:3f57b707f3438fc309f867",
   measurementId: "G-RG2M2FHGWV"
 };
-
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
