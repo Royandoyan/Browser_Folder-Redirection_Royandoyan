@@ -119,7 +119,7 @@ document.getElementById("createFolderBtn").addEventListener("click", async () =>
     alert("Please enter a folder name.");
     return;
   }
-
+    
   try {
     const newFolder = await addDoc(collection(db, "folders"), {
       name: folderName,

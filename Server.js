@@ -74,7 +74,7 @@ const upload = multer({ storage: multer.memoryStorage() });
 app.post("/upload", upload.single("file"), async (req, res) => {
   if (!req.file) {
     return res.status(400).send("No file uploaded");
-  }
+  }     
 
   const fileName = pathLib.basename(req.file.originalname);
   const file = bucket.file(`files/${fileName}`);
