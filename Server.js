@@ -1,104 +1,58 @@
-const express = require('express');
-const multer = require('multer');
-const bodyParser = require('body-parser');
-const cors = require('cors');
-const firebaseAdmin = require('firebase-admin');
-const fetch = require('node-fetch'); // For interacting with Upload.io API
-const path = require('path');
+const express = require("express");
+const path = require("path");
+const { initializeApp } = require("firebase/app");
+const { getFirestore, collection, addDoc, updateDoc, doc, getDocs, query, where } = require("firebase/firestore");
+const bodyParser = require("body-parser");
 
-// Initialize Firebase Admin SDK
-firebaseAdmin.initializeApp({
-  credential: firebaseAdmin.credential.applicationDefault(),
-  databaseURL: "https://browser-redirection-default-rtdb.firebaseio.com"
-});
-
-const db = firebaseAdmin.firestore();
 const app = express();
-const port = process.env.PORT || 5000;
+const port = 3000;
+
+// Firebase configuration
+const firebaseConfig = {
+  apiKey: "AIzaSyAIKjugxiJh9Bd0B32SEd4t9FImRQ9SVK8",
+  authDomain: "browser-redirection.firebaseapp.com",
+  databaseURL: "https://browser-redirection-default-rtdb.firebaseio.com",
+  projectId: "browser-redirection",
+  storageBucket: "browser-redirection.firebasestorage.app",
+  messagingSenderId: "119718481062",
+  appId: "1:119718481062:web:3f57b707f3438fc309f867",
+  measurementId: "G-RG2M2FHGWV"
+};
+
+const firebaseApp = initializeApp(firebaseConfig);
+const db = getFirestore(firebaseApp);
 
 // Middleware
-app.use(cors());
+app.use(express.static(path.join(__dirname, 'templates')));
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
 
-// Set up multer for file upload handling
-const upload = multer({ dest: 'uploads/' });
-
-// Serve the web app (static files) from the 'templates' directory
-app.use(express.static('templates'));
-
-// Serve the index.html file when accessing the root URL
+// Serve the frontend
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'templates', 'index.html'));
+    res.sendFile(path.join(__dirname, 'templates', 'index.html'));
 });
 
-// API endpoint to create folders
-app.post('/api/create-folder', async (req, res) => {
-  const { folderName, parentID } = req.body;
-
-  try {
-    const folderRef = await db.collection('folders').add({
-      name: folderName,
-      isDeleted: false,
-      parentID: parentID || null,
-    });
-    res.status(200).json({ folderID: folderRef.id });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
+// Get folders
+app.get("/folders", async (req, res) => {
+    const { parentId, isDeleted } = req.query;
+    const snapshot = await getDocs(query(collection(db, "folders"), where("parentId", "==", parentId || null), where("isDeleted", "==", isDeleted === "true")));
+    res.json(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
 });
 
-// API endpoint to upload files
-app.post('/api/upload-file', upload.single('file'), async (req, res) => {
-  const file = req.file;
-  const folderID = req.body.folderID; // Folder ID where the file will be uploaded
-
-  if (!file) {
-    return res.status(400).send('No file uploaded.');
-  }
-
-  try {
-    // Upload the file to Upload.io
-    const uploadResponse = await fetch('https://api.upload.io/upload', {
-      method: 'POST',
-      body: new FormData().append('file', file.buffer),
-      headers: {
-        'Authorization': 'Bearer public_G22nhXS4Z4biETXGSrSV42HFA3Gz',
-      },
-    });
-
-    const uploadedFile = await uploadResponse.json();
-
-    // Save the file metadata in Firestore
-    const fileMetadata = {
-      name: file.originalname,
-      fileURL: uploadedFile.url,
-      folderID: folderID || null,
-    };
-
-    await db.collection('files').add(fileMetadata);
-
-    // Send response with file details
-    res.status(200).json({ message: 'File uploaded successfully!', file: uploadedFile });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
+// Create folder
+app.post("/create-folder", async (req, res) => {
+    const { folderName, parentId } = req.body;
+    if (!folderName) return res.status(400).send({ error: "Folder name is required!" });
+    await addDoc(collection(db, "folders"), { name: folderName, createdAt: new Date(), isDeleted: false, parentId: parentId || null });
+    res.send({ message: "Folder created successfully!" });
 });
 
-// API endpoint to delete files from Firestore
-app.delete('/api/delete-file/:fileID', async (req, res) => {
-  const fileID = req.params.fileID;
-
-  try {
-    const fileRef = db.collection('files').doc(fileID);
-    await fileRef.delete();
-    res.status(200).json({ message: 'File deleted successfully.' });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
+// Mark folder as deleted
+app.post("/delete-folder", async (req, res) => {
+    const { folderId } = req.body;
+    if (!folderId) return res.status(400).send({ error: "Folder ID is required!" });
+    await updateDoc(doc(db, "folders", folderId), { isDeleted: true });
+    res.send({ message: "Folder deleted successfully!" });
 });
 
 // Start server
-app.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
-});
+app.listen(port, () => console.log(`Server running on http://localhost:${port}`));
