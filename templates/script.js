@@ -1,154 +1,116 @@
-import { initializeApp } from "firebase/app";
-import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "firebase/auth";
-import { getFirestore, collection, addDoc, getDocs, query, where, updateDoc, doc, onSnapshot } from "firebase/firestore";
+// Import required modules
+const express = require('express');
+const path = require('path');
+const firebaseAdmin = require('firebase-admin');
+const multer = require('multer');
+const axios = require('axios');
+require('dotenv').config();  // For environment variables, e.g., Firebase Admin SDK and API keys
 
-// Initialize Firebase
-const firebaseConfig = {
-  apiKey: "AIzaSyAIKjugxiJh9Bd0B32SEd4t9FImRQ9SVK8",
-  authDomain: "browser-redirection.firebaseapp.com",
-  databaseURL: "https://browser-redirection-default-rtdb.firebaseio.com",
-  projectId: "browser-redirection",
-  storageBucket: "browser-redirection.firebasestorage.app",
-  messagingSenderId: "119718481062",
-  appId: "1:119718481062:web:3f57b707f3438fc309f867",
-  measurementId: "G-RG2M2FHGWV"
-};
-
-// Initialize Firebase app
-const app = initializeApp(firebaseConfig);
-const auth = getAuth();
-const db = getFirestore(app);
-
-// Authentication state listener
-onAuthStateChanged(auth, user => {
-  if (user) {
-    document.getElementById('authContainer').style.display = 'none';
-    document.getElementById('fileManager').style.display = 'block';
-  } else {
-    document.getElementById('authContainer').style.display = 'block';
-    document.getElementById('fileManager').style.display = 'none';
-  }
+// Initialize Firebase Admin SDK
+firebaseAdmin.initializeApp({
+  credential: firebaseAdmin.credential.cert(require('./firebase-service-account.json')),
+  databaseURL: 'https://browser-redirection.firebaseio.com',
 });
 
-// Sign In function
-document.getElementById('signinBtn').addEventListener('click', async () => {
-  const email = document.getElementById('signinEmail').value;
-  const password = document.getElementById('signinPassword').value;
+// Initialize Express
+const app = express();
+const port = process.env.PORT || 3000;
+
+// Serve static files (e.g., index.html, styles.css, etc.)
+app.use(express.static(path.join(__dirname, 'templates')));
+
+// Firebase Firestore
+const db = firebaseAdmin.firestore();
+
+// Middleware to parse JSON and form-data
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// Multer for handling file uploads (local or external storage)
+const storage = multer.memoryStorage();  // Store files in memory
+const upload = multer({ storage: storage });
+
+// Upload.io API key (or configure another service)
+const uploadApiKey = "public_G22nhXS4Z4biETXGSrSV42HFA3Gz";
+
+// POST route for file upload to Upload.io or bytescale.com
+app.post('/upload', upload.single('file'), async (req, res) => {
+  if (!req.file) {
+    return res.status(400).send('No file uploaded');
+  }
 
   try {
-    await signInWithEmailAndPassword(auth, email, password);
-  } catch (error) {
-    alert('Failed to sign in: ' + error.message);
-  }
-});
+    // Prepare file for Upload.io (or another file upload service)
+    const formData = new FormData();
+    formData.append('file', req.file.buffer, req.file.originalname);
+    formData.append('apiKey', uploadApiKey);
 
-// Sign Up function
-document.getElementById('signupBtn').addEventListener('click', async () => {
-  const email = document.getElementById('signupEmail').value;
-  const password = document.getElementById('signupPassword').value;
-
-  try {
-    await createUserWithEmailAndPassword(auth, email, password);
-  } catch (error) {
-    alert('Failed to sign up: ' + error.message);
-  }
-});
-
-// Logout function
-document.getElementById('logoutBtn').addEventListener('click', async () => {
-  await signOut(auth);
-});
-
-// Upload file function
-document.getElementById('uploadFileBtn').addEventListener('click', async () => {
-  const file = document.getElementById('fileInput').files[0];
-
-  if (!file) {
-    alert('Please select a file to upload');
-    return;
-  }
-
-  const formData = new FormData();
-  formData.append('file', file);
-
-  const idToken = await auth.currentUser.getIdToken();
-
-  try {
-    const response = await fetch('http://localhost:3000/upload', {
-      method: 'POST',
-      headers: {
-        'Authorization': idToken
-      },
-      body: formData
+    // Send file to Upload.io (or another service)
+    const response = await axios.post('https://upload.upload.io', formData, {
+      headers: formData.getHeaders(),
     });
 
-    const data = await response.json();
-    if (data.message === "File uploaded successfully") {
-      alert('File uploaded successfully');
-    } else {
-      alert('Error uploading file');
-    }
+    const fileUrl = response.data.url;  // The URL of the uploaded file
+
+    // Save file metadata to Firestore
+    const fileRef = db.collection('files').doc();
+    await fileRef.set({
+      fileName: req.file.originalname,
+      fileURL: fileUrl,
+      parentID: req.body.parentID,  // Folder ID for where the file should be placed
+      createdAt: firebaseAdmin.firestore.FieldValue.serverTimestamp(),
+    });
+
+    // Respond with success
+    res.status(200).send({ fileURL: fileUrl, message: 'File uploaded and metadata saved' });
   } catch (error) {
-    alert('Error uploading file');
+    console.error('Error uploading file:', error);
+    res.status(500).send('Error uploading file');
   }
 });
 
-// Create folder function
-document.getElementById('createFolderBtn').addEventListener('click', async () => {
-  const folderName = document.getElementById('folderName').value;
-
-  if (!folderName) {
-    alert('Please enter a folder name');
-    return;
-  }
-
-  const idToken = await auth.currentUser.getIdToken();
+// Firebase Realtime Database: Add a folder (Firestore)
+app.post('/create-folder', async (req, res) => {
+  const { folderName, parentID } = req.body;
 
   try {
-    const response = await fetch('http://localhost:3000/createFolder', {
-      method: 'POST',
-      headers: {
-        'Authorization': idToken,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ folderName, parentID: null })
+    const folderRef = db.collection('folders').doc();
+    await folderRef.set({
+      name: folderName,
+      parentID: parentID || null,
+      isDeleted: false,
     });
 
-    const data = await response.json();
-    if (data.message === "Folder created successfully") {
-      alert('Folder created successfully');
-    } else {
-      alert('Error creating folder');
-    }
+    res.status(200).send('Folder created');
   } catch (error) {
-    alert('Error creating folder');
+    console.error('Error creating folder:', error);
+    res.status(500).send('Error creating folder');
   }
 });
 
-// Delete item (folder or file)
-document.getElementById('deleteFolderBtn').addEventListener('click', async () => {
-  const itemID = 'itemID'; // Get the selected folder/file ID
-  const isFolder = true; // Check if it's a folder or not
-
-  const idToken = await auth.currentUser.getIdToken();
+// Firebase Realtime Database: Delete folder
+app.post('/delete-folder', async (req, res) => {
+  const { folderID } = req.body;
 
   try {
-    const response = await fetch('http://localhost:3000/deleteItem', {
-      method: 'DELETE',
-      headers: {
-        'Authorization': idToken,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ itemID, isFolder })
+    const folderRef = db.collection('folders').doc(folderID);
+    await folderRef.update({
+      isDeleted: true,
     });
 
-    const data = await response.json();
-    if (data.message === "Item deleted successfully") {
-      alert('Item deleted successfully');
-    } else {
-      alert('Error deleting item');
-    }
+    res.status(200).send('Folder deleted');
   } catch (error) {
-    alert('Error deleting item');
+    console.error('Error deleting folder:', error);
+    res.status(500).send('Error deleting folder');
   }
+});
+
+// Serve frontend HTML (index.html)
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'templates', 'index.html'));
+});
+
+// Start the server
+app.listen(port, () => {
+  console.log(`Server is running on port ${port}`);
 });
