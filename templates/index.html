@@ -11,7 +11,6 @@
 
     <!-- Authentication Section -->
     <div id="authContainer">
-        <!-- Sign In Form -->
         <div id="signinForm">
             <h2>Sign In</h2>
             <input type="email" id="signinEmail" placeholder="Email">
@@ -20,7 +19,6 @@
             <p>Don't have an account? <a href="#" id="showSignup">Sign Up</a></p>
         </div>
 
-        <!-- Sign Up Form (Hidden by Default) -->
         <div id="signupForm" style="display: none;">
             <h2>Sign Up</h2>
             <input type="text" id="fullName" placeholder="Full Name">
@@ -33,7 +31,6 @@
         </div>
     </div>
 
-    <!-- File Manager (Hidden Until Logged In) -->
     <div id="fileManager" style="display: none;">
         <h2 id="folderPath">Home</h2>
         <button id="logoutBtn">Logout</button>
@@ -42,17 +39,22 @@
             <input type="text" id="folderName" placeholder="Folder Name">
             <button id="createFolderBtn">Create Folder</button>
         </div>
+
         <div id="folderList"></div>
-        <button id="deleteFolderBtn">Delete Folder</button>
 
         <div>
             <input type="file" id="fileInput">
             <button id="uploadFileBtn">Upload File</button>
-            <p id="uploadStatus"></p> <!-- Upload Status Display -->
+            <p id="uploadStatus"></p>
         </div>
+
         <div id="fileList"></div>
     </div>
 
     <script type="module" src="script.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js"></script>
+
 </body>
 </html>
