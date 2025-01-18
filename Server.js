@@ -3,7 +3,6 @@ const path = require("path");
 const { initializeApp } = require("firebase/app");
 const { getFirestore, collection, addDoc, updateDoc, doc, getDocs, query, where } = require("firebase/firestore");
 const bodyParser = require("body-parser");
-const firebaseAdmin = require("firebase-admin");
 const multer = require("multer");
 const cors = require("cors");
 const pathLib = require("path");
@@ -26,13 +25,9 @@ const port = 3000;
 const firebaseApp = initializeApp(firebaseConfig);
 const db = getFirestore(firebaseApp);
 
-// Initialize Firebase Admin SDK
-firebaseAdmin.initializeApp({
-  credential: firebaseAdmin.credential.cert(require("./path-to-service-account-file.json")),
-  storageBucket: "browser-redirection.firebasestorage.app"
-});
-
-const bucket = firebaseAdmin.storage().bucket();
+// Initialize Firebase Storage
+const { getStorage, ref, uploadBytes, getDownloadURL } = require("firebase/storage");
+const storage = getStorage(firebaseApp);
 
 // Middleware
 app.use(express.static(path.join(__dirname, 'templates')));
@@ -75,17 +70,18 @@ app.post("/upload", upload.single("file"), async (req, res) => {
   if (!req.file) {
     return res.status(400).send("No file uploaded");
   }     
-
+    
   const fileName = pathLib.basename(req.file.originalname);
-  const file = bucket.file(`files/${fileName}`);
-
+  const fileRef = ref(storage, `files/${fileName}`);
+  
   try {
-    await file.save(req.file.buffer, {
+    // Upload file to Firebase Storage
+    await uploadBytes(fileRef, req.file.buffer, {
       contentType: req.file.mimetype,
-      public: true, // Make the file public
     });
 
-    const fileUrl = `https://storage.googleapis.com/${bucket.name}/files/${fileName}`;
+    // Get the download URL for the uploaded file
+    const fileUrl = await getDownloadURL(fileRef);
 
     // Optionally store file metadata in Firestore
     await addDoc(collection(db, "files"), {
