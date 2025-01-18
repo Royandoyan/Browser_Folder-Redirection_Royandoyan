@@ -1,8 +1,0 @@
-[
-    {
-      "origin": ["https://browser-folder-redirection-royandoyan.onrender.com"],
-      "method": ["GET", "POST", "PUT"],
-      "maxAgeSeconds": 3600
-    }
-  ]
-  
