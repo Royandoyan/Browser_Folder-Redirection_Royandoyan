@@ -1,101 +1,101 @@
-const express = require("express");
-const path = require("path");
-const { initializeApp } = require("firebase/app");
-const { getFirestore, collection, addDoc, updateDoc, doc, getDocs, query, where } = require("firebase/firestore");
-const bodyParser = require("body-parser");
-const multer = require("multer");
-const cors = require("cors");
-const pathLib = require("path");
+// Import necessary libraries
+const express = require('express');
+const admin = require('firebase-admin');
+const cors = require('cors');
+const multer = require('multer');
+const path = require('path');
 
-// Firebase configuration
-const firebaseConfig = {
-  apiKey: "AIzaSyAIKjugxiJh9Bd0B32SEd4t9FImRQ9SVK8",
-  authDomain: "browser-redirection.firebaseapp.com",
-  databaseURL: "https://browser-redirection-default-rtdb.firebaseio.com",
-  projectId: "browser-redirection",
-  storageBucket: "browser-redirection.firebasestorage.app",
-  messagingSenderId: "119718481062",
-  appId: "1:119718481062:web:3f57b707f3438fc309f867",
-  measurementId: "G-RG2M2FHGWV"
-};
+// Initialize Firebase Admin SDK
+admin.initializeApp({
+  credential: admin.credential.applicationDefault(),
+  databaseURL: "https://browser-redirection-default-rtdb.firebaseio.com"
+});
 
-// Initialize Firebase
+const db = admin.firestore();
+
+// Set up Express app
 const app = express();
-const port = 3000;
-const firebaseApp = initializeApp(firebaseConfig);
-const db = getFirestore(firebaseApp);
+app.use(cors());
+app.use(express.json());
 
-// Initialize Firebase Storage
-const { getStorage, ref, uploadBytes, getDownloadURL } = require("firebase/storage");
-const storage = getStorage(firebaseApp);
+// Set up file upload using multer
+const upload = multer({ dest: 'uploads/' });  // You can configure this as needed
 
-// Middleware
-app.use(express.static(path.join(__dirname, 'templates')));
-app.use(bodyParser.json());
-app.use(cors());  // Enable CORS for frontend requests
-
-// Serve the frontend
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'templates', 'index.html'));
-});
-
-// Get folders
-app.get("/folders", async (req, res) => {
-    const { parentId, isDeleted } = req.query;
-    const snapshot = await getDocs(query(collection(db, "folders"), where("parentId", "==", parentId || null), where("isDeleted", "==", isDeleted === "true")));
-    res.json(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
-});
-
-// Create folder
-app.post("/create-folder", async (req, res) => {
-    const { folderName, parentId } = req.body;
-    if (!folderName) return res.status(400).send({ error: "Folder name is required!" });
-    await addDoc(collection(db, "folders"), { name: folderName, createdAt: new Date(), isDeleted: false, parentId: parentId || null });
-    res.send({ message: "Folder created successfully!" });
-});
-
-// Mark folder as deleted
-app.post("/delete-folder", async (req, res) => {
-    const { folderId } = req.body;
-    if (!folderId) return res.status(400).send({ error: "Folder ID is required!" });
-    await updateDoc(doc(db, "folders", folderId), { isDeleted: true });
-    res.send({ message: "Folder deleted successfully!" });
-});
-
-// Set up multer for file uploads (in-memory storage)
-const upload = multer({ storage: multer.memoryStorage() });
-
-// Endpoint to upload files to Firebase Storage
-app.post("/upload", upload.single("file"), async (req, res) => {
-  if (!req.file) {
-    return res.status(400).send("No file uploaded");
-  }     
-    
-  const fileName = pathLib.basename(req.file.originalname);
-  const fileRef = ref(storage, `files/${fileName}`);
+// Firebase Auth Middleware (to check if the user is authenticated)
+const authenticate = async (req, res, next) => {
+  const idToken = req.headers.authorization;
+  
+  if (!idToken) {
+    return res.status(403).send('Unauthorized');
+  }
   
   try {
-    // Upload file to Firebase Storage
-    await uploadBytes(fileRef, req.file.buffer, {
-      contentType: req.file.mimetype,
-    });
-
-    // Get the download URL for the uploaded file
-    const fileUrl = await getDownloadURL(fileRef);
-
-    // Optionally store file metadata in Firestore
-    await addDoc(collection(db, "files"), {
-      name: fileName,
-      url: fileUrl,
-      createdAt: new Date(),
-    });
-
-    // Send the file URL back to the frontend
-    res.json({ fileUrl });
+    const decodedToken = await admin.auth().verifyIdToken(idToken);
+    req.user = decodedToken;
+    next();
   } catch (error) {
-    res.status(500).send(`Error uploading file: ${error.message}`);
+    res.status(403).send('Unauthorized');
+  }
+};
+
+// Route to upload files
+app.post('/upload', authenticate, upload.single('file'), async (req, res) => {
+  try {
+    // Upload to external service (Upload.io or others)
+    const file = req.file; // file uploaded via multer
+    const fileURL = "https://path-to-uploaded-file.com";  // You'd call the Upload.io API to get this URL
+    
+    // Store metadata in Firestore
+    const fileRef = await db.collection('files').add({
+      fileName: file.originalname,
+      fileURL: fileURL,
+      userID: req.user.uid,
+      timestamp: new Date(),
+      isDeleted: false
+    });
+
+    res.status(200).send({ message: "File uploaded successfully", fileID: fileRef.id });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Error uploading file');
   }
 });
 
-// Start server
-app.listen(port, () => console.log(`Server running on http://localhost:${port}`));
+// Create folder route
+app.post('/createFolder', authenticate, async (req, res) => {
+  try {
+    const { folderName, parentID } = req.body;
+
+    const folderRef = await db.collection('folders').add({
+      name: folderName,
+      parentID: parentID || null,
+      userID: req.user.uid,
+      isDeleted: false,
+      timestamp: new Date()
+    });
+
+    res.status(200).send({ message: "Folder created successfully", folderID: folderRef.id });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Error creating folder');
+  }
+});
+
+// Route to delete a file or folder (soft delete)
+app.delete('/deleteItem', authenticate, async (req, res) => {
+  try {
+    const { itemID, isFolder } = req.body;
+    const itemRef = db.collection(isFolder ? 'folders' : 'files').doc(itemID);
+    await itemRef.update({ isDeleted: true });
+
+    res.status(200).send({ message: "Item deleted successfully" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Error deleting item');
+  }
+});
+
+// Start the server
+app.listen(3000, () => {
+  console.log('Server is running on http://localhost:3000');
+});
