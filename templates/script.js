@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.0/firebase-app.js";
-import { getFirestore, collection, addDoc, query, where, onSnapshot } from "https://www.gstatic.com/firebasejs/9.6.0/firebase-firestore.js";
+import { getFirestore, collection, addDoc, query, where, onSnapshot, updateDoc, doc } from "https://www.gstatic.com/firebasejs/9.6.0/firebase-firestore.js";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/9.6.0/firebase-auth.js";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.6.0/firebase-storage.js";
 
@@ -109,6 +109,9 @@ function loadFiles() {
       fileItem.innerHTML = `<a href="${fileData.url}" target="_blank">${fileData.name}</a>`;
       fileList.appendChild(fileItem);
     });
+  }, (error) => {
+    console.error("Error fetching files:", error);
+    alert("Error loading files. Please check your Firestore permissions.");
   });
 }
 
@@ -153,6 +156,9 @@ function loadFolders() {
       });
       folderList.appendChild(folderItem);
     });
+  }, (error) => {
+    console.error("Error loading folders:", error);
+    alert("Error loading folders. Please check your Firestore permissions.");
   });
 }
 
