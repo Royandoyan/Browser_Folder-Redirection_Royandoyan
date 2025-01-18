@@ -4,13 +4,14 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 const firebaseAdmin = require('firebase-admin');
 const fetch = require('node-fetch'); // For interacting with Upload.io API
+const path = require('path');
 
 // Initialize Firebase Admin SDK
 firebaseAdmin.initializeApp({
-    credential: firebaseAdmin.credential.applicationDefault(),
-    databaseURL: "https://browser-redirection-default-rtdb.firebaseio.com"
-  });
-  
+  credential: firebaseAdmin.credential.applicationDefault(),
+  databaseURL: "https://browser-redirection-default-rtdb.firebaseio.com"
+});
+
 const db = firebaseAdmin.firestore();
 const app = express();
 const port = process.env.PORT || 5000;
@@ -23,8 +24,13 @@ app.use(bodyParser.urlencoded({ extended: true }));
 // Set up multer for file upload handling
 const upload = multer({ dest: 'uploads/' });
 
-// Serve the web app (static files) from the 'public' directory
-app.use(express.static('public'));
+// Serve the web app (static files) from the 'templates' directory
+app.use(express.static('templates'));
+
+// Serve the index.html file when accessing the root URL
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'templates', 'index.html'));
+});
 
 // API endpoint to create folders
 app.post('/api/create-folder', async (req, res) => {
