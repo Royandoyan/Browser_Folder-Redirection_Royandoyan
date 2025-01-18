@@ -67,32 +67,29 @@ document.getElementById("uploadFileBtn").addEventListener("click", async () => {
     return;
   }
 
-  // Show upload progress
-  const uploadStatus = document.getElementById("uploadStatus");
-  uploadStatus.textContent = "Uploading... Please wait.";
-
-  const fileRef = ref(storage, `files/${currentFolderId}/${file.name}`); // Store in the selected folder
+  const formData = new FormData();
+  formData.append("file", file);
 
   try {
-    // Upload file to Firebase Storage
-    const snapshot = await uploadBytes(fileRef, file);
-    const fileUrl = await getDownloadURL(snapshot.ref); // Get the download URL for the uploaded file
-
-    // Store file metadata in Firestore under the selected folder
-    await addDoc(collection(db, "files"), {
-      name: file.name,
-      url: fileUrl,
-      folderId: currentFolderId, // Linking the file to the folder using currentFolderId
-      createdAt: new Date()
+    const response = await fetch("http://localhost:3000/upload", {
+      method: "POST",
+      body: formData
     });
 
-    uploadStatus.textContent = "Upload successful!";
-    loadFiles(); // Reload files to show the newly uploaded one
+    const data = await response.json();
+    if (data.fileUrl) {
+      alert("Upload successful!");
+      console.log("File URL:", data.fileUrl);
+      // Handle the file URL (e.g., store it in Firestore, display it on the UI, etc.)
+    } else {
+      alert("Error uploading file.");
+    }
   } catch (error) {
-    uploadStatus.textContent = "Upload failed. Please try again.";
-    console.error("Error uploading file:", error);
+    alert("Error uploading file.");
+    console.error(error);
   }
 });
+
 
 // Function to load files for the current folder
 function loadFiles() {

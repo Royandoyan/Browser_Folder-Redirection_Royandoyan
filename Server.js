@@ -3,9 +3,10 @@ const path = require("path");
 const { initializeApp } = require("firebase/app");
 const { getFirestore, collection, addDoc, updateDoc, doc, getDocs, query, where } = require("firebase/firestore");
 const bodyParser = require("body-parser");
-
-const app = express();
-const port = 3000;
+const firebaseAdmin = require("firebase-admin");
+const multer = require("multer");
+const cors = require("cors");
+const pathLib = require("path");
 
 // Firebase configuration
 const firebaseConfig = {
@@ -19,12 +20,24 @@ const firebaseConfig = {
   measurementId: "G-RG2M2FHGWV"
 };
 
+// Initialize Firebase
+const app = express();
+const port = 3000;
 const firebaseApp = initializeApp(firebaseConfig);
 const db = getFirestore(firebaseApp);
+
+// Initialize Firebase Admin SDK
+firebaseAdmin.initializeApp({
+  credential: firebaseAdmin.credential.cert(require("./path-to-service-account-file.json")),
+  storageBucket: "browser-redirection.firebasestorage.app"
+});
+
+const bucket = firebaseAdmin.storage().bucket();
 
 // Middleware
 app.use(express.static(path.join(__dirname, 'templates')));
 app.use(bodyParser.json());
+app.use(cors());  // Enable CORS for frontend requests
 
 // Serve the frontend
 app.get('/', (req, res) => {
@@ -52,6 +65,40 @@ app.post("/delete-folder", async (req, res) => {
     if (!folderId) return res.status(400).send({ error: "Folder ID is required!" });
     await updateDoc(doc(db, "folders", folderId), { isDeleted: true });
     res.send({ message: "Folder deleted successfully!" });
+});
+
+// Set up multer for file uploads (in-memory storage)
+const upload = multer({ storage: multer.memoryStorage() });
+
+// Endpoint to upload files to Firebase Storage
+app.post("/upload", upload.single("file"), async (req, res) => {
+  if (!req.file) {
+    return res.status(400).send("No file uploaded");
+  }
+
+  const fileName = pathLib.basename(req.file.originalname);
+  const file = bucket.file(`files/${fileName}`);
+
+  try {
+    await file.save(req.file.buffer, {
+      contentType: req.file.mimetype,
+      public: true, // Make the file public
+    });
+
+    const fileUrl = `https://storage.googleapis.com/${bucket.name}/files/${fileName}`;
+
+    // Optionally store file metadata in Firestore
+    await addDoc(collection(db, "files"), {
+      name: fileName,
+      url: fileUrl,
+      createdAt: new Date(),
+    });
+
+    // Send the file URL back to the frontend
+    res.json({ fileUrl });
+  } catch (error) {
+    res.status(500).send(`Error uploading file: ${error.message}`);
+  }
 });
 
 // Start server
