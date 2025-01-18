@@ -99,75 +99,86 @@ function loadFiles() {
   const fileList = document.getElementById("fileList");
   fileList.innerHTML = ""; // Clear the current file list
 
-  if (!currentFolderId) return; // No folder selected
-
-  const fileRef = collection(db, "files"); // Reference to Firestore 'files' collection
-  const q = query(fileRef, where("folderId", "==", currentFolderId));
-
-  onSnapshot(q, (snapshot) => {
-    fileList.innerHTML = ""; // Clear previous files
-    snapshot.forEach(doc => {
-      const file = doc.data();
-      const div = document.createElement("div");
-      div.classList.add("file");
-      div.textContent = file.name;
-      div.onclick = () => viewFileDetails(file.url); // On click, show file URL
-      fileList.appendChild(div);
+  const filesRef = collection(db, "files");
+  const filesQuery = query(filesRef, where("folderId", "==", currentFolderId));
+  onSnapshot(filesQuery, (snapshot) => {
+    snapshot.docs.forEach(doc => {
+      const fileData = doc.data();
+      const fileItem = document.createElement("div");
+      fileItem.classList.add("file");
+      fileItem.innerHTML = `<a href="${fileData.url}" target="_blank">${fileData.name}</a>`;
+      fileList.appendChild(fileItem);
     });
   });
 }
 
-// Function to view file details (display file URL or other metadata)
-function viewFileDetails(url) {
-  const fileDetails = document.getElementById("fileDetails");
-  fileDetails.innerHTML = `<p>File URL: <a href="${url}" target="_blank">${url}</a></p>`;
-}
-
-// Navigate to a specific folder
-function navigateToFolder(folderId, folderName) {
-  currentFolderId = folderId;
-  document.getElementById("folderPath").textContent = folderName;
-  loadFiles();  // Load files for the selected folder
-}
-
-// Load folders dynamically
-function loadFolders() {
-  const folderList = document.getElementById("folderList");
-  folderList.innerHTML = "";
-  const q = query(collection(db, "folders"), where("parentId", "==", currentFolderId), where("isDeleted", "==", false));
-
-  onSnapshot(q, (snapshot) => {
-      folderList.innerHTML = "";
-      snapshot.forEach(doc => {
-          const folder = doc.data();
-          const div = document.createElement("div");
-          div.classList.add("folder");
-          div.textContent = folder.name;
-          div.onclick = () => navigateToFolder(doc.id, folder.name);
-          folderList.appendChild(div);
-      });
-  });
-
-  loadFiles();  // Load files for the current folder
-}
-
-// Create Folder
+// Folder creation logic
 document.getElementById("createFolderBtn").addEventListener("click", async () => {
   const folderName = document.getElementById("folderName").value;
-  if (folderName.trim() === "") {
-    alert("Folder name is required");
+  if (!folderName) {
+    alert("Please enter a folder name.");
     return;
   }
 
   try {
-      await addDoc(collection(db, "folders"), {
-          name: folderName,
-          parentId: currentFolderId, // Set parentId to the current folder's id
-          isDeleted: false
-      });
-      alert("Folder created successfully!");
-      loadFolders(); // Reload folders after creating a new one
+    const newFolder = await addDoc(collection(db, "folders"), {
+      name: folderName,
+      parentId: currentFolderId || null,
+      createdAt: new Date(),
+      isDeleted: false
+    });
+    loadFolders();
   } catch (error) {
-      console.error("Error creating folder: ", error);
+    alert("Error creating folder:", error.message);
   }
 });
+
+// Load folders and display them
+function loadFolders() {
+  const folderList = document.getElementById("folderList");
+  folderList.innerHTML = ""; // Clear current folders list
+  const folderRef = collection(db, "folders");
+  const folderQuery = query(folderRef, where("parentId", "==", currentFolderId || null), where("isDeleted", "==", false));
+  onSnapshot(folderQuery, (snapshot) => {
+    snapshot.docs.forEach(doc => {
+      const folderData = doc.data();
+      const folderItem = document.createElement("div");
+      folderItem.classList.add("folder");
+      folderItem.textContent = folderData.name;
+      folderItem.addEventListener("click", () => {
+        currentFolderId = doc.id; // Set the selected folder as the current folder
+        loadFolders();
+        loadFiles();
+        document.getElementById("folderPath").textContent = folderData.name;
+      });
+      folderList.appendChild(folderItem);
+    });
+  });
+}
+
+// Folder deletion logic
+document.getElementById("deleteFolderBtn").addEventListener("click", async () => {
+  if (!currentFolderId) {
+    alert("No folder selected to delete.");
+    return;
+  }
+
+  try {
+    await updateDoc(doc(db, "folders", currentFolderId), { isDeleted: true });
+    alert("Folder deleted successfully!");
+    currentFolderId = null;
+    loadFolders();
+    loadFiles();
+  } catch (error) {
+    alert("Error deleting folder:", error.message);
+  }
+});
+
+window.onload = () => {
+  const user = auth.currentUser;
+  if (user) {
+    document.getElementById("authContainer").style.display = "none";
+    document.getElementById("fileManager").style.display = "block";
+    loadFolders();
+  }
+};
