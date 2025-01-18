@@ -1,58 +1,55 @@
-const express = require("express");
-const path = require("path");
-const { initializeApp } = require("firebase/app");
-const { getFirestore, collection, addDoc, updateDoc, doc, getDocs, query, where } = require("firebase/firestore");
-const bodyParser = require("body-parser");
+// server.js
+
+const express = require('express');
+const bodyParser = require('body-parser');
+const cors = require('cors');
+const upload = require('upload.io');
+const multer = require('multer');
 
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 3000;
 
-// Firebase configuration
-const firebaseConfig = {
-  apiKey: "AIzaSyAIKjugxiJh9Bd0B32SEd4t9FImRQ9SVK8",
-  authDomain: "browser-redirection.firebaseapp.com",
-  databaseURL: "https://browser-redirection-default-rtdb.firebaseio.com",
-  projectId: "browser-redirection",
-  storageBucket: "browser-redirection.firebasestorage.app",
-  messagingSenderId: "119718481062",
-  appId: "1:119718481062:web:3f57b707f3438fc309f867",
-  measurementId: "G-RG2M2FHGWV"
-};
-
-const firebaseApp = initializeApp(firebaseConfig);
-const db = getFirestore(firebaseApp);
-
-// Middleware
-app.use(express.static(path.join(__dirname, 'templates')));
+app.use(cors());
 app.use(bodyParser.json());
 
-// Serve the frontend
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'templates', 'index.html'));
+// Setup multer for file handling
+const storage = multer.memoryStorage();
+const uploadMiddleware = multer({ storage: storage });
+
+// Upload.io API key (from Upload.io)
+const uploadIoClient = upload({
+    publicKey: 'public_G22nhXS4Z4biETXGSrSV42HFA3Gz',  // Your API key
+    secretKey: 'secret_G22nhXS6Gy49Y8tkxtbt7wtwEGi2', // Your secret key
 });
 
-// Get folders
-app.get("/folders", async (req, res) => {
-    const { parentId, isDeleted } = req.query;
-    const snapshot = await getDocs(query(collection(db, "folders"), where("parentId", "==", parentId || null), where("isDeleted", "==", isDeleted === "true")));
-    res.json(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+// File upload API (client-side Firebase SDK will handle Firestore)
+app.post('/upload-file', uploadMiddleware.single('file'), async (req, res) => {
+    const { folderId, userId } = req.body;
+    const file = req.file;
+
+    if (!file) {
+        return res.status(400).json({ message: 'No file uploaded' });
+    }
+
+    try {
+        // Upload to Upload.io
+        const uploadResponse = await uploadIoClient.upload(file.buffer, {
+            filename: file.originalname,
+            tags: ['user_file', userId],
+        });
+
+        // Here, we just return the file URL, the client-side Firebase SDK will handle saving it to Firestore.
+        res.status(200).json({
+            message: 'File uploaded successfully',
+            fileURL: uploadResponse.url
+        });
+    } catch (error) {
+        console.error('Error uploading file:', error);
+        res.status(500).json({ message: 'Failed to upload file', error: error.message });
+    }
 });
 
-// Create folder
-app.post("/create-folder", async (req, res) => {
-    const { folderName, parentId } = req.body;
-    if (!folderName) return res.status(400).send({ error: "Folder name is required!" });
-    await addDoc(collection(db, "folders"), { name: folderName, createdAt: new Date(), isDeleted: false, parentId: parentId || null });
-    res.send({ message: "Folder created successfully!" });
+// Start the server
+app.listen(port, () => {
+    console.log(`Server running on port ${port}`);
 });
-
-// Mark folder as deleted
-app.post("/delete-folder", async (req, res) => {
-    const { folderId } = req.body;
-    if (!folderId) return res.status(400).send({ error: "Folder ID is required!" });
-    await updateDoc(doc(db, "folders", folderId), { isDeleted: true });
-    res.send({ message: "Folder deleted successfully!" });
-});
-
-// Start server
-app.listen(port, () => console.log(`Server running on http://localhost:${port}`));
