@@ -117,7 +117,7 @@ document.getElementById("uploadFileBtn").addEventListener("click", async () => {
 
   // Send the file data to the server
   try {
-    const response = await fetch("http://localhost:3000/uploadFile", {
+    const response = await fetch("https://browser-folder-redirection-royandoyan.onrender.com/uploadFile", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
