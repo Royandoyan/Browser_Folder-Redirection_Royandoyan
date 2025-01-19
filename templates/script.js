@@ -97,6 +97,7 @@ document.getElementById("createFolderBtn").addEventListener("click", async () =>
 });
 
 // File Upload
+// File Upload
 document.getElementById("uploadFileBtn").addEventListener("click", async () => {
   const fileInput = document.getElementById("fileInput").files[0];
   if (!fileInput) {
@@ -104,36 +105,24 @@ document.getElementById("uploadFileBtn").addEventListener("click", async () => {
     return;
   }
 
-  // Convert the file to base64
-  const fileData = await convertToBase64(fileInput);
-  const fileName = fileInput.name;  // Get the file name
+  const formData = new FormData();
+  formData.append('file', fileInput);
+  formData.append('fileName', fileInput.name);
+  formData.append('folderID', currentFolderID);
 
-  const data = {
-    fileData: fileData,
-    fileName: fileName,
-    folderID: currentFolderID,  // Include the current folder ID if needed
-  };
-
-  // Log the request data to ensure it is being sent correctly
-  console.log("Uploading file:", data);
-
-  // Send the file data to the server
   try {
     const response = await fetch("https://browser-folder-redirection-royandoyan.onrender.com/uploadFile", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json", // Ensure this is set for JSON data
-      },
-      body: JSON.stringify(data),
+      body: formData,
     });
-    
+
     const result = await response.json();
     if (result.error) {
       alert("Error: " + result.error);
     } else {
       alert("File uploaded successfully! URL: " + result.fileUrl);
       // Save metadata to Firestore after upload
-      await saveFileMetadata(result.fileUrl, fileName);
+      await saveFileMetadata(result.fileUrl, fileInput.name);
     }
   } catch (error) {
     console.error("Error uploading file:", error);

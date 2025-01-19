@@ -4,6 +4,8 @@ const path = require("path");
 const axios = require("axios");
 const FormData = require("form-data");
 const cors = require("cors"); // Import CORS
+const multer = require('multer');
+const upload = multer({ dest: 'uploads/' });
 
 const app = express();
 app.use(express.json());
@@ -38,14 +40,14 @@ app.get("/folders", (req, res) => {
   res.send([]);
 });
 
-app.post('/uploadFile', async (req, res) => {
-  const fileData = req.body.fileData;
-  const fileName = req.body.fileName;
-  const folderID = req.body.folderID;
-
+app.post('/uploadFile', upload.single('file'), async (req, res) => {
   try {
-    // Assuming you're saving files using a service like Upload.io
-    const fileUrl = await uploadFileToService(fileData, fileName);  // Placeholder function
+    const file = req.file;
+    const fileName = req.body.fileName;
+    const folderID = req.body.folderID;
+
+    // Process file, e.g., upload to a third-party service
+    const fileUrl = await uploadFileToService(file);  // Handle the uploaded file
 
     // Save file metadata to Firestore
     await setDoc(doc(db, "files", crypto.randomUUID()), {
@@ -61,6 +63,7 @@ app.post('/uploadFile', async (req, res) => {
     res.status(500).json({ error: 'Failed to upload file.' });
   }
 });
+
 
 
 // Start the server
