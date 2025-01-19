@@ -1,130 +1,185 @@
-const express = require('express');
-const firebaseAdmin = require('firebase-admin');
-const path = require('path');
-const multer = require('multer');
-const fetch = require('node-fetch');
-const fs = require('fs');
-const FormData = require('form-data');
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
+import { getFirestore, collection, addDoc, query, where, getDocs, updateDoc, doc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js";
 
-// Initialize Firebase Admin
-firebaseAdmin.initializeApp({
-  credential: firebaseAdmin.credential.applicationDefault(),
-  databaseURL: "https://browser-redirection-default-rtdb.firebaseio.com"
+// Firebase configuration
+const firebaseConfig = {
+    apiKey: "AIzaSyAIKjugxiJh9Bd0B32SEd4t9FImRQ9SVK8",
+    authDomain: "browser-redirection.firebaseapp.com",
+    databaseURL: "https://browser-redirection-default-rtdb.firebaseio.com",
+    projectId: "browser-redirection",
+    storageBucket: "browser-redirection.firebasestorage.app",
+    messagingSenderId: "119718481062",
+    appId: "1:119718481062:web:3f57b707f3438fc309f867",
+    measurementId: "G-RG2M2FHGWV"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+// DOM Elements
+const authContainer = document.getElementById('authContainer');
+const fileManager = document.getElementById('fileManager');
+const folderList = document.getElementById('folderList');
+const fileList = document.getElementById('fileList');
+const folderNameInput = document.getElementById('folderName');
+const createFolderBtn = document.getElementById('createFolderBtn');
+const fileInput = document.getElementById('fileInput');
+const uploadFileBtn = document.getElementById('uploadFileBtn');
+const uploadStatus = document.getElementById('uploadStatus');
+const folderPath = document.getElementById('folderPath');
+const logoutBtn = document.getElementById('logoutBtn');
+const signinForm = document.getElementById('signinForm');
+const signupForm = document.getElementById('signupForm');
+const signinEmail = document.getElementById('signinEmail');
+const signinPassword = document.getElementById('signinPassword');
+const signupEmail = document.getElementById('signupEmail');
+const signupPassword = document.getElementById('signupPassword');
+const showSignup = document.getElementById('showSignup');
+const showSignin = document.getElementById('showSignin');
+
+// Show sign up form
+showSignup.addEventListener('click', () => {
+    signinForm.style.display = 'none';
+    signupForm.style.display = 'block';
 });
 
-// Initialize Express app
-const app = express();
-const port = process.env.PORT || 3000;
-
-// Serve static files (your frontend)
-app.use(express.static(path.join(__dirname, 'templates')));
-
-// Middleware to parse JSON data
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-
-// Sample API route (you can add more as needed)
-app.get('/api', (req, res) => {
-  res.json({ message: 'Welcome to the File Manager API!' });
+// Show sign in form
+showSignin.addEventListener('click', () => {
+    signupForm.style.display = 'none';
+    signinForm.style.display = 'block';
 });
 
-// Firebase Firestore API for managing folders and files
-const db = firebaseAdmin.firestore();
-
-// Create a folder in Firestore
-app.post('/api/create-folder', async (req, res) => {
-  try {
-    const { folderName, parentID } = req.body;
-    const folderRef = await db.collection('folders').add({
-      name: folderName,
-      parentID: parentID || null,
-      isDeleted: false
-    });
-    res.json({ message: 'Folder created successfully', folderId: folderRef.id });
-  } catch (error) {
-    res.status(500).json({ error: 'Error creating folder' });
-  }
+// Sign up function
+document.getElementById('signupBtn').addEventListener('click', () => {
+    const email = signupEmail.value;
+    const password = signupPassword.value;
+    createUserWithEmailAndPassword(auth, email, password)
+        .then(() => {
+            alert("Sign Up Successful!");
+            signinForm.style.display = 'block';
+            signupForm.style.display = 'none';
+        })
+        .catch((error) => alert(error.message));
 });
 
-// Delete a folder (soft delete)
-app.post('/api/delete-folder', async (req, res) => {
-  try {
-    const { folderId } = req.body;
-    await db.collection('folders').doc(folderId).update({ isDeleted: true });
-    res.json({ message: 'Folder deleted successfully' });
-  } catch (error) {
-    res.status(500).json({ error: 'Error deleting folder' });
-  }
+// Sign in function
+document.getElementById('signinBtn').addEventListener('click', () => {
+    const email = signinEmail.value;
+    const password = signinPassword.value;
+    signInWithEmailAndPassword(auth, email, password)
+        .then(() => {
+            authContainer.style.display = 'none';
+            fileManager.style.display = 'block';
+            loadFolders();
+        })
+        .catch((error) => alert(error.message));
 });
 
-// Get all folders that are not deleted
-// Create a folder in Firestore
-app.post('/api/create-folder', async (req, res) => {
-    try {
-        const { folderName, parentID } = req.body;
+// Logout function
+logoutBtn.addEventListener('click', () => {
+    signOut(auth).then(() => {
+        authContainer.style.display = 'block';
+        fileManager.style.display = 'none';
+    }).catch((error) => alert(error.message));
+});
 
-        if (!folderName) {
-            return res.status(400).json({ error: 'Folder name is required' });
-        }
+// Load folders from Firestore
+function loadFolders() {
+    const foldersRef = collection(db, 'folders');
+    const q = query(foldersRef, where('ownerId', '==', auth.currentUser.uid), where('parentID', '==', null), where('isDeleted', '==', false));
 
-        const folderRef = await db.collection('folders').add({
-            name: folderName,
-            parentID: parentID || null,
-            isDeleted: false,
+    onSnapshot(q, snapshot => {
+        folderList.innerHTML = '';
+        snapshot.forEach(doc => {
+            const folderData = doc.data();
+            const folderDiv = document.createElement('div');
+            folderDiv.classList.add('folder');
+            folderDiv.textContent = folderData.name;
+            folderDiv.addEventListener('click', () => {
+                loadSubFolders(doc.id);
+            });
+            folderList.appendChild(folderDiv);
         });
-
-        res.json({ message: 'Folder created successfully', folderId: folderRef.id });
-    } catch (error) {
-        console.error("Error creating folder:", error);
-        res.status(500).json({ error: 'Error creating folder: ' + error.message });
-    }
-});
-
-
-// File upload handling using multer
-const upload = multer({ dest: 'uploads/' });  // Temporary folder to store uploaded files
-
-// File upload route
-app.post('/api/upload-file', upload.single('file'), async (req, res) => {
-  const file = req.file;
-  
-  if (!file) {
-    return res.status(400).json({ error: 'No file uploaded' });
-  }
-
-  const formData = new FormData();
-  formData.append('file', fs.createReadStream(file.path));
-  formData.append('key', 'public_G22nhXS4Z4biETXGSrSV42HFA3Gz');  // Replace with your actual API key
-
-  try {
-    const response = await fetch('https://upload.io/api/v1/upload', {
-      method: 'POST',
-      body: formData
     });
+}
 
-    const data = await response.json();
+// Load subfolders when a folder is clicked
+function loadSubFolders(parentId) {
+    const foldersRef = collection(db, 'folders');
+    const q = query(foldersRef, where('parentID', '==', parentId), where('isDeleted', '==', false));
 
-    if (data && data.url) {
-      // Store file metadata in Firestore
-      await db.collection('files').add({
-        fileName: file.originalname,
-        fileUrl: data.url,
-        folderId: req.body.folderId || null  // Assuming folderId is passed in the request body
-      });
+    onSnapshot(q, snapshot => {
+        folderList.innerHTML = '';
+        snapshot.forEach(doc => {
+            const folderData = doc.data();
+            const folderDiv = document.createElement('div');
+            folderDiv.classList.add('folder');
+            folderDiv.textContent = folderData.name;
+            folderDiv.addEventListener('click', () => {
+                loadSubFolders(doc.id);
+            });
+            folderList.appendChild(folderDiv);
+        });
+    });
+}
 
-      // Clean up the temporary file after uploading
-      fs.unlinkSync(file.path);
+// Create a new folder
+createFolderBtn.addEventListener('click', () => {
+    const folderName = folderNameInput.value;
+    const parentID = folderPath.textContent !== 'Home' ? folderPath.textContent : null; // Check if you're inside a folder
 
-      res.status(200).json({ message: 'File uploaded successfully!', fileUrl: data.url });
-    } else {
-      res.status(500).json({ error: 'Error uploading file to Upload.io' });
-    }
-  } catch (error) {
-    res.status(500).json({ error: 'Error uploading file' });
-  }
+    console.log("Creating folder with name:", folderName, "Parent ID:", parentID);  // Log the folder name and parent ID
+
+    const newFolder = {
+        folderName: folderName,
+        parentID: parentID,
+        userId: auth.currentUser.uid  // Include user ID here
+    };
+
+    // Make sure the payload is sent correctly to the server
+    fetch('/api/create-folder', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newFolder),
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.message) {
+            alert(data.message); // Alert success message
+            loadFolders(); // Reload the folders list
+        } else {
+            alert("Error creating folder");
+        }
+    })
+    .catch((error) => {
+        alert("Error creating folder: " + error.message);
+        console.error(error);
+    });
 });
 
-// Firestore listener to update real-time changes for files/folders (Firestore triggers)
-app.listen(port, () => {
-  console.log(`Server running on port ${port}`);
+// Upload file to an external service (e.g., upload.io)
+uploadFileBtn.addEventListener('click', () => {
+    const file = fileInput.files[0];
+    if (file) {
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('folderId', folderPath.textContent !== 'Home' ? folderPath.textContent : null);
+
+        fetch('/upload', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            uploadStatus.textContent = "Upload Successful!";
+            loadFiles(); // Reload the list of files after upload
+        })
+        .catch(error => {
+            uploadStatus.textContent = "Error uploading file.";
+            alert(error.message);
+        });
+    }
 });

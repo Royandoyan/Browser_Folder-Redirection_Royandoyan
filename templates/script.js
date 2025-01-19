@@ -130,12 +130,13 @@ function loadSubFolders(parentId) {
 createFolderBtn.addEventListener('click', () => {
     const folderName = folderNameInput.value;
     const parentID = folderPath.textContent !== 'Home' ? folderPath.textContent : null; // Check if you're inside a folder
-    
+
     console.log("Creating folder with name:", folderName, "Parent ID:", parentID);  // Log the folder name and parent ID
 
     const newFolder = {
         folderName: folderName,
         parentID: parentID,
+        userId: auth.currentUser.uid  // Include user ID here
     };
 
     // Make sure the payload is sent correctly to the server
@@ -158,7 +159,6 @@ createFolderBtn.addEventListener('click', () => {
         console.error(error);
     });
 });
-
 
 // Upload file to an external service (e.g., upload.io)
 uploadFileBtn.addEventListener('click', () => {
