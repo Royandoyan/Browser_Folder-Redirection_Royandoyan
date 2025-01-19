@@ -39,13 +39,19 @@ app.get("/folders", (req, res) => {
 
 app.post("/uploadFile", async (req, res) => {
   try {
-    // Ensure the file data and name are provided
     if (!req.body.fileData || !req.body.fileName) {
       return res.status(400).send({ error: "File data and name are required." });
     }
 
+    // Log file data and name for debugging
+    console.log("File Data:", req.body.fileData);
+    console.log("File Name:", req.body.fileName);
+
     // Convert the Base64 fileData back to binary
     const fileBuffer = Buffer.from(req.body.fileData, 'base64');
+
+    // Log buffer size for validation
+    console.log("Buffer Size:", fileBuffer.length);
 
     // Prepare the form data
     const formData = new FormData();
@@ -54,30 +60,26 @@ app.post("/uploadFile", async (req, res) => {
     // Send the file to the Upload.io API
     const response = await axios.post('https://api.upload.io/v1/files/upload', formData, {
       headers: {
-        'Authorization': 'Bearer secret_G22nhXS2vsL4g26QP2tTfqrBNn4p',
+        'Authorization': 'Bearer secret_G22nhXS2vsL4g26QP2tTfqrBNn4p',  // Use your actual API key here
         'Content-Type': 'multipart/form-data',
       },
     });
 
-    // Handle the response from Upload.io API
-    if (response.data.error) {
-      return res.status(500).send({ error: "File upload failed: " + response.data.error });
-    }
+    // Log response for debugging
+    console.log("Upload.io Response:", response.data);
 
-    // File upload was successful, return the data
+    // If the file upload is successful, return the file URL and metadata
     res.status(201).send({
       message: "File uploaded successfully!",
       fileUrl: response.data.url, // URL of the uploaded file
       fileMetadata: response.data.metadata, // Optional: metadata of the file
     });
+
   } catch (error) {
     console.error("File upload error:", error);
-    // Send a detailed error message
-    res.status(500).send({ error: "File upload failed. Please try again. Error: " + error.message });
+    res.status(500).send({ error: "File upload failed. Please try again." });
   }
 });
-
-
 
 
 // Start the server
