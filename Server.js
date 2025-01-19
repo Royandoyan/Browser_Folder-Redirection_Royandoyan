@@ -46,8 +46,12 @@ app.post('/uploadFile', upload.single('file'), async (req, res) => {
     const fileName = req.body.fileName;
     const folderID = req.body.folderID;
 
+    if (!file) {
+      return res.status(400).json({ error: 'No file uploaded.' });
+    }
+
     // Process file, e.g., upload to a third-party service
-    const fileUrl = await uploadFileToService(file);  // Handle the uploaded file
+    const fileUrl = await uploadFileToService(file);  // Implement your logic to upload to external service
 
     // Save file metadata to Firestore
     await setDoc(doc(db, "files", crypto.randomUUID()), {

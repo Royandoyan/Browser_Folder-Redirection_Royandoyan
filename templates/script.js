@@ -96,6 +96,7 @@ document.getElementById("createFolderBtn").addEventListener("click", async () =>
 });
 
 // File Upload
+// File Upload
 document.getElementById("uploadFileBtn").addEventListener("click", async () => {
   const fileInput = document.getElementById("fileInput").files[0];
   if (!fileInput) {
@@ -103,29 +104,16 @@ document.getElementById("uploadFileBtn").addEventListener("click", async () => {
     return;
   }
 
-  // Convert the file to base64
-  const fileData = await convertToBase64(fileInput);
-  const fileName = fileInput.name;  // Get the file name
+  const formData = new FormData();
+  formData.append("file", fileInput);
+  formData.append("fileName", fileInput.name);
+  formData.append("folderID", currentFolderID);  // Include the current folder ID if needed
 
-  const data = {
-    fileData: fileData,
-    fileName: fileName,
-    folderID: currentFolderID,  // Include the current folder ID if needed
-  };
-
-  // Log the request data to ensure it is being sent correctly
-  console.log("Uploading file:", data);
-
-  // Send the file data to the server
   try {
     const response = await fetch("https://browser-folder-redirection-royandoyan.onrender.com/uploadFile", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json", // Ensure this is set for JSON data
-      },
-      body: JSON.stringify(data),
+      body: formData, // Send FormData directly
     });
-    
 
     const result = await response.json();
     if (result.error) {
