@@ -61,28 +61,25 @@ app.post('/api/delete-folder', async (req, res) => {
 // Create a folder in Firestore
 app.post('/api/create-folder', async (req, res) => {
     try {
-      const { folderName, parentID } = req.body;
-  
-      // Check if folderName exists
-      if (!folderName) {
-        return res.status(400).json({ error: 'Folder name is required' });
-      }
-  
-      // Create folder in Firestore
-      const folderRef = await db.collection('folders').add({
-        name: folderName,
-        parentID: parentID || null,  // If no parent ID, set as null
-        isDeleted: false,
-        ownerId: req.user.uid  // Ensure you have user data to associate it with the correct user
-      });
-  
-      res.json({ message: 'Folder created successfully', folderId: folderRef.id });
+        const { folderName, parentID } = req.body;
+
+        if (!folderName) {
+            return res.status(400).json({ error: 'Folder name is required' });
+        }
+
+        const folderRef = await db.collection('folders').add({
+            name: folderName,
+            parentID: parentID || null,
+            isDeleted: false,
+        });
+
+        res.json({ message: 'Folder created successfully', folderId: folderRef.id });
     } catch (error) {
-      console.error('Error creating folder:', error);
-      res.status(500).json({ error: 'Error creating folder' });
+        console.error("Error creating folder:", error);
+        res.status(500).json({ error: 'Error creating folder: ' + error.message });
     }
-  });
-  
+});
+
 
 // File upload handling using multer
 const upload = multer({ dest: 'uploads/' });  // Temporary folder to store uploaded files

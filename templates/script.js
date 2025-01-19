@@ -131,25 +131,32 @@ createFolderBtn.addEventListener('click', () => {
     const folderName = folderNameInput.value;
     const parentID = folderPath.textContent !== 'Home' ? folderPath.textContent : null; // Check if you're inside a folder
     
+    console.log("Creating folder with name:", folderName, "Parent ID:", parentID);  // Log the folder name and parent ID
+
     const newFolder = {
         folderName: folderName,
-        parentID: parentID,  // Set the parent ID based on current folder path
+        parentID: parentID,
     };
 
-    // Use the backend API to create a folder
+    // Make sure the payload is sent correctly to the server
     fetch('/api/create-folder', {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newFolder),
     })
-        .then(response => response.json())
-        .then(data => {
-            alert("Folder Created Successfully");
-            loadFolders(); // Reload folders after creation
-        })
-        .catch(error => alert("Error creating folder: " + error.message));
+    .then(response => response.json())
+    .then(data => {
+        if (data.message) {
+            alert(data.message); // Alert success message
+            loadFolders(); // Reload the folders list
+        } else {
+            alert("Error creating folder");
+        }
+    })
+    .catch((error) => {
+        alert("Error creating folder: " + error.message);
+        console.error(error);
+    });
 });
 
 
