@@ -13,12 +13,14 @@ const db = admin.firestore();
 
 app.use(bodyParser.json());
 
+// Serve static files from the templates folder
+app.use(express.static('templates'));
+
 // Endpoint to create a new folder
 app.post('/createFolder', async (req, res) => {
   try {
     const { userId, folderName, parentID } = req.body;
 
-    // Ensure valid input
     if (!folderName || !userId) {
       return res.status(400).json({ error: "Folder name and user ID are required" });
     }
@@ -27,8 +29,8 @@ app.post('/createFolder', async (req, res) => {
     await newFolderRef.set({
       userId: userId,
       folderName: folderName,
-      parentID: parentID || null, // Null if no parent
-      isDeleted: false, // Default value
+      parentID: parentID || null,
+      isDeleted: false,
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
     });
 
