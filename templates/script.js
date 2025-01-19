@@ -129,15 +129,19 @@ function loadSubFolders(parentId) {
 // Create a new folder
 createFolderBtn.addEventListener('click', () => {
     const folderName = folderNameInput.value;
+    const parentID = folderPath.textContent !== 'Home' ? folderPath.textContent : null; // Check if you're inside a folder
+    
     const newFolder = {
         name: folderName,
-        parentID: null,
+        parentID: parentID,  // Set the parent ID based on current folder path
         isDeleted: false
     };
-    addDoc(collection(db, 'folders'), newFolder)
+
+    db.collection('folders').add(newFolder)
         .then(() => alert("Folder Created Successfully"))
         .catch(error => alert("Error creating folder: " + error.message));
 });
+
 
 // Upload file to upload.io
 uploadFileBtn.addEventListener('click', () => {
@@ -145,24 +149,20 @@ uploadFileBtn.addEventListener('click', () => {
     if (file) {
         const formData = new FormData();
         formData.append('file', file);
-        formData.append('key', 'public_G22nhXS4Z4biETXGSrSV42HFA3Gz');
-        
-        fetch('https://upload.io/api/v1/upload', {
+        formData.append('folderId', folderPath.textContent !== 'Home' ? folderPath.textContent : null);
+
+        fetch('/upload', {
             method: 'POST',
             body: formData
         })
         .then(response => response.json())
         .then(data => {
-            uploadStatus.textContent = 'File uploaded successfully!';
-            const fileMetadata = {
-                name: file.name,
-                url: data.url
-            };
-            addDoc(collection(db, 'files'), fileMetadata);
+            uploadStatus.textContent = "Upload Successful!";
+            loadFiles();
         })
         .catch(error => {
-            uploadStatus.textContent = 'Upload failed!';
-            console.error('Error uploading file:', error);
+            uploadStatus.textContent = "Error uploading file.";
+            alert(error.message);
         });
     }
 });

@@ -1,6 +1,10 @@
 const express = require('express');
 const firebaseAdmin = require('firebase-admin');
 const path = require('path');
+const multer = require('multer');
+const fetch = require('node-fetch');
+const fs = require('fs');
+const FormData = require('form-data');
 
 // Initialize Firebase Admin
 firebaseAdmin.initializeApp({
@@ -68,6 +72,49 @@ app.get('/api/get-folders', async (req, res) => {
     res.json({ folders });
   } catch (error) {
     res.status(500).json({ error: 'Error fetching folders' });
+  }
+});
+
+// File upload handling using multer
+const upload = multer({ dest: 'uploads/' });  // Temporary folder to store uploaded files
+
+// File upload route
+app.post('/api/upload-file', upload.single('file'), async (req, res) => {
+  const file = req.file;
+  
+  if (!file) {
+    return res.status(400).json({ error: 'No file uploaded' });
+  }
+
+  const formData = new FormData();
+  formData.append('file', fs.createReadStream(file.path));
+  formData.append('key', 'public_G22nhXS4Z4biETXGSrSV42HFA3Gz');  // Replace with your actual API key
+
+  try {
+    const response = await fetch('https://upload.io/api/v1/upload', {
+      method: 'POST',
+      body: formData
+    });
+
+    const data = await response.json();
+
+    if (data && data.url) {
+      // Store file metadata in Firestore
+      await db.collection('files').add({
+        fileName: file.originalname,
+        fileUrl: data.url,
+        folderId: req.body.folderId || null  // Assuming folderId is passed in the request body
+      });
+
+      // Clean up the temporary file after uploading
+      fs.unlinkSync(file.path);
+
+      res.status(200).json({ message: 'File uploaded successfully!', fileUrl: data.url });
+    } else {
+      res.status(500).json({ error: 'Error uploading file to Upload.io' });
+    }
+  } catch (error) {
+    res.status(500).json({ error: 'Error uploading file' });
   }
 });
 
