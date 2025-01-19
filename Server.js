@@ -38,29 +38,30 @@ app.get("/folders", (req, res) => {
 });
 
 // File upload route (proxy to Upload.io API)
-// File upload route (proxy to Upload.io API)
 app.post("/uploadFile", async (req, res) => {
   try {
-    // Ensure the file is provided
+    // Ensure the file data and name are provided
     if (!req.body.fileData || !req.body.fileName) {
       return res.status(400).send({ error: "File data and name are required." });
     }
 
+    // Convert the Base64 fileData back to binary
+    const fileBuffer = Buffer.from(req.body.fileData, 'base64');
+
     // Prepare the form data
     const formData = new FormData();
-    formData.append("file", Buffer.from(req.body.fileData, "base64"), req.body.fileName);
+    formData.append("file", fileBuffer, req.body.fileName);
 
-    // Send the file to Upload.io API using PUT method
-    const response = await axios({
-      method: 'PUT',
-      url: "https://api.upload.io/v1/files/upload",
+    // Send the file to the Upload.io API
+    axios.post('https://api.upload.io/v1/files/upload', formData, {
       headers: {
-        ...formData.getHeaders(),
-        "Authorization": "Bearer secret_G22nhXS2vsL4g26QP2tTfqrBNn4p", // API key
-        "Content-Type": "multipart/form-data" // Ensure the content type is set to multipart/form-data
+        'Authorization': 'Bearer secret_G22nhXS2vsL4g26QP2tTfqrBNn4p',
+        'Content-Type': 'multipart/form-data',
       },
-      data: formData
-    });
+    })
+      .then(response => console.log(response.data))
+      .catch(error => console.error(error));
+    
 
     // Handle the response from Upload.io API
     if (response.data.error) {
@@ -78,6 +79,7 @@ app.post("/uploadFile", async (req, res) => {
     res.status(500).send({ error: "File upload failed. Please try again." });
   }
 });
+
 
 
 // Start the server
