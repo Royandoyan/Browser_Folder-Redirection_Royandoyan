@@ -137,4 +137,17 @@ document.getElementById("uploadFileBtn").addEventListener("click", async () => {
     alert("An error occurred while uploading the file.");
   }
 });
+// Function to convert a file to Base64
+function convertToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    
+    reader.onloadend = () => {
+      resolve(reader.result.split(',')[1]); // Get the base64 string (skip "data:image/png;base64," part)
+    };
+
+    reader.onerror = reject; // If there's an error, reject the promise
+    reader.readAsDataURL(file); // Start reading the file
+  });
+}
 
