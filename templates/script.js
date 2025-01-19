@@ -99,20 +99,47 @@ document.getElementById("createFolderBtn").addEventListener("click", async () =>
 document.getElementById("uploadFileBtn").addEventListener("click", async () => {
   const fileInput = document.getElementById("fileInput").files[0];
   if (!fileInput) return alert("Please select a file.");
-  
+
+  // Create a FormData object to send the file
   const formData = new FormData();
   formData.append("file", fileInput);
-  
-  const response = await fetch("http://localhost:3000/uploadFile", {
-    method: "POST",
-    body: formData,
-  });
-  
-  const result = await response.json();
-  if (result.error) {
-    alert(result.error);
-  } else {
+
+  try {
+    // Make a POST request to the file upload API (Upload.io or Bytescale)
+    const response = await fetch("https://api.upload.io/v1/files/upload", {
+      method: "POST",
+      headers: {
+        "Authorization": "Bearer public_G22nhXS4Z4biETXGSrSV42HFA3Gz", // Use your actual API key here
+      },
+      body: formData,
+    });
+
+    const result = await response.json();
+
+    if (result.error) {
+      alert(result.error);
+      return;
+    }
+
+    // File uploaded successfully, get metadata (URL, size, etc.)
+    const fileMetadata = {
+      fileName: result.data.name,
+      fileURL: result.data.url,
+      fileSize: result.data.size,
+      uploadedAt: new Date(),
+      folderID: currentFolderID, // Associate the file with the current folder
+    };
+
+    // Store the file metadata in Firestore
+    const fileDocRef = doc(collection(db, "files"));
+    await setDoc(fileDocRef, fileMetadata);
+
+    // Alert the user and refresh folder list
     alert("File uploaded successfully!");
-    loadFolders();  // Optionally, reload folders to display file metadata or refresh UI
+    loadFolders(); // Reload folder contents to show the uploaded file
+
+  } catch (error) {
+    alert("Error uploading file: " + error.message);
   }
 });
+
