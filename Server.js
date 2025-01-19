@@ -3,68 +3,57 @@ const bodyParser = require("body-parser");
 const path = require("path");
 const axios = require("axios");
 const FormData = require("form-data");
-const cors = require("cors"); // Import CORS
+const cors = require("cors");
 const multer = require('multer');
-const upload = multer({ dest: 'uploads/' });
+const { getFirestore, doc, setDoc } = require('firebase-admin/firestore');
+const admin = require("firebase-admin");
 
 const app = express();
 app.use(express.json());
-const port = process.env.PORT || 3000; // Ensure the port matches the Render environment
+const port = process.env.PORT || 3000;
+
+// Initialize Firebase Admin SDK
+admin.initializeApp();
+const db = getFirestore();
 
 // CORS configuration
 app.use(cors({
-  origin: "https://browser-folder-redirection-royandoyan.onrender.com", // Frontend deployed domain
+  origin: "https://browser-folder-redirection-royandoyan.onrender.com",
   methods: ["GET", "POST"],
   credentials: true,
 }));
 
-// Middleware
 app.use(bodyParser.json());
-app.use(express.static(path.join(__dirname, "templates"))); // Serve static files from the templates folder
+app.use(express.static(path.join(__dirname, "templates"))); 
 
 // Serve the index.html file
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "templates", "index.html"));
 });
 
-// Placeholder for folder creation
-app.post("/createFolder", (req, res) => {
-  const { name, parentID, isDeleted } = req.body;
-  console.log("Folder created:", { name, parentID, isDeleted });
-  res.status(201).send({ message: "Folder created successfully." });
-});
-
-// Placeholder for fetching folders
-app.get("/folders", (req, res) => {
-  console.log("Fetching folders...");
-  res.send([]);
-});
-
-app.post('/uploadFile', upload.single('file'), async (req, res) => {
+// File upload to Firestore (Base64 encoding approach)
+app.post('/uploadFile', multer().single('file'), async (req, res) => {
   try {
+    const { fileName, folderID } = req.body;
     const file = req.file;
-    const fileName = req.body.fileName;
-    const folderID = req.body.folderID;
 
-    // Process file, e.g., upload to a third-party service
-    const fileUrl = await uploadFileToService(file);  // Handle the uploaded file
+    // Convert file to Base64
+    const base64File = file.buffer.toString('base64');
 
-    // Save file metadata to Firestore
+    // Save file metadata and Base64 encoded content to Firestore
     await setDoc(doc(db, "files", crypto.randomUUID()), {
       fileName: fileName,
-      fileUrl: fileUrl,
+      fileData: base64File,  // Storing Base64 encoded file content
       folderID: folderID,
       createdAt: new Date(),
     });
 
-    res.json({ fileUrl });
+    res.json({ message: "File uploaded and metadata saved to Firestore." });
   } catch (error) {
     console.error('Error uploading file:', error);
     res.status(500).json({ error: 'Failed to upload file.' });
   }
 });
-
-
 
 // Start the server
 app.listen(port, () => {

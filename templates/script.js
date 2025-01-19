@@ -55,10 +55,10 @@ document.getElementById("signinBtn").addEventListener("click", async () => {
   }
 });
 
-
 // Toggle Forms
 document.getElementById("showSignup").addEventListener("click", () => toggleForms());
 document.getElementById("showSignin").addEventListener("click", () => toggleForms());
+
 function toggleForms() {
   signinForm.style.display = signinForm.style.display === "none" ? "block" : "none";
   signupForm.style.display = signupForm.style.display === "none" ? "block" : "none";
@@ -96,7 +96,6 @@ document.getElementById("createFolderBtn").addEventListener("click", async () =>
   loadFolders();  // Reload folder list after creating a folder
 });
 
-// File Upload
 // File Upload
 document.getElementById("uploadFileBtn").addEventListener("click", async () => {
   const fileInput = document.getElementById("fileInput").files[0];
