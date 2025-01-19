@@ -5,17 +5,7 @@ const axios = require("axios");
 const FormData = require("form-data");
 const cors = require("cors"); // Import CORS
 const multer = require('multer');
-const { initializeApp } = require("firebase-admin");
-const { getFirestore, doc, setDoc } = require("firebase-admin/firestore");
-const crypto = require("crypto");
-
-// Initialize Firebase Admin SDK
-initializeApp({
-  credential: applicationDefault(),
-  databaseURL: 'https://your-project-id.firebaseio.com'
-});
-
-const db = getFirestore();
+const upload = multer({ dest: 'uploads/' });
 
 const app = express();
 app.use(express.json());
@@ -32,33 +22,34 @@ app.use(cors({
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, "templates"))); // Serve static files from the templates folder
 
-// Multer configuration for handling file uploads
-const upload = multer({ dest: 'uploads/' });  // Temporary file storage location
-
 // Serve the index.html file
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "templates", "index.html"));
 });
 
-// File upload route
+// Placeholder for folder creation
+app.post("/createFolder", (req, res) => {
+  const { name, parentID, isDeleted } = req.body;
+  console.log("Folder created:", { name, parentID, isDeleted });
+  res.status(201).send({ message: "Folder created successfully." });
+});
+
+// Placeholder for fetching folders
+app.get("/folders", (req, res) => {
+  console.log("Fetching folders...");
+  res.send([]);
+});
+
 app.post('/uploadFile', upload.single('file'), async (req, res) => {
   try {
-    // Ensure the file is present
-    if (!req.file) {
-      return res.status(400).json({ error: 'No file uploaded' });
-    }
-    
-    const { fileName, folderID } = req.body;
+    const file = req.file;
+    const fileName = req.body.fileName;
+    const folderID = req.body.folderID;
 
-    console.log('Received file:', req.file);
-    console.log('File Name:', fileName);
-    console.log('Folder ID:', folderID);
+    // Process file, e.g., upload to a third-party service
+    const fileUrl = await uploadFileToService(file);  // Handle the uploaded file
 
-    // Here you should upload the file to Firebase Storage or a third-party service.
-    // For now, we'll just simulate it by returning a static URL.
-    const fileUrl = `https://your-storage-bucket-url/${req.file.filename}`;
-
-    // Save the file metadata to Firestore
+    // Save file metadata to Firestore
     await setDoc(doc(db, "files", crypto.randomUUID()), {
       fileName: fileName,
       fileUrl: fileUrl,
@@ -66,14 +57,14 @@ app.post('/uploadFile', upload.single('file'), async (req, res) => {
       createdAt: new Date(),
     });
 
-    // Return file URL
     res.json({ fileUrl });
-
   } catch (error) {
     console.error('Error uploading file:', error);
-    res.status(500).json({ error: 'Failed to upload file' });
+    res.status(500).json({ error: 'Failed to upload file.' });
   }
 });
+
+
 
 // Start the server
 app.listen(port, () => {
