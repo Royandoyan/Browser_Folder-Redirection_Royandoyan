@@ -37,7 +37,6 @@ app.get("/folders", (req, res) => {
   res.send([]);
 });
 
-// File upload route (proxy to Upload.io API)
 app.post("/uploadFile", async (req, res) => {
   try {
     // Ensure the file data and name are provided
@@ -53,15 +52,12 @@ app.post("/uploadFile", async (req, res) => {
     formData.append("file", fileBuffer, req.body.fileName);
 
     // Send the file to the Upload.io API
-    axios.post('https://api.upload.io/v1/files/upload', formData, {
+    const response = await axios.post('https://api.upload.io/v1/files/upload', formData, {
       headers: {
         'Authorization': 'Bearer secret_G22nhXS2vsL4g26QP2tTfqrBNn4p',
         'Content-Type': 'multipart/form-data',
       },
-    })
-      .then(response => console.log(response.data))
-      .catch(error => console.error(error));
-    
+    });
 
     // Handle the response from Upload.io API
     if (response.data.error) {
@@ -76,9 +72,11 @@ app.post("/uploadFile", async (req, res) => {
     });
   } catch (error) {
     console.error("File upload error:", error);
-    res.status(500).send({ error: "File upload failed. Please try again." });
+    // Send a detailed error message
+    res.status(500).send({ error: "File upload failed. Please try again. Error: " + error.message });
   }
 });
+
 
 
 
