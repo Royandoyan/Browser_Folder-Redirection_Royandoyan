@@ -96,7 +96,6 @@ document.getElementById("createFolderBtn").addEventListener("click", async () =>
 });
 
 // File Upload
-// File Upload Event Handler
 document.getElementById("uploadFileBtn").addEventListener("click", async () => {
   const fileInput = document.getElementById("fileInput").files[0];
   if (!fileInput) {
@@ -108,12 +107,14 @@ document.getElementById("uploadFileBtn").addEventListener("click", async () => {
   const fileData = await convertToBase64(fileInput);
   const fileName = fileInput.name;  // Get the file name
 
-  // Prepare the data to send to the server
   const data = {
     fileData: fileData,
     fileName: fileName,
     folderID: currentFolderID,  // Include the current folder ID if needed
   };
+
+  // Log the request data to ensure it is being sent correctly
+  console.log("Uploading file:", data);
 
   // Send the file data to the server
   try {
@@ -137,12 +138,3 @@ document.getElementById("uploadFileBtn").addEventListener("click", async () => {
   }
 });
 
-// Convert File to Base64
-function convertToBase64(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onloadend = () => resolve(reader.result.split(",")[1]); // Extract base64 data from the result
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
-}
