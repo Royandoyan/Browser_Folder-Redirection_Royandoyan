@@ -1,22 +1,24 @@
-import firebase from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
-import "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
-import "https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
+import { getAuth } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
+import { getFirestore } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js";
+
 
 // Firebase Configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyAIKjugxiJh9Bd0B32SEd4t9FImRQ9SVK8",
-  authDomain: "browser-redirection.firebaseapp.com",
-  databaseURL: "https://browser-redirection-default-rtdb.firebaseio.com",
-  projectId: "browser-redirection",
-  storageBucket: "browser-redirection.firebasestorage.app",
-  messagingSenderId: "119718481062",
-  appId: "1:119718481062:web:3f57b707f3438fc309f867",
-  measurementId: "G-RG2M2FHGWV"
-};
-
-const app = firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
-const db = firebase.firestore();
+    apiKey: "AIzaSyAIKjugxiJh9Bd0B32SEd4t9FImRQ9SVK8",
+    authDomain: "browser-redirection.firebaseapp.com",
+    databaseURL: "https://browser-redirection-default-rtdb.firebaseio.com",
+    projectId: "browser-redirection",
+    storageBucket: "browser-redirection.firebasestorage.app",
+    messagingSenderId: "119718481062",
+    appId: "1:119718481062:web:3f57b707f3438fc309f867",
+    measurementId: "G-RG2M2FHGWV"
+  };
+  
+  const app = initializeApp(firebaseConfig); // Initialize Firebase app
+  const auth = getAuth(app); // Initialize Firebase Authentication
+  const db = getFirestore(app); // Initialize Firestore
+  
 
 // DOM elements
 const authContainer = document.getElementById("authContainer");
