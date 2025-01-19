@@ -13,10 +13,12 @@ const port = process.env.PORT || 3000; // Ensure the port matches the Render env
 
 // CORS configuration
 app.use(cors({
-  origin: "https://browser-folder-redirection-royandoyan.onrender.com", // Frontend deployed domain
+  origin: "https://browser-folder-redirection-royandoyan.onrender.com", // Frontend domain
   methods: ["GET", "POST"],
+  allowedHeaders: ["Content-Type"], // Allow necessary headers
   credentials: true,
 }));
+
 
 // Middleware
 app.use(bodyParser.json());
@@ -42,29 +44,13 @@ app.get("/folders", (req, res) => {
 
 app.post('/uploadFile', upload.single('file'), async (req, res) => {
   try {
-    const file = req.file;
-    const fileName = req.body.fileName;
-    const folderID = req.body.folderID;
+    console.log("Request body:", req.body);
+    console.log("Uploaded file:", req.file);
 
-    if (!file) {
-      return res.status(400).json({ error: 'No file uploaded.' });
-    }
-
-    // Process file, e.g., upload to a third-party service
-    const fileUrl = await uploadFileToService(file);  // Implement your logic to upload to external service
-
-    // Save file metadata to Firestore
-    await setDoc(doc(db, "files", crypto.randomUUID()), {
-      fileName: fileName,
-      fileUrl: fileUrl,
-      folderID: folderID,
-      createdAt: new Date(),
-    });
-
-    res.json({ fileUrl });
+    // Your existing logic...
   } catch (error) {
-    console.error('Error uploading file:', error);
-    res.status(500).json({ error: 'Failed to upload file.' });
+    console.error("Error details:", error);
+    res.status(500).json({ error: "Failed to upload file." });
   }
 });
 
