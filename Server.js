@@ -3,22 +3,24 @@ const bodyParser = require("body-parser");
 const path = require("path");
 const axios = require("axios");
 const FormData = require("form-data");
-const cors = require("cors"); // Import CORS
-const multer = require('multer');
-const upload = multer({ dest: 'uploads/' });
+const cors = require("cors");
+const multer = require("multer");
+
+const upload = multer({ dest: "uploads/" }); // Temporary folder for file uploads
 
 const app = express();
 app.use(express.json());
-const port = process.env.PORT || 3000; // Ensure the port matches the Render environment
+const port = process.env.PORT || 3000;
 
 // CORS configuration
-app.use(cors({
-  origin: "https://browser-folder-redirection-royandoyan.onrender.com", // Frontend domain
-  methods: ["GET", "POST"],
-  allowedHeaders: ["Content-Type"], // Allow necessary headers
-  credentials: true,
-}));
-
+app.use(
+  cors({
+    origin: "https://browser-folder-redirection-royandoyan.onrender.com", // Frontend domain
+    methods: ["GET", "POST"],
+    allowedHeaders: ["Content-Type"],
+    credentials: true,
+  })
+);
 
 // Middleware
 app.use(bodyParser.json());
@@ -29,32 +31,44 @@ app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "templates", "index.html"));
 });
 
-// Placeholder for folder creation
+// Folder creation endpoint
 app.post("/createFolder", (req, res) => {
   const { name, parentID, isDeleted } = req.body;
+
+  if (!name) {
+    return res.status(400).json({ error: "Folder name is required." });
+  }
+
   console.log("Folder created:", { name, parentID, isDeleted });
-  res.status(201).send({ message: "Folder created successfully." });
+  res.status(201).json({ message: "Folder created successfully." });
 });
 
-// Placeholder for fetching folders
+// Fetching folders
 app.get("/folders", (req, res) => {
   console.log("Fetching folders...");
-  res.send([]);
+  res.json([]); // Placeholder for actual folder data
 });
 
-app.post('/uploadFile', upload.single('file'), async (req, res) => {
+// File upload handler
+app.post("/uploadFile", upload.single("file"), async (req, res) => {
   try {
-    console.log("Request body:", req.body);
-    console.log("Uploaded file:", req.file);
+    const file = req.file;
+    const { fileName, folderID } = req.body;
 
-    // Your existing logic...
+    if (!file) {
+      return res.status(400).json({ error: "No file uploaded." });
+    }
+
+    console.log("Uploaded file details:", file);
+    console.log("Additional data:", { fileName, folderID });
+
+    // Example of file handling logic (replace with actual implementation)
+    res.status(200).json({ message: "File uploaded successfully." });
   } catch (error) {
-    console.error("Error details:", error);
+    console.error("Error during file upload:", error);
     res.status(500).json({ error: "Failed to upload file." });
   }
 });
-
-
 
 // Start the server
 app.listen(port, () => {
