@@ -4,14 +4,14 @@ import { getFirestore, collection, addDoc, query, where, getDocs, updateDoc, doc
 
 // Firebase configuration
 const firebaseConfig = {
-    apiKey: "AIzaSyAIKjugxiJh9Bd0B32SEd4t9FImRQ9SVK8",
-    authDomain: "browser-redirection.firebaseapp.com",
-    databaseURL: "https://browser-redirection-default-rtdb.firebaseio.com",
-    projectId: "browser-redirection",
-    storageBucket: "browser-redirection.firebasestorage.app",
-    messagingSenderId: "119718481062",
-    appId: "1:119718481062:web:3f57b707f3438fc309f867",
-    measurementId: "G-RG2M2FHGWV"
+  apiKey: "AIzaSyAIKjugxiJh9Bd0B32SEd4t9FImRQ9SVK8",
+  authDomain: "browser-redirection.firebaseapp.com",
+  databaseURL: "https://browser-redirection.firebaseio.com",
+  projectId: "browser-redirection",
+  storageBucket: "browser-redirection.firebasestorage.app",
+  messagingSenderId: "119718481062",
+  appId: "1:119718481062:web:3f57b707f3438fc309f867",
+  measurementId: "G-RG2M2FHGWV"
 };
 
 // Initialize Firebase
@@ -19,167 +19,168 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-// DOM Elements
+// DOM elements
 const authContainer = document.getElementById('authContainer');
 const fileManager = document.getElementById('fileManager');
 const folderList = document.getElementById('folderList');
 const fileList = document.getElementById('fileList');
-const folderNameInput = document.getElementById('folderName');
+const folderName = document.getElementById('folderName');
 const createFolderBtn = document.getElementById('createFolderBtn');
-const fileInput = document.getElementById('fileInput');
 const uploadFileBtn = document.getElementById('uploadFileBtn');
+const fileInput = document.getElementById('fileInput');
 const uploadStatus = document.getElementById('uploadStatus');
-const folderPath = document.getElementById('folderPath');
-const logoutBtn = document.getElementById('logoutBtn');
-const signinForm = document.getElementById('signinForm');
-const signupForm = document.getElementById('signupForm');
-const signinEmail = document.getElementById('signinEmail');
-const signinPassword = document.getElementById('signinPassword');
-const signupEmail = document.getElementById('signupEmail');
-const signupPassword = document.getElementById('signupPassword');
-const showSignup = document.getElementById('showSignup');
-const showSignin = document.getElementById('showSignin');
 
-// Show sign up form
-showSignup.addEventListener('click', () => {
-    signinForm.style.display = 'none';
-    signupForm.style.display = 'block';
-});
+// API Key for Upload.io or ByteScale
+const uploadAPIKey = "public_G22nhXS4Z4biETXGSrSV42HFA3Gz";
+const uploadAPIUrl = "https://api.upload.io/v1/files"; // Upload.io API URL
 
-// Show sign in form
-showSignin.addEventListener('click', () => {
-    signupForm.style.display = 'none';
-    signinForm.style.display = 'block';
-});
+// Sign In/Sign Up Handling
+document.getElementById('signinBtn').addEventListener('click', signIn);
+document.getElementById('signupBtn').addEventListener('click', signUp);
+document.getElementById('showSignup').addEventListener('click', showSignup);
+document.getElementById('showSignin').addEventListener('click', showSignin);
 
-// Sign up function
-document.getElementById('signupBtn').addEventListener('click', () => {
-    const email = signupEmail.value;
-    const password = signupPassword.value;
-    createUserWithEmailAndPassword(auth, email, password)
-        .then(() => {
-            alert("Sign Up Successful!");
-            signinForm.style.display = 'block';
-            signupForm.style.display = 'none';
-        })
-        .catch((error) => alert(error.message));
-});
+// Sign In
+async function signIn() {
+  const email = document.getElementById('signinEmail').value;
+  const password = document.getElementById('signinPassword').value;
 
-// Sign in function
-document.getElementById('signinBtn').addEventListener('click', () => {
-    const email = signinEmail.value;
-    const password = signinPassword.value;
-    signInWithEmailAndPassword(auth, email, password)
-        .then(() => {
-            authContainer.style.display = 'none';
-            fileManager.style.display = 'block';
-            loadFolders();
-        })
-        .catch((error) => alert(error.message));
-});
-
-// Logout function
-logoutBtn.addEventListener('click', () => {
-    signOut(auth).then(() => {
-        authContainer.style.display = 'block';
-        fileManager.style.display = 'none';
-    }).catch((error) => alert(error.message));
-});
-
-// Load folders from Firestore
-function loadFolders() {
-    const foldersRef = collection(db, 'folders');
-    const q = query(foldersRef, where('ownerId', '==', auth.currentUser.uid), where('parentID', '==', null), where('isDeleted', '==', false));
-
-    onSnapshot(q, snapshot => {
-        folderList.innerHTML = '';
-        snapshot.forEach(doc => {
-            const folderData = doc.data();
-            const folderDiv = document.createElement('div');
-            folderDiv.classList.add('folder');
-            folderDiv.textContent = folderData.name;
-            folderDiv.addEventListener('click', () => {
-                loadSubFolders(doc.id);
-            });
-            folderList.appendChild(folderDiv);
-        });
-    });
+  try {
+    await signInWithEmailAndPassword(auth, email, password);
+    showFileManager();
+  } catch (error) {
+    alert(error.message);
+  }
 }
 
-// Load subfolders when a folder is clicked
-function loadSubFolders(parentId) {
-    const foldersRef = collection(db, 'folders');
-    const q = query(foldersRef, where('parentID', '==', parentId), where('isDeleted', '==', false));
+// Sign Up
+async function signUp() {
+  const email = document.getElementById('signupEmail').value;
+  const password = document.getElementById('signupPassword').value;
 
-    onSnapshot(q, snapshot => {
-        folderList.innerHTML = '';
-        snapshot.forEach(doc => {
-            const folderData = doc.data();
-            const folderDiv = document.createElement('div');
-            folderDiv.classList.add('folder');
-            folderDiv.textContent = folderData.name;
-            folderDiv.addEventListener('click', () => {
-                loadSubFolders(doc.id);
-            });
-            folderList.appendChild(folderDiv);
-        });
-    });
+  try {
+    await createUserWithEmailAndPassword(auth, email, password);
+    showFileManager();
+  } catch (error) {
+    alert(error.message);
+  }
 }
 
-// Create a new folder
-createFolderBtn.addEventListener('click', () => {
-    const folderName = folderNameInput.value;
-    const parentID = folderPath.textContent !== 'Home' ? folderPath.textContent : null; // Check if you're inside a folder
+// Show Sign Up Form
+function showSignup() {
+  document.getElementById('signinForm').style.display = 'none';
+  document.getElementById('signupForm').style.display = 'block';
+}
 
-    console.log("Creating folder with name:", folderName, "Parent ID:", parentID);  // Log the folder name and parent ID
+// Show Sign In Form
+function showSignin() {
+  document.getElementById('signupForm').style.display = 'none';
+  document.getElementById('signinForm').style.display = 'block';
+}
 
-    const newFolder = {
-        folderName: folderName,
-        parentID: parentID,
-        userId: auth.currentUser.uid  // Include user ID here
-    };
+// Show File Manager
+function showFileManager() {
+  authContainer.style.display = 'none';
+  fileManager.style.display = 'block';
+  loadFolders();
+}
 
-    // Make sure the payload is sent correctly to the server
-    fetch('/api/create-folder', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newFolder),
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.message) {
-            alert(data.message); // Alert success message
-            loadFolders(); // Reload the folders list
-        } else {
-            alert("Error creating folder");
-        }
-    })
-    .catch((error) => {
-        alert("Error creating folder: " + error.message);
-        console.error(error);
-    });
+// Logout
+document.getElementById('logoutBtn').addEventListener('click', async () => {
+  await signOut(auth);
+  authContainer.style.display = 'block';
+  fileManager.style.display = 'none';
 });
 
-// Upload file to an external service (e.g., upload.io)
-uploadFileBtn.addEventListener('click', () => {
-    const file = fileInput.files[0];
-    if (file) {
-        const formData = new FormData();
-        formData.append('file', file);
-        formData.append('folderId', folderPath.textContent !== 'Home' ? folderPath.textContent : null);
+// Create Folder
+createFolderBtn.addEventListener('click', createFolder);
+async function createFolder() {
+  const name = folderName.value.trim();
+  if (!name) {
+    return alert('Folder name cannot be empty');
+  }
 
-        fetch('/api/upload-file', {
-            method: 'POST',
-            body: formData
-        })
-        .then(response => response.json())
-        .then(data => {
-            uploadStatus.textContent = "Upload Successful!";
-            loadFiles(); // Reload the list of files after upload
-        })
-        .catch(error => {
-            uploadStatus.textContent = "Error uploading file.";
-            alert(error.message);
-        });
-    }
-});
+  const userId = auth.currentUser.uid;
+  const parentID = null; // You can set this dynamically if needed
+
+  await addDoc(collection(db, 'folders'), {
+    userId,
+    folderName: name,
+    parentID,
+    isDeleted: false,
+    createdAt: new Date()
+  });
+
+  folderName.value = '';
+  loadFolders();
+}
+
+// Load Folders
+async function loadFolders() {
+  const userId = auth.currentUser.uid;
+  const q = query(collection(db, 'folders'), where('userId', '==', userId), where('isDeleted', '==', false));
+
+  const querySnapshot = await getDocs(q);
+  folderList.innerHTML = '';
+  querySnapshot.forEach(doc => {
+    const folder = doc.data();
+    const div = document.createElement('div');
+    div.classList.add('folder');
+    div.textContent = folder.folderName;
+    div.addEventListener('click', () => loadFiles(doc.id));
+    folderList.appendChild(div);
+  });
+}
+
+// Load Files for a Folder
+async function loadFiles(folderId) {
+  const q = query(collection(db, 'files'), where('folderId', '==', folderId));
+
+  const querySnapshot = await getDocs(q);
+  fileList.innerHTML = '';
+  querySnapshot.forEach(doc => {
+    const file = doc.data();
+    const div = document.createElement('div');
+    div.classList.add('file');
+    div.textContent = file.fileName;
+    fileList.appendChild(div);
+  });
+}
+
+// Upload File
+uploadFileBtn.addEventListener('click', uploadFile);
+async function uploadFile() {
+  const file = fileInput.files[0];
+  if (!file) {
+    return alert('Please select a file');
+  }
+
+  const folderId = 'someFolderId'; // Set dynamically based on current folder
+  
+  // Step 1: Upload file to external API (Upload.io or ByteScale)
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('publicKey', uploadAPIKey);
+
+  const response = await fetch(uploadAPIUrl, {
+    method: 'POST',
+    body: formData
+  });
+
+  if (!response.ok) {
+    return alert('File upload failed');
+  }
+
+  const fileData = await response.json();
+  const fileUrl = fileData.file.url;  // Assuming the response has the URL under 'file.url'
+
+  // Step 2: Store file metadata in Firestore
+  await addDoc(collection(db, 'files'), {
+    folderId,
+    fileName: file.name,
+    fileUrl,
+    createdAt: new Date()
+  });
+
+  loadFiles(folderId);
+}
