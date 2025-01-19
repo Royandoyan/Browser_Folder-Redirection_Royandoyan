@@ -1,60 +1,77 @@
 const express = require('express');
-const path = require('path');
 const firebaseAdmin = require('firebase-admin');
-const cors = require('cors');
+const path = require('path');
+
+// Initialize Firebase Admin
+firebaseAdmin.initializeApp({
+  credential: firebaseAdmin.credential.applicationDefault(),
+  databaseURL: "https://browser-redirection-default-rtdb.firebaseio.com"
+});
+
+// Initialize Express app
 const app = express();
 const port = process.env.PORT || 3000;
 
-// Firebase configuration
-const firebaseConfig = {
-  apiKey: "AIzaSyAIKjugxiJh9Bd0B32SEd4t9FImRQ9SVK8",
-  authDomain: "browser-redirection.firebaseapp.com",
-  databaseURL: "https://browser-redirection-default-rtdb.firebaseio.com",
-  projectId: "browser-redirection",
-  storageBucket: "browser-redirection.firebasestorage.app",
-  messagingSenderId: "119718481062",
-  appId: "1:119718481062:web:3f57b707f3438fc309f867",
-  measurementId: "G-RG2M2FHGWV"
-};
-
-// Initialize Firebase Admin SDK
-firebaseAdmin.initializeApp({
-  credential: firebaseAdmin.credential.applicationDefault(),
-  databaseURL: firebaseConfig.databaseURL
-});
-
-// Middleware to enable CORS and serve static files
-app.use(cors());
+// Serve static files (your frontend)
 app.use(express.static(path.join(__dirname, 'templates')));
 
-// Serve the HTML, CSS, and JS files from the 'templates' folder
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'templates', 'index.html'));
+// Middleware to parse JSON data
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// Sample API route (you can add more as needed)
+app.get('/api', (req, res) => {
+  res.json({ message: 'Welcome to the File Manager API!' });
 });
 
-// Firebase authentication middleware for protected routes
-const authenticate = (req, res, next) => {
-  const token = req.headers['authorization'];
-  if (token) {
-    firebaseAdmin.auth().verifyIdToken(token)
-      .then(decodedToken => {
-        req.user = decodedToken;
-        next();
-      })
-      .catch(err => {
-        res.status(401).send('Unauthorized');
-      });
-  } else {
-    res.status(401).send('Unauthorized');
+// Firebase Firestore API for managing folders and files
+const db = firebaseAdmin.firestore();
+
+// Create a folder in Firestore
+app.post('/api/create-folder', async (req, res) => {
+  try {
+    const { folderName, parentID } = req.body;
+    const folderRef = await db.collection('folders').add({
+      name: folderName,
+      parentID: parentID || null,
+      isDeleted: false
+    });
+    res.json({ message: 'Folder created successfully', folderId: folderRef.id });
+  } catch (error) {
+    res.status(500).json({ error: 'Error creating folder' });
   }
-};
-
-// Example of a protected route
-app.get('/user', authenticate, (req, res) => {
-  res.send({ user: req.user });
 });
 
-// Start the server
+// Delete a folder (soft delete)
+app.post('/api/delete-folder', async (req, res) => {
+  try {
+    const { folderId } = req.body;
+    await db.collection('folders').doc(folderId).update({ isDeleted: true });
+    res.json({ message: 'Folder deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ error: 'Error deleting folder' });
+  }
+});
+
+// Get all folders that are not deleted
+app.get('/api/get-folders', async (req, res) => {
+  try {
+    const snapshot = await db.collection('folders')
+      .where('isDeleted', '==', false)
+      .get();
+
+    let folders = [];
+    snapshot.forEach(doc => {
+      folders.push({ id: doc.id, ...doc.data() });
+    });
+
+    res.json({ folders });
+  } catch (error) {
+    res.status(500).json({ error: 'Error fetching folders' });
+  }
+});
+
+// Firestore listener to update real-time changes for files/folders (Firestore triggers)
 app.listen(port, () => {
-  console.log(`Server is running on http://localhost:${port}`);
+  console.log(`Server running on port ${port}`);
 });
