@@ -146,4 +146,3 @@ function convertToBase64(file) {
     reader.readAsDataURL(file);
   });
 }
-
