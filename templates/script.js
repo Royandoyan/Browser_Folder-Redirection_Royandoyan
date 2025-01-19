@@ -1,20 +1,6 @@
-// Firebase imports
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
-import {
-  getAuth,
-  signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
-} from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
-import {
-  getFirestore,
-  doc,
-  setDoc,
-  collection,
-  query,
-  where,
-  getDocs,
-  onSnapshot, // Import onSnapshot
-} from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
+import { getFirestore, doc, setDoc, collection, query, where, getDocs, onSnapshot } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
 // Firebase configuration
 const firebaseConfig = {
@@ -22,13 +8,12 @@ const firebaseConfig = {
   authDomain: "browser-redirection.firebaseapp.com",
   databaseURL: "https://browser-redirection-default-rtdb.firebaseio.com",
   projectId: "browser-redirection",
-  storageBucket: "browser-redirection.appspot.com", // Updated typo in storageBucket
+  storageBucket: "browser-redirection.firebasestorage.app",
   messagingSenderId: "119718481062",
   appId: "1:119718481062:web:3f57b707f3438fc309f867",
-  measurementId: "G-RG2M2FHGWV",
+  measurementId: "G-RG2M2FHGWV"
 };
 
-// Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const auth = getAuth();
 const db = getFirestore(app);
@@ -39,21 +24,20 @@ const signinForm = document.getElementById("signinForm");
 const signupForm = document.getElementById("signupForm");
 const fileManager = document.getElementById("fileManager");
 const folderList = document.getElementById("folderList");
+const fileList = document.getElementById("fileList");
 const folderPath = document.getElementById("folderPath");
-
-let currentFolderID = null; // Tracks current folder ID
+let currentFolderID = null;
 
 // Sign Up
 document.getElementById("signupBtn").addEventListener("click", async () => {
   const email = document.getElementById("signupEmail").value;
   const password = document.getElementById("signupPassword").value;
-
   try {
     await createUserWithEmailAndPassword(auth, email, password);
     alert("Sign-up successful!");
     toggleForms();
   } catch (error) {
-    alert(`Error: ${error.message}`);
+    alert(error.message);
   }
 });
 
@@ -61,122 +45,100 @@ document.getElementById("signupBtn").addEventListener("click", async () => {
 document.getElementById("signinBtn").addEventListener("click", async () => {
   const email = document.getElementById("signinEmail").value;
   const password = document.getElementById("signinPassword").value;
-
   try {
     await signInWithEmailAndPassword(auth, email, password);
     authContainer.style.display = "none";
     fileManager.style.display = "block";
-    loadFolders(); // Load folders upon sign-in
+    loadFolders();  // Load folders when signed in
   } catch (error) {
-    alert(`Error: ${error.message}`);
+    alert(error.message);
   }
 });
 
-// Toggle Forms (Sign In / Sign Up)
+// Toggle Forms
+document.getElementById("showSignup").addEventListener("click", () => toggleForms());
+document.getElementById("showSignin").addEventListener("click", () => toggleForms());
 function toggleForms() {
   signinForm.style.display = signinForm.style.display === "none" ? "block" : "none";
   signupForm.style.display = signupForm.style.display === "none" ? "block" : "none";
 }
 
-document.getElementById("showSignup").addEventListener("click", toggleForms);
-document.getElementById("showSignin").addEventListener("click", toggleForms);
-
-// Load Folders with Real-Time Updates
+// Load Folders
 async function loadFolders() {
-  folderList.innerHTML = ""; // Clear existing folders
-
-  const q = query(
-    collection(db, "folders"),
-    where("parentID", "==", currentFolderID),
-    where("isDeleted", "==", false)
-  );
-
-  // Real-time listener for folder updates
-  const unsubscribe = onSnapshot(q, (querySnapshot) => {
-    folderList.innerHTML = ""; // Clear folder list before appending new folders
-
-    querySnapshot.forEach((doc) => {
-      const folder = document.createElement("div");
-      folder.className = "folder";
-      folder.textContent = doc.data().name;
-
-      folder.addEventListener("click", () => {
-        currentFolderID = doc.id;
-        folderPath.textContent = doc.data().name;
-        loadFolders(); // Load subfolders if necessary
-      });
-
-      folderList.appendChild(folder);
+  folderList.innerHTML = "";
+  const q = query(collection(db, "folders"), where("parentID", "==", currentFolderID), where("isDeleted", "==", false));
+  const querySnapshot = await getDocs(q);
+  querySnapshot.forEach((doc) => {
+    const folder = document.createElement("div");
+    folder.className = "folder";
+    folder.textContent = doc.data().name;
+    folder.addEventListener("click", () => {
+      currentFolderID = doc.id;
+      folderPath.textContent = doc.data().name;
+      loadFolders();  // Load subfolders
     });
+    folderList.appendChild(folder);
   });
-
-  // Return the unsubscribe function to stop listening when needed
-  return unsubscribe;
 }
 
 // Create Folder
 document.getElementById("createFolderBtn").addEventListener("click", async () => {
   const folderName = document.getElementById("folderName").value;
-
-  if (!folderName) {
-    alert("Folder name is required!");
-    return;
-  }
-
-  // Create new folder in Firestore
+  if (!folderName) return alert("Folder name is required!");
+  
+  // Create a new folder with the current parent folder ID
   await setDoc(doc(db, "folders", crypto.randomUUID()), {
     name: folderName,
-    parentID: currentFolderID || null, // Use null for root folder
+    parentID: currentFolderID,  // Set parentID to the current folder ID (or null for root)
     isDeleted: false,
   });
-
-  // No need to manually refresh the folder list - it's handled by the real-time listener
-});
-
-
-// Create Folder
-document.getElementById("createFolderBtn").addEventListener("click", async () => {
-  const folderName = document.getElementById("folderName").value;
-
-  if (!folderName) {
-    alert("Folder name is required!");
-    return;
-  }
-
-  // Create new folder in Firestore
-  await setDoc(doc(db, "folders", crypto.randomUUID()), {
-    name: folderName,
-    parentID: currentFolderID || null, // Use null for root folder
-    isDeleted: false,
-  });
-
-  loadFolders(); // Refresh folder list
+  loadFolders();  // Reload folder list after creating a folder
 });
 
 // File Upload
 document.getElementById("uploadFileBtn").addEventListener("click", async () => {
   const fileInput = document.getElementById("fileInput").files[0];
-  if (!fileInput) return alert("Please select a file.");
+  if (!fileInput) {
+    alert("Please select a file.");
+    return;
+  }
 
+  // Prepare the FormData object
   const formData = new FormData();
-  formData.append("file", fileInput);
-  formData.append("fileName", fileInput.name);
-  formData.append("folderID", currentFolderID || "root");
+  formData.append("file", fileInput); // Attach the file
+  formData.append("fileName", fileInput.name); // Attach the file name
+  formData.append("folderID", currentFolderID || "root"); // Attach the folder ID
 
+  // Send the file data to the server
   try {
-    const response = await fetch("/uploadFile", {
+    const response = await fetch("https://browser-folder-redirection-royandoyan.onrender.com/uploadFile", {
       method: "POST",
       body: formData,
     });
 
     const result = await response.json();
     if (result.error) {
-      alert(`Error: ${result.error}`);
+      alert("Error: " + result.error);
     } else {
-      alert("File uploaded successfully!");
+      alert("File uploaded successfully! URL: " + result.fileUrl);
     }
   } catch (error) {
     console.error("Error uploading file:", error);
-    alert("Failed to upload file.");
+    alert("An error occurred while uploading the file.");
   }
 });
+
+
+// Function to convert a file to Base64
+function convertToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    
+    reader.onloadend = () => {
+      resolve(reader.result.split(',')[1]); // Get the base64 string (skip "data:image/png;base64," part)
+    };
+
+    reader.onerror = reject; // If there's an error, reject the promise
+    reader.readAsDataURL(file); // Start reading the file
+  });
+}
