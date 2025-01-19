@@ -3,9 +3,17 @@ const bodyParser = require("body-parser");
 const path = require("path");
 const axios = require("axios");
 const FormData = require("form-data");
+const cors = require("cors"); // Import CORS
 
 const app = express();
 const port = 3000;
+
+// CORS configuration
+app.use(cors({
+  origin: "https://browser-folder-redirection-royandoyan.onrender.com", // Allow only your frontend domain
+  methods: ["GET", "POST"],
+  credentials: true,
+}));
 
 // Middleware
 app.use(bodyParser.json());
