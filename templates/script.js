@@ -49,7 +49,7 @@ document.getElementById("signinBtn").addEventListener("click", async () => {
     await signInWithEmailAndPassword(auth, email, password);
     authContainer.style.display = "none";
     fileManager.style.display = "block";
-    loadFolders();
+    loadFolders();  // Load folders when signed in
   } catch (error) {
     alert(error.message);
   }
@@ -75,7 +75,7 @@ async function loadFolders() {
     folder.addEventListener("click", () => {
       currentFolderID = doc.id;
       folderPath.textContent = doc.data().name;
-      loadFolders();
+      loadFolders();  // Load subfolders
     });
     folderList.appendChild(folder);
   });
@@ -85,29 +85,34 @@ async function loadFolders() {
 document.getElementById("createFolderBtn").addEventListener("click", async () => {
   const folderName = document.getElementById("folderName").value;
   if (!folderName) return alert("Folder name is required!");
+  
+  // Create a new folder with the current parent folder ID
   await setDoc(doc(db, "folders", crypto.randomUUID()), {
     name: folderName,
-    parentID: currentFolderID,
+    parentID: currentFolderID,  // Set parentID to the current folder ID (or null for root)
     isDeleted: false,
   });
-  loadFolders();
+  loadFolders();  // Reload folder list after creating a folder
 });
 
 // File Upload
 document.getElementById("uploadFileBtn").addEventListener("click", async () => {
   const fileInput = document.getElementById("fileInput").files[0];
   if (!fileInput) return alert("Please select a file.");
+  
   const formData = new FormData();
   formData.append("file", fileInput);
+  
   const response = await fetch("http://localhost:3000/uploadFile", {
     method: "POST",
     body: formData,
   });
+  
   const result = await response.json();
   if (result.error) {
     alert(result.error);
   } else {
     alert("File uploaded successfully!");
-    loadFolders();
+    loadFolders();  // Optionally, reload folders to display file metadata or refresh UI
   }
 });
