@@ -55,6 +55,7 @@ document.getElementById("signinBtn").addEventListener("click", async () => {
   }
 });
 
+
 // Toggle Forms
 document.getElementById("showSignup").addEventListener("click", () => toggleForms());
 document.getElementById("showSignin").addEventListener("click", () => toggleForms());
@@ -126,18 +127,50 @@ document.getElementById("uploadFileBtn").addEventListener("click", async () => {
       body: JSON.stringify(data),
     });
     
-
     const result = await response.json();
     if (result.error) {
       alert("Error: " + result.error);
     } else {
       alert("File uploaded successfully! URL: " + result.fileUrl);
+      // Save metadata to Firestore after upload
+      await saveFileMetadata(result.fileUrl, fileName);
     }
   } catch (error) {
     console.error("Error uploading file:", error);
     alert("An error occurred while uploading the file.");
   }
 });
+
+// Function to save file metadata to Firestore
+async function saveFileMetadata(fileUrl, fileName) {
+  try {
+    // Save file metadata to Firestore
+    await setDoc(doc(db, "files", crypto.randomUUID()), {
+      fileName: fileName,
+      fileUrl: fileUrl,
+      folderID: currentFolderID,  // Store the folder ID
+      createdAt: new Date(),
+    });
+    console.log("File metadata saved to Firestore!");
+    loadFiles();  // Reload the file list
+  } catch (error) {
+    console.error("Error saving file metadata:", error);
+  }
+}
+
+// Function to load files and display them
+async function loadFiles() {
+  fileList.innerHTML = "";  // Clear previous files
+  const q = query(collection(db, "files"), where("folderID", "==", currentFolderID));
+  const querySnapshot = await getDocs(q);
+  querySnapshot.forEach((doc) => {
+    const fileData = doc.data();
+    const fileElement = document.createElement("div");
+    fileElement.className = "file";
+    fileElement.innerHTML = `<a href="${fileData.fileUrl}" target="_blank">${fileData.fileName}</a>`;
+    fileList.appendChild(fileElement);
+  });
+}
 
 // Function to convert a file to Base64
 function convertToBase64(file) {
