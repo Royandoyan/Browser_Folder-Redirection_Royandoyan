@@ -138,6 +138,7 @@ document.getElementById("uploadFileBtn").addEventListener("click", async () => {
     alert("An error occurred while uploading the file.");
   }
 });
+
 // Function to convert a file to Base64
 function convertToBase64(file) {
   return new Promise((resolve, reject) => {
@@ -151,4 +152,3 @@ function convertToBase64(file) {
     reader.readAsDataURL(file); // Start reading the file
   });
 }
-

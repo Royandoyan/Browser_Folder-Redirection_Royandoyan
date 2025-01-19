@@ -6,6 +6,7 @@ const FormData = require("form-data");
 const cors = require("cors"); // Import CORS
 
 const app = express();
+app.use(express.json());
 const port = process.env.PORT || 3000; // Ensure the port matches the Render environment
 
 // CORS configuration
@@ -55,7 +56,7 @@ app.post("/uploadFile", async (req, res) => {
 
     const response = await axios.post('https://api.upload.io/v1/files/upload', formData, {
       headers: {
-        'Authorization': 'Bearer secret_G22nhXS2vsL4g26QP2tTfqrBNn4p',
+        'Authorization': 'Bearer secret_G22nhXS2vsL4g26QP2tTfqrBNn4p', // Update with your token
         'Content-Type': 'multipart/form-data',
       },
     });
@@ -82,7 +83,6 @@ app.post("/uploadFile", async (req, res) => {
     }
   }
 });
-
 
 // Start the server
 app.listen(port, () => {
