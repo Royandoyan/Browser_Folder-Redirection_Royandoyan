@@ -4,8 +4,6 @@ const path = require("path");
 const axios = require("axios");
 const FormData = require("form-data");
 const cors = require("cors"); // Import CORS
-const { getFirestore, doc, setDoc } = require("firebase/firestore");
-const crypto = require("crypto");
 
 const app = express();
 app.use(express.json());
@@ -40,38 +38,14 @@ app.get("/folders", (req, res) => {
   res.send([]);
 });
 
-// Function to upload file to a third-party service
-async function uploadFileToService(fileData, fileName) {
-  try {
-    const formData = new FormData();
-    formData.append("file", fileData, fileName); // Append the file to the FormData object
-
-    const response = await axios.post("https://api.upload.io/v1/files/Upload", formData, {
-      headers: {
-        ...formData.getHeaders(),
-        "Authorization": `secret_G22nhXS2vsL4g26QP2tTfqrBNn4p`, // Replace with your actual API key
-      },
-    });
-
-    // Assuming the response contains a URL of the uploaded file
-    const fileUrl = response.data.fileUrl; // Modify according to the actual response structure
-    return fileUrl;
-  } catch (error) {
-    console.error('Error uploading file:', error);
-    throw new Error('Failed to upload file');
-  }
-}
-
-// Handle file upload and metadata storage
 app.post('/uploadFile', async (req, res) => {
-  const { fileData, fileName, folderID } = req.body;
+  const fileData = req.body.fileData;
+  const fileName = req.body.fileName;
+  const folderID = req.body.folderID;
 
   try {
-    // Upload the file to the third-party service
-    const fileUrl = await uploadFileToService(fileData, fileName);
-
-    // Initialize Firestore
-    const db = getFirestore(); // Make sure Firebase is initialized in your app
+    // Assuming you're saving files using a service like Upload.io
+    const fileUrl = await uploadFileToService(fileData, fileName);  // Placeholder function
 
     // Save file metadata to Firestore
     await setDoc(doc(db, "files", crypto.randomUUID()), {
@@ -87,6 +61,7 @@ app.post('/uploadFile', async (req, res) => {
     res.status(500).json({ error: 'Failed to upload file.' });
   }
 });
+
 
 // Start the server
 app.listen(port, () => {
