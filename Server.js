@@ -39,6 +39,7 @@ app.get("/folders", (req, res) => {
 
 app.post("/uploadFile", async (req, res) => {
   try {
+    // Validate file data and name
     if (!req.body.fileData || !req.body.fileName) {
       return res.status(400).send({ error: "File data and name are required." });
     }
@@ -53,6 +54,12 @@ app.post("/uploadFile", async (req, res) => {
     // Log buffer size for validation
     console.log("Buffer Size:", fileBuffer.length);
 
+    // Optional: Check file size limit (adjust 5MB as needed)
+    const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
+    if (fileBuffer.length > MAX_FILE_SIZE) {
+      return res.status(400).send({ error: "File size exceeds the 5MB limit." });
+    }
+
     // Prepare the form data
     const formData = new FormData();
     formData.append("file", fileBuffer, req.body.fileName);
@@ -60,7 +67,7 @@ app.post("/uploadFile", async (req, res) => {
     // Send the file to the Upload.io API
     const response = await axios.post('https://api.upload.io/v1/files/upload', formData, {
       headers: {
-        'Authorization': 'Bearer secret_G22nhXS2vsL4g26QP2tTfqrBNn4p',  // Use your actual API key here
+        'Authorization': 'Bearer secret_G22nhXS2vsL4g26QP2tTfqrBNn4p', // Use your actual API key here
         'Content-Type': 'multipart/form-data',
       },
     });
@@ -76,11 +83,23 @@ app.post("/uploadFile", async (req, res) => {
     });
 
   } catch (error) {
-    console.error("File upload error:", error);
-    res.status(500).send({ error: "File upload failed. Please try again." });
+    // Detailed error handling
+    if (error.response) {
+      // The request was made, and the server responded with a status code
+      console.error("Error response:", error.response.data);
+      console.error("Status code:", error.response.status);
+      return res.status(error.response.status).send({ error: error.response.data.message || "File upload failed." });
+    } else if (error.request) {
+      // The request was made, but no response was received
+      console.error("No response received:", error.request);
+      return res.status(500).send({ error: "No response from the file upload server." });
+    } else {
+      // Something else went wrong
+      console.error("Error message:", error.message);
+      return res.status(500).send({ error: "File upload failed. Please try again." });
+    }
   }
 });
-
 
 // Start the server
 app.listen(port, () => {
