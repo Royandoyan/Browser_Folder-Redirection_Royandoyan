@@ -4,6 +4,7 @@ const firebaseAdmin = require('firebase-admin');
 const cors = require('cors');
 const axios = require('axios');
 const FormData = require('form-data');
+const path = require('path');  // To serve static files
 
 // Initialize Firebase Admin SDK
 firebaseAdmin.initializeApp({
@@ -17,6 +18,9 @@ const port = process.env.PORT || 3000;
 // Middleware
 app.use(cors());
 app.use(express.json());
+
+// Serve static files from the 'templates' folder (for index.html, CSS, JS)
+app.use(express.static(path.join(__dirname, 'templates')));
 
 // Firestore reference
 const db = firebaseAdmin.firestore();
@@ -85,6 +89,11 @@ app.post('/upload', async (req, res) => {
     console.error('Error uploading file:', error);
     res.status(500).send('Error uploading file');
   }
+});
+
+// Route for root URL to serve the index.html
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'templates', 'index.html'));
 });
 
 // Start server
