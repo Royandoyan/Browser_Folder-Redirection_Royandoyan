@@ -103,12 +103,16 @@ async function createFolder() {
   const userId = auth.currentUser.uid;
   const parentID = null; // You can set this dynamically if needed
 
-  await addDoc(collection(db, 'folders'), {
-    userId,
-    folderName: name,
-    parentID,
-    isDeleted: false,
-    createdAt: new Date()
+  await fetch('/createFolder', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      userId,
+      folderName: name,
+      parentID
+    })
   });
 
   folderName.value = '';
@@ -183,4 +187,17 @@ async function uploadFile() {
   });
 
   loadFiles(folderId);
+}
+
+// Delete Folder
+async function deleteFolder(folderId) {
+  await fetch('/deleteFolder', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ folderId })
+  });
+
+  loadFolders();
 }
