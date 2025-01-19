@@ -96,50 +96,54 @@ document.getElementById("createFolderBtn").addEventListener("click", async () =>
 });
 
 // File Upload
+// File Upload Event Handler
 document.getElementById("uploadFileBtn").addEventListener("click", async () => {
   const fileInput = document.getElementById("fileInput").files[0];
-  if (!fileInput) return alert("Please select a file.");
+  if (!fileInput) {
+    alert("Please select a file.");
+    return;
+  }
 
-  // Create a FormData object to send the file
-  const formData = new FormData();
-  formData.append("file", fileInput);
+  // Convert the file to base64
+  const fileData = await convertToBase64(fileInput);
+  const fileName = fileInput.name;  // Get the file name
 
+  // Prepare the data to send to the server
+  const data = {
+    fileData: fileData,
+    fileName: fileName,
+    folderID: currentFolderID,  // Include the current folder ID if needed
+  };
+
+  // Send the file data to the server
   try {
-    // Make a POST request to the file upload API (Upload.io or Bytescale)
-    const response = await fetch("https://api.upload.io/v1/files/upload", {
+    const response = await fetch("http://localhost:3000/uploadFile", {
       method: "POST",
       headers: {
-        "Authorization": "Bearer public_G22nhXS4Z4biETXGSrSV42HFA3Gz", // Use your actual API key here
+        "Content-Type": "application/json",
       },
-      body: formData,
+      body: JSON.stringify(data),
     });
 
     const result = await response.json();
-
     if (result.error) {
-      alert(result.error);
-      return;
+      alert("Error: " + result.error);
+    } else {
+      alert("File uploaded successfully! URL: " + result.fileUrl);
     }
-
-    // File uploaded successfully, get metadata (URL, size, etc.)
-    const fileMetadata = {
-      fileName: result.data.name,
-      fileURL: result.data.url,
-      fileSize: result.data.size,
-      uploadedAt: new Date(),
-      folderID: currentFolderID, // Associate the file with the current folder
-    };
-
-    // Store the file metadata in Firestore
-    const fileDocRef = doc(collection(db, "files"));
-    await setDoc(fileDocRef, fileMetadata);
-
-    // Alert the user and refresh folder list
-    alert("File uploaded successfully!");
-    loadFolders(); // Reload folder contents to show the uploaded file
-
   } catch (error) {
-    alert("Error uploading file: " + error.message);
+    console.error("Error uploading file:", error);
+    alert("An error occurred while uploading the file.");
   }
 });
+
+// Convert File to Base64
+function convertToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve(reader.result.split(",")[1]); // Extract base64 data from the result
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
 
