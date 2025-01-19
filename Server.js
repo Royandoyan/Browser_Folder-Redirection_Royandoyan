@@ -53,7 +53,7 @@ app.post("/uploadFile", async (req, res) => {
     const response = await axios.post("https://api.upload.io/v1/files/upload", formData, {
       headers: {
         ...formData.getHeaders(),
-        "Authorization": "Bearer public_G22nhXS4Z4biETXGSrSV42HFA3Gz", // API key
+        "Authorization": "Bearer secret_G22nhXS6Gy49Y8tkxtbt7wtwEGi2", // API key
       },
     });
 
