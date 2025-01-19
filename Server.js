@@ -6,11 +6,11 @@ const FormData = require("form-data");
 const cors = require("cors"); // Import CORS
 
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 3000; // Ensure the port matches the Render environment
 
 // CORS configuration
 app.use(cors({
-  origin: "https://browser-folder-redirection-royandoyan.onrender.com", // Allow only your frontend domain
+  origin: "https://browser-folder-redirection-royandoyan.onrender.com", // Frontend deployed domain
   methods: ["GET", "POST"],
   credentials: true,
 }));

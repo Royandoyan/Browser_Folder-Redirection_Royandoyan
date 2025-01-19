@@ -121,10 +121,11 @@ document.getElementById("uploadFileBtn").addEventListener("click", async () => {
     const response = await fetch("https://browser-folder-redirection-royandoyan.onrender.com/uploadFile", {
       method: "POST",
       headers: {
-        "Content-Type": "application/json",
+        "Content-Type": "application/json", // Ensure this is set for JSON data
       },
       body: JSON.stringify(data),
     });
+    
 
     const result = await response.json();
     if (result.error) {
