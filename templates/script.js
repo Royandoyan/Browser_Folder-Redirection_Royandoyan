@@ -89,8 +89,8 @@ logoutBtn.addEventListener('click', () => {
 // Load folders from Firestore
 function loadFolders() {
     const foldersRef = collection(db, 'folders');
-    const q = query(foldersRef, where('parentID', '==', null), where('isDeleted', '==', false));
-    
+    const q = query(foldersRef, where('ownerId', '==', auth.currentUser.uid), where('parentID', '==', null), where('isDeleted', '==', false));
+
     onSnapshot(q, snapshot => {
         folderList.innerHTML = '';
         snapshot.forEach(doc => {
@@ -110,7 +110,7 @@ function loadFolders() {
 function loadSubFolders(parentId) {
     const foldersRef = collection(db, 'folders');
     const q = query(foldersRef, where('parentID', '==', parentId), where('isDeleted', '==', false));
-    
+
     onSnapshot(q, snapshot => {
         folderList.innerHTML = '';
         snapshot.forEach(doc => {
@@ -134,16 +134,17 @@ createFolderBtn.addEventListener('click', () => {
     const newFolder = {
         name: folderName,
         parentID: parentID,  // Set the parent ID based on current folder path
-        isDeleted: false
+        isDeleted: false,
+        ownerId: auth.currentUser.uid // Associate folder with authenticated user
     };
 
-    db.collection('folders').add(newFolder)
+    // Use addDoc from the Firebase v9 modular SDK
+    addDoc(collection(db, 'folders'), newFolder)
         .then(() => alert("Folder Created Successfully"))
         .catch(error => alert("Error creating folder: " + error.message));
 });
 
-
-// Upload file to upload.io
+// Upload file to an external service (e.g., upload.io)
 uploadFileBtn.addEventListener('click', () => {
     const file = fileInput.files[0];
     if (file) {
@@ -158,7 +159,7 @@ uploadFileBtn.addEventListener('click', () => {
         .then(response => response.json())
         .then(data => {
             uploadStatus.textContent = "Upload Successful!";
-            loadFiles();
+            loadFiles(); // Reload the list of files after upload
         })
         .catch(error => {
             uploadStatus.textContent = "Error uploading file.";
