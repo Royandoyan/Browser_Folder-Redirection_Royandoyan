@@ -97,6 +97,7 @@ document.getElementById("createFolderBtn").addEventListener("click", async () =>
 });
 
 // File Upload
+// File Upload
 document.getElementById("uploadFileBtn").addEventListener("click", async () => {
   const fileInput = document.getElementById("fileInput").files[0];
   if (!fileInput) {

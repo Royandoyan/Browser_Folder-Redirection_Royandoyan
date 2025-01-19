@@ -3,55 +3,75 @@ const bodyParser = require("body-parser");
 const path = require("path");
 const axios = require("axios");
 const FormData = require("form-data");
-const cors = require("cors");
+const cors = require("cors"); // Import CORS
 const multer = require('multer');
-const { getFirestore, doc, setDoc } = require('firebase-admin/firestore');
-const admin = require("firebase-admin");
+const { initializeApp } = require("firebase-admin");
+const { getFirestore, doc, setDoc } = require("firebase-admin/firestore");
+const crypto = require("crypto");
+
+// Initialize Firebase Admin SDK
+initializeApp({
+  credential: applicationDefault(),
+  databaseURL: 'https://your-project-id.firebaseio.com'
+});
+
+const db = getFirestore();
 
 const app = express();
 app.use(express.json());
-const port = process.env.PORT || 3000;
-
-// Initialize Firebase Admin SDK
-admin.initializeApp();
-const db = getFirestore();
+const port = process.env.PORT || 3000; // Ensure the port matches the Render environment
 
 // CORS configuration
 app.use(cors({
-  origin: "https://browser-folder-redirection-royandoyan.onrender.com",
+  origin: "https://browser-folder-redirection-royandoyan.onrender.com", // Frontend deployed domain
   methods: ["GET", "POST"],
   credentials: true,
 }));
 
+// Middleware
 app.use(bodyParser.json());
-app.use(express.static(path.join(__dirname, "templates"))); 
+app.use(express.static(path.join(__dirname, "templates"))); // Serve static files from the templates folder
+
+// Multer configuration for handling file uploads
+const upload = multer({ dest: 'uploads/' });  // Temporary file storage location
 
 // Serve the index.html file
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "templates", "index.html"));
 });
 
-// File upload to Firestore (Base64 encoding approach)
-app.post('/uploadFile', multer().single('file'), async (req, res) => {
+// File upload route
+app.post('/uploadFile', upload.single('file'), async (req, res) => {
   try {
+    // Ensure the file is present
+    if (!req.file) {
+      return res.status(400).json({ error: 'No file uploaded' });
+    }
+    
     const { fileName, folderID } = req.body;
-    const file = req.file;
 
-    // Convert file to Base64
-    const base64File = file.buffer.toString('base64');
+    console.log('Received file:', req.file);
+    console.log('File Name:', fileName);
+    console.log('Folder ID:', folderID);
 
-    // Save file metadata and Base64 encoded content to Firestore
+    // Here you should upload the file to Firebase Storage or a third-party service.
+    // For now, we'll just simulate it by returning a static URL.
+    const fileUrl = `https://your-storage-bucket-url/${req.file.filename}`;
+
+    // Save the file metadata to Firestore
     await setDoc(doc(db, "files", crypto.randomUUID()), {
       fileName: fileName,
-      fileData: base64File,  // Storing Base64 encoded file content
+      fileUrl: fileUrl,
       folderID: folderID,
       createdAt: new Date(),
     });
 
-    res.json({ message: "File uploaded and metadata saved to Firestore." });
+    // Return file URL
+    res.json({ fileUrl });
+
   } catch (error) {
     console.error('Error uploading file:', error);
-    res.status(500).json({ error: 'Failed to upload file.' });
+    res.status(500).json({ error: 'Failed to upload file' });
   }
 });
 
