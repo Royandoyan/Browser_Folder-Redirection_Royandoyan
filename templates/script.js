@@ -132,17 +132,26 @@ createFolderBtn.addEventListener('click', () => {
     const parentID = folderPath.textContent !== 'Home' ? folderPath.textContent : null; // Check if you're inside a folder
     
     const newFolder = {
-        name: folderName,
+        folderName: folderName,
         parentID: parentID,  // Set the parent ID based on current folder path
-        isDeleted: false,
-        ownerId: auth.currentUser.uid // Associate folder with authenticated user
     };
 
-    // Use addDoc from the Firebase v9 modular SDK
-    addDoc(collection(db, 'folders'), newFolder)
-        .then(() => alert("Folder Created Successfully"))
+    // Use the backend API to create a folder
+    fetch('/api/create-folder', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(newFolder),
+    })
+        .then(response => response.json())
+        .then(data => {
+            alert("Folder Created Successfully");
+            loadFolders(); // Reload folders after creation
+        })
         .catch(error => alert("Error creating folder: " + error.message));
 });
+
 
 // Upload file to an external service (e.g., upload.io)
 uploadFileBtn.addEventListener('click', () => {
