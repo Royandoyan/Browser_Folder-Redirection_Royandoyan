@@ -21,7 +21,7 @@ const firebaseConfig = {
   authDomain: "browser-redirection.firebaseapp.com",
   databaseURL: "https://browser-redirection-default-rtdb.firebaseio.com",
   projectId: "browser-redirection",
-  storageBucket: "browser-redirection.appspot.com", // Updated typo in storageBucket
+  storageBucket: "browser-redirection.appspot.com",
   messagingSenderId: "119718481062",
   appId: "1:119718481062:web:3f57b707f3438fc309f867",
   measurementId: "G-RG2M2FHGWV",
@@ -38,6 +38,7 @@ const signinForm = document.getElementById("signinForm");
 const signupForm = document.getElementById("signupForm");
 const fileManager = document.getElementById("fileManager");
 const folderList = document.getElementById("folderList");
+const fileList = document.getElementById("fileList"); // Container for files
 const folderPath = document.getElementById("folderPath");
 
 let currentFolderID = null; // Tracks current folder ID
@@ -80,18 +81,20 @@ function toggleForms() {
 document.getElementById("showSignup").addEventListener("click", toggleForms);
 document.getElementById("showSignin").addEventListener("click", toggleForms);
 
-// Load Folders
+// Load Folders and Files
 async function loadFolders() {
   folderList.innerHTML = "";
+  fileList.innerHTML = "";
 
+  // Fetch folders
   const q = query(
     collection(db, "folders"),
     where("parentID", "==", currentFolderID),
     where("isDeleted", "==", false)
   );
 
-  const querySnapshot = await getDocs(q);
-  querySnapshot.forEach((doc) => {
+  const folderSnapshot = await getDocs(q);
+  folderSnapshot.forEach((doc) => {
     const folder = document.createElement("div");
     folder.className = "folder";
     folder.textContent = doc.data().name;
@@ -103,6 +106,25 @@ async function loadFolders() {
     });
 
     folderList.appendChild(folder);
+  });
+
+  // Fetch files
+  const fileQuery = query(
+    collection(db, "files"),
+    where("folderID", "==", currentFolderID || "root")
+  );
+
+  const fileSnapshot = await getDocs(fileQuery);
+  fileSnapshot.forEach((doc) => {
+    const fileData = doc.data();
+    const fileItem = document.createElement("div");
+    fileItem.className = "file";
+    fileItem.innerHTML = `
+      <a href="${fileData.url}" target="_blank">${fileData.name}</a>
+      <span>Uploaded: ${new Date(fileData.uploadedAt).toLocaleString()}</span>
+    `;
+
+    fileList.appendChild(fileItem);
   });
 }
 
@@ -146,6 +168,7 @@ document.getElementById("uploadFileBtn").addEventListener("click", async () => {
       alert(`Error: ${result.error}`);
     } else {
       alert("File uploaded successfully!");
+      loadFolders(); // Refresh folder and file list after upload
     }
   } catch (error) {
     console.error("Error uploading file:", error);
