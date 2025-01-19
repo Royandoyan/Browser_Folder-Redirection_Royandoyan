@@ -49,38 +49,26 @@ app.get("/folders", (req, res) => {
   res.json([]); // Placeholder for actual folder data
 });
 
-app.post('/uploadFile', upload.single('file'), async (req, res) => {
+// File upload handler
+app.post("/uploadFile", upload.single("file"), async (req, res) => {
   try {
+    const file = req.file;
     const { fileName, folderID } = req.body;
 
-    if (!req.file) {
-      return res.status(400).json({ error: "No file uploaded" });
+    if (!file) {
+      return res.status(400).json({ error: "No file uploaded." });
     }
 
-    // Example: Generate a fake URL (update this with your actual storage solution)
-    const fileUrl = `https://your-upload-bucket-url/${req.file.filename}`;
+    console.log("Uploaded file details:", file);
+    console.log("Additional data:", { fileName, folderID });
 
-    // Add file metadata to Firestore
-    const fileData = {
-      name: fileName,
-      folderID: folderID || "root", // Associate file with a folder
-      url: fileUrl,
-      uploadedAt: new Date().toISOString(),
-    };
-
-    // Assume you have Firestore configured in your server
-    const db = require('./firebase-config.js'); // Your Firestore config
-    const filesRef = db.collection("files");
-
-    await filesRef.add(fileData);
-
-    res.status(200).json({ message: "File uploaded successfully!", fileUrl });
+    // Example of file handling logic (replace with actual implementation)
+    res.status(200).json({ message: "File uploaded successfully." });
   } catch (error) {
     console.error("Error during file upload:", error);
     res.status(500).json({ error: "Failed to upload file." });
   }
 });
-
 
 // Start the server
 app.listen(port, () => {
