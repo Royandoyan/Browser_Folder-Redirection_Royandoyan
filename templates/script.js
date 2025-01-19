@@ -13,6 +13,7 @@ import {
   query,
   where,
   getDocs,
+  onSnapshot, // Import onSnapshot
 } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
 // Firebase configuration
@@ -80,7 +81,6 @@ function toggleForms() {
 document.getElementById("showSignup").addEventListener("click", toggleForms);
 document.getElementById("showSignin").addEventListener("click", toggleForms);
 
-// Load Folders
 // Load Folders with Real-Time Updates
 async function loadFolders() {
   folderList.innerHTML = ""; // Clear existing folders
