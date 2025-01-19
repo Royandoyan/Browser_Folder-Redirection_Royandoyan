@@ -81,8 +81,9 @@ document.getElementById("showSignup").addEventListener("click", toggleForms);
 document.getElementById("showSignin").addEventListener("click", toggleForms);
 
 // Load Folders
+// Load Folders with Real-Time Updates
 async function loadFolders() {
-  folderList.innerHTML = "";
+  folderList.innerHTML = ""; // Clear existing folders
 
   const q = query(
     collection(db, "folders"),
@@ -90,21 +91,48 @@ async function loadFolders() {
     where("isDeleted", "==", false)
   );
 
-  const querySnapshot = await getDocs(q);
-  querySnapshot.forEach((doc) => {
-    const folder = document.createElement("div");
-    folder.className = "folder";
-    folder.textContent = doc.data().name;
+  // Real-time listener for folder updates
+  const unsubscribe = onSnapshot(q, (querySnapshot) => {
+    folderList.innerHTML = ""; // Clear folder list before appending new folders
 
-    folder.addEventListener("click", () => {
-      currentFolderID = doc.id;
-      folderPath.textContent = doc.data().name;
-      loadFolders(); // Load subfolders
+    querySnapshot.forEach((doc) => {
+      const folder = document.createElement("div");
+      folder.className = "folder";
+      folder.textContent = doc.data().name;
+
+      folder.addEventListener("click", () => {
+        currentFolderID = doc.id;
+        folderPath.textContent = doc.data().name;
+        loadFolders(); // Load subfolders if necessary
+      });
+
+      folderList.appendChild(folder);
     });
-
-    folderList.appendChild(folder);
   });
+
+  // Return the unsubscribe function to stop listening when needed
+  return unsubscribe;
 }
+
+// Create Folder
+document.getElementById("createFolderBtn").addEventListener("click", async () => {
+  const folderName = document.getElementById("folderName").value;
+
+  if (!folderName) {
+    alert("Folder name is required!");
+    return;
+  }
+
+  // Create new folder in Firestore
+  await setDoc(doc(db, "folders", crypto.randomUUID()), {
+    name: folderName,
+    parentID: currentFolderID || null, // Use null for root folder
+    isDeleted: false,
+  });
+
+  // No need to manually refresh the folder list - it's handled by the real-time listener
+});
+
 
 // Create Folder
 document.getElementById("createFolderBtn").addEventListener("click", async () => {
