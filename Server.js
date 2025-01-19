@@ -17,29 +17,41 @@ app.use(bodyParser.json());
 app.use(express.static('templates'));
 
 // Endpoint to create a new folder
-app.post('/createFolder', async (req, res) => {
-  try {
-    const { userId, folderName, parentID } = req.body;
-
-    if (!folderName || !userId) {
-      return res.status(400).json({ error: "Folder name and user ID are required" });
+async function createFolder() {
+    const name = folderName.value.trim();
+    if (!name) {
+      return alert('Folder name cannot be empty');
     }
-
-    const newFolderRef = db.collection('folders').doc();
-    await newFolderRef.set({
-      userId: userId,
-      folderName: folderName,
-      parentID: parentID || null,
-      isDeleted: false,
-      createdAt: admin.firestore.FieldValue.serverTimestamp(),
-    });
-
-    res.status(201).json({ message: "Folder created successfully", folderId: newFolderRef.id });
-  } catch (error) {
-    console.error('Error creating folder: ', error);
-    res.status(500).json({ error: "Internal server error" });
+  
+    const userId = auth.currentUser.uid;
+    const parentID = null; // You can set this dynamically if needed
+  
+    try {
+      const response = await fetch('/createFolder', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          userId,
+          folderName: name,
+          parentID
+        })
+      });
+  
+      const result = await response.json();
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to create folder');
+      }
+  
+      folderName.value = '';
+      loadFolders();
+    } catch (error) {
+      console.error('Error creating folder: ', error);
+      alert('Error creating folder: ' + error.message);
+    }
   }
-});
+  
 
 // Endpoint to delete a folder
 app.post('/deleteFolder', async (req, res) => {
