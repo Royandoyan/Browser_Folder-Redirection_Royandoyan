@@ -1,9 +1,8 @@
-// Import Firebase modules
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
 import { getFirestore, collection, addDoc, query, where, getDocs, updateDoc, doc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js";
 
-/// Firebase configuration
+// Firebase configuration
 const firebaseConfig = {
     apiKey: "AIzaSyAIKjugxiJh9Bd0B32SEd4t9FImRQ9SVK8",
     authDomain: "browser-redirection.firebaseapp.com",
@@ -16,9 +15,9 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
-firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
-const db = firebase.firestore();
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
 
 // DOM Elements
 const authContainer = document.getElementById('authContainer');
@@ -57,7 +56,7 @@ showSignin.addEventListener('click', () => {
 document.getElementById('signupBtn').addEventListener('click', () => {
     const email = signupEmail.value;
     const password = signupPassword.value;
-    auth.createUserWithEmailAndPassword(email, password)
+    createUserWithEmailAndPassword(auth, email, password)
         .then(() => {
             alert("Sign Up Successful!");
             signinForm.style.display = 'block';
@@ -70,7 +69,7 @@ document.getElementById('signupBtn').addEventListener('click', () => {
 document.getElementById('signinBtn').addEventListener('click', () => {
     const email = signinEmail.value;
     const password = signinPassword.value;
-    auth.signInWithEmailAndPassword(email, password)
+    signInWithEmailAndPassword(auth, email, password)
         .then(() => {
             authContainer.style.display = 'none';
             fileManager.style.display = 'block';
@@ -81,7 +80,7 @@ document.getElementById('signinBtn').addEventListener('click', () => {
 
 // Logout function
 logoutBtn.addEventListener('click', () => {
-    auth.signOut().then(() => {
+    signOut(auth).then(() => {
         authContainer.style.display = 'block';
         fileManager.style.display = 'none';
     }).catch((error) => alert(error.message));
@@ -89,42 +88,42 @@ logoutBtn.addEventListener('click', () => {
 
 // Load folders from Firestore
 function loadFolders() {
-    db.collection('folders')
-        .where('parentID', '==', null)
-        .where('isDeleted', '==', false)
-        .onSnapshot(snapshot => {
-            folderList.innerHTML = '';
-            snapshot.forEach(doc => {
-                const folderData = doc.data();
-                const folderDiv = document.createElement('div');
-                folderDiv.classList.add('folder');
-                folderDiv.textContent = folderData.name;
-                folderDiv.addEventListener('click', () => {
-                    loadSubFolders(doc.id);
-                });
-                folderList.appendChild(folderDiv);
+    const foldersRef = collection(db, 'folders');
+    const q = query(foldersRef, where('parentID', '==', null), where('isDeleted', '==', false));
+    
+    onSnapshot(q, snapshot => {
+        folderList.innerHTML = '';
+        snapshot.forEach(doc => {
+            const folderData = doc.data();
+            const folderDiv = document.createElement('div');
+            folderDiv.classList.add('folder');
+            folderDiv.textContent = folderData.name;
+            folderDiv.addEventListener('click', () => {
+                loadSubFolders(doc.id);
             });
+            folderList.appendChild(folderDiv);
         });
+    });
 }
 
 // Load subfolders when a folder is clicked
 function loadSubFolders(parentId) {
-    db.collection('folders')
-        .where('parentID', '==', parentId)
-        .where('isDeleted', '==', false)
-        .onSnapshot(snapshot => {
-            folderList.innerHTML = '';
-            snapshot.forEach(doc => {
-                const folderData = doc.data();
-                const folderDiv = document.createElement('div');
-                folderDiv.classList.add('folder');
-                folderDiv.textContent = folderData.name;
-                folderDiv.addEventListener('click', () => {
-                    loadSubFolders(doc.id);
-                });
-                folderList.appendChild(folderDiv);
+    const foldersRef = collection(db, 'folders');
+    const q = query(foldersRef, where('parentID', '==', parentId), where('isDeleted', '==', false));
+    
+    onSnapshot(q, snapshot => {
+        folderList.innerHTML = '';
+        snapshot.forEach(doc => {
+            const folderData = doc.data();
+            const folderDiv = document.createElement('div');
+            folderDiv.classList.add('folder');
+            folderDiv.textContent = folderData.name;
+            folderDiv.addEventListener('click', () => {
+                loadSubFolders(doc.id);
             });
+            folderList.appendChild(folderDiv);
         });
+    });
 }
 
 // Create a new folder
@@ -135,7 +134,7 @@ createFolderBtn.addEventListener('click', () => {
         parentID: null,
         isDeleted: false
     };
-    db.collection('folders').add(newFolder)
+    addDoc(collection(db, 'folders'), newFolder)
         .then(() => alert("Folder Created Successfully"))
         .catch(error => alert("Error creating folder: " + error.message));
 });
@@ -154,41 +153,16 @@ uploadFileBtn.addEventListener('click', () => {
         })
         .then(response => response.json())
         .then(data => {
-            const fileData = {
-                fileName: file.name,
-                fileUrl: data.url,
-                folderId: null
+            uploadStatus.textContent = 'File uploaded successfully!';
+            const fileMetadata = {
+                name: file.name,
+                url: data.url
             };
-            db.collection('files').add(fileData)
-                .then(() => {
-                    uploadStatus.textContent = "Upload Successful!";
-                    loadFiles();
-                })
-                .catch(error => {
-                    uploadStatus.textContent = "Error uploading file.";
-                    alert(error.message);
-                });
+            addDoc(collection(db, 'files'), fileMetadata);
         })
         .catch(error => {
-            uploadStatus.textContent = "Error uploading file.";
-            alert(error.message);
+            uploadStatus.textContent = 'Upload failed!';
+            console.error('Error uploading file:', error);
         });
     }
 });
-
-// Load files
-function loadFiles() {
-    db.collection('files').onSnapshot(snapshot => {
-        fileList.innerHTML = '';
-        snapshot.forEach(doc => {
-            const fileData = doc.data();
-            const fileDiv = document.createElement('div');
-            fileDiv.classList.add('file');
-            fileDiv.textContent = fileData.fileName;
-            fileDiv.addEventListener('click', () => {
-                window.open(fileData.fileUrl, '_blank');
-            });
-            fileList.appendChild(fileDiv);
-        });
-    });
-}
