@@ -168,7 +168,7 @@ uploadFileBtn.addEventListener('click', () => {
         formData.append('file', file);
         formData.append('folderId', folderPath.textContent !== 'Home' ? folderPath.textContent : null);
 
-        fetch('/upload', {
+        fetch('/api/upload-file', {
             method: 'POST',
             body: formData
         })
