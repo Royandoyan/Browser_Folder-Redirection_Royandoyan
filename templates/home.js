@@ -110,54 +110,51 @@ function loadFolders(parentId = 0) {
         });
     });
 
-    // Load files
-    const filesRef = collection(db, "files");
-    const fileQuery = query(
-        filesRef,
-        where("parent_id", "==", effectiveParentId),
-        where("user_id", "==", currentUserUid)
-    );
 
-    const unsubscribeFiles = onSnapshot(fileQuery, (querySnapshot) => {
-        if (querySnapshot.metadata.hasPendingWrites) {
-            console.log("Waiting for Firestore sync...");
-            return;
-        }
+   // Load files
+const filesRef = collection(db, "files");
+const fileQuery = query(
+    filesRef,
+    where("parent_id", "==", effectiveParentId),
+    where("user_id", "==", currentUserUid)
+);
 
-        const fileItems = [];
-        querySnapshot.forEach((doc) => {
-            const file = doc.data();
-            fileItems.push(`
-                <div class="file-item">
-                    <img src="../file.png" class="file-icon" alt="File Icon">
-                    <a href="${file.url}" target="_blank" class="file-link">${file.name}</a>
-                    <button class="delete-btn" data-id="${doc.id}">Delete</button>
-                </div>
-            `);
-        });
+const unsubscribeFiles = onSnapshot(fileQuery, (querySnapshot) => {
+    if (querySnapshot.metadata.hasPendingWrites) {
+        console.log("Waiting for Firestore sync...");
+        return;
+    }
 
-        filesElement.innerHTML = fileItems.join("");
-
-        const deleteButtons = filesElement.querySelectorAll(".delete-btn");
-        deleteButtons.forEach((button, index) => {
-            const fileId = querySnapshot.docs[index].id;
-
-            button.addEventListener("click", async (e) => {
-                e.stopPropagation();
-                try {
-                    await deleteFile(fileId);
-                } catch (error) {
-                    console.error("Error deleting file:", error);
-                }
-            });
-        });
+    const fileItems = [];
+    querySnapshot.forEach((doc) => {
+        const file = doc.data();
+        fileItems.push(`
+            <div class="file-item">
+                <img src="${file.url}" class="file-icon" alt="File Icon"> <!-- Correct file URL -->
+                <a href="${file.url}" target="_blank" class="file-link">${file.name}</a>
+                <button class="delete-btn" data-id="${doc.id}">Delete</button>
+            </div>
+        `);
     });
 
+    filesElement.innerHTML = fileItems.join("");
+
+    const deleteButtons = filesElement.querySelectorAll(".delete-btn");
+    deleteButtons.forEach((button, index) => {
+        const fileId = querySnapshot.docs[index].id;
+
+        button.addEventListener("click", async (e) => {
+            e.stopPropagation();
+            try {
+                await deleteFile(fileId);
+            } catch (error) {
+                console.error("Error deleting file:", error);
+            }
+        });
+    });
+});
     return { unsubscribeFolders, unsubscribeFiles };
 }
-
-
-
 
 // Open folder
 function openFolder(folderId) {
@@ -241,8 +238,6 @@ async function deleteFile(fileId) {
         console.error("Error deleting file:", error);
     }
 }
-
-
 
 
 
