@@ -35,7 +35,7 @@ cloudinary.config({
 app.use(cors());
 
 // Serve static files from the 'templates' directory (assuming index.html is in templates)
-app.use('/templates', express.static('templates'));
+app.use(express.static('templates'));  // Serve templates folder directly
 
 // Multer Configuration for File Handling
 const storage = multer.memoryStorage();
