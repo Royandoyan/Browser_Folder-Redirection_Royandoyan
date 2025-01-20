@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>File Manager</title>
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 </head>
 <body>
     <h1>File Manager</h1>
@@ -26,31 +27,13 @@
             <input type="text" id="address" placeholder="Address">
             <input type="email" id="signupEmail" placeholder="Email">
             <input type="password" id="signupPassword" placeholder="Password">
+            <input type="password" id="confirmPassword" placeholder="Confirm Password">
             <button id="signupBtn">Sign Up</button>
             <p>Already have an account? <a href="#" id="showSignin">Sign In</a></p>
         </div>
     </div>
 
-    <div id="fileManager" style="display: none;">
-        <h2 id="folderPath">Home</h2>
-        <button id="logoutBtn">Logout</button>
-
-        <div>
-            <input type="text" id="folderName" placeholder="Folder Name">
-            <button id="createFolderBtn">Create Folder</button>
-        </div>
-
-        <div id="folderList"></div>
-
-        <div>
-            <input type="file" id="fileInput">
-            <button id="uploadFileBtn">Upload File</button>
-            <p id="uploadStatus"></p>
-        </div>
-
-        <div id="fileList"></div>
-    </div>
-
-    <script src="script.js" type="module"></script>
+    <script type="module" src="firebase.js"></script>
+    <script type="module" src="script.js"></script>
 </body>
 </html>

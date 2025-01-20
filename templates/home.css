@@ -1,0 +1,173 @@
+/* General Reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Layout */
+.left {
+    margin-right: auto;
+}
+.right {
+    margin-left: auto;
+}
+
+/* Form Styling */
+input {
+    padding: 10px;
+    margin-bottom: 10px;
+    width: 400px;
+    border-radius: 5px;
+    font-family: Arial;
+}
+button {
+    background-color: rgb(23, 32, 52);
+    color: white;
+    font-family: LEMONMILK-Light;
+    font-size: 12px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    height: 40px;
+    width: 120px;
+    margin-top: 15px;
+}
+button:hover {
+    background-color: #0056b3;
+}
+
+/* Navigation */
+nav {
+    background-color: #ffffff;
+    color: rgb(23, 32, 52);
+    padding: 20px;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+}
+.nav-left {
+    display: flex;
+    align-items: center;
+    font-family: LEMONMILK-Bold;
+}
+.nav-right {
+    display: flex;
+    align-items: center;
+    font-family: LEMONMILK-Light;
+    font-size: 14px;
+}
+.nav-item.btn {
+    width: 100px;
+    color: #ffffff;
+}
+
+/* Containers */
+.container {
+    width: 100%;
+    background-color: rgba(28, 43, 76, 0.262);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0px 0;
+    height: 545px;
+    justify-content: center;
+    border: 3px solid rgb(23, 32, 52);
+}
+.container #folders {
+    align-self: flex-start;
+    font-family: Arial;
+    color: #ffffff;
+    font-size: 13px;
+}
+.folders-background {
+    background-color: rgb(23, 32, 52);
+    border-radius: 10px;
+    width: 80%;
+    height: 70%;
+    overflow-y: auto;
+    padding: 10px;
+}
+
+/* Typography */
+.title {
+    font-family: LEMONMILK-Bold;
+    font-size: 40px;
+    color: rgb(23, 32, 52);
+}
+
+/* Folder and File Items */
+.folder-item, .file-item {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    position: relative;
+    justify-content: space-between;
+    max-height: 50px;
+}
+.folder-text, .file-link {
+    flex-grow: 1;
+}
+.delete-btn {
+    background-color: rgb(217, 0, 0);
+    border: none;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 60px;
+    height: 30px;
+    margin-bottom: 20px;
+}
+
+/* Floating Button */
+.floating-file-btn {
+    position: fixed;
+    bottom: 20px;
+    right: 30px;
+    z-index: 1000;
+    box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.3);
+}
+.floating-file-btn input[type="file"] {
+    display: none;
+}
+.floating-file-btn label {
+    display: inline-block;
+    background-color: rgb(23, 32, 52);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 10px;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    font-family: LEMONMILK-Light;
+    font-size: 12px;
+}
+.floating-file-btn label:hover {
+    background-color: #0056b3;
+}
+
+/* Media Queries */
+@media screen and (max-width: 600px) {
+    button {
+        height: 30px;
+        width: 100px;
+    }
+    .nav-item.btn {
+        font-size: 10px;
+        width: 60px;
+    }
+    input {
+        width: 260px !important;
+    }
+    .folders-background {
+        width: 90%;
+    }
+    .right {
+        width: 70px;
+        font-size: 8px !important;
+    }
+    #folderName {
+        width: 150px !important;
+    }
+}
