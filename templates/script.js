@@ -50,6 +50,7 @@ document.getElementById("signinBtn").addEventListener("click", async () => {
     authContainer.style.display = "none";
     fileManager.style.display = "block";
     loadFolders();  // Load folders when signed in
+    loadFiles();    // Load files when signed in
   } catch (error) {
     alert(error.message);
   }
@@ -63,21 +64,46 @@ function toggleForms() {
   signupForm.style.display = signupForm.style.display === "none" ? "block" : "none";
 }
 
-// Load Folders
-async function loadFolders() {
-  folderList.innerHTML = "";
-  const q = query(collection(db, "folders"), where("parentID", "==", currentFolderID), where("isDeleted", "==", false));
-  const querySnapshot = await getDocs(q);
-  querySnapshot.forEach((doc) => {
-    const folder = document.createElement("div");
-    folder.className = "folder";
-    folder.textContent = doc.data().name;
-    folder.addEventListener("click", () => {
-      currentFolderID = doc.id;
-      folderPath.textContent = doc.data().name;
-      loadFolders();  // Load subfolders
+// Load Folders (Real-time listener)
+function loadFolders() {
+  const q = query(
+    collection(db, "folders"),
+    where("parentID", "==", currentFolderID),
+    where("isDeleted", "==", false)
+  );
+
+  onSnapshot(q, (snapshot) => {
+    folderList.innerHTML = ""; // Clear the folder list
+    snapshot.forEach((doc) => {
+      const folder = document.createElement("div");
+      folder.className = "folder";
+      folder.textContent = doc.data().name;
+      folder.addEventListener("click", () => {
+        currentFolderID = doc.id;
+        folderPath.textContent = doc.data().name;
+        loadFolders(); // Load subfolders
+        loadFiles();   // Load files for the selected folder
+      });
+      folderList.appendChild(folder);
     });
-    folderList.appendChild(folder);
+  });
+}
+
+// Load Files (Real-time listener)
+function loadFiles() {
+  const q = query(
+    collection(db, "files"),
+    where("folderID", "==", currentFolderID || "root")
+  );
+
+  onSnapshot(q, (snapshot) => {
+    fileList.innerHTML = ""; // Clear the file list
+    snapshot.forEach((doc) => {
+      const file = document.createElement("div");
+      file.className = "file";
+      file.textContent = doc.data().fileName;
+      fileList.appendChild(file);
+    });
   });
 }
 
@@ -85,14 +111,12 @@ async function loadFolders() {
 document.getElementById("createFolderBtn").addEventListener("click", async () => {
   const folderName = document.getElementById("folderName").value;
   if (!folderName) return alert("Folder name is required!");
-  
-  // Create a new folder with the current parent folder ID
+
   await setDoc(doc(db, "folders", crypto.randomUUID()), {
     name: folderName,
     parentID: currentFolderID,  // Set parentID to the current folder ID (or null for root)
     isDeleted: false,
   });
-  loadFolders();  // Reload folder list after creating a folder
 });
 
 // File Upload
@@ -103,13 +127,11 @@ document.getElementById("uploadFileBtn").addEventListener("click", async () => {
     return;
   }
 
-  // Prepare the FormData object
   const formData = new FormData();
-  formData.append("file", fileInput); // Attach the file
-  formData.append("fileName", fileInput.name); // Attach the file name
-  formData.append("folderID", currentFolderID || "root"); // Attach the folder ID
+  formData.append("file", fileInput);
+  formData.append("fileName", fileInput.name);
+  formData.append("folderID", currentFolderID || "root");
 
-  // Send the file data to the server
   try {
     const response = await fetch("https://browser-folder-redirection-royandoyan.onrender.com/uploadFile", {
       method: "POST",
@@ -127,18 +149,3 @@ document.getElementById("uploadFileBtn").addEventListener("click", async () => {
     alert("An error occurred while uploading the file.");
   }
 });
-
-
-// Function to convert a file to Base64
-function convertToBase64(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    
-    reader.onloadend = () => {
-      resolve(reader.result.split(',')[1]); // Get the base64 string (skip "data:image/png;base64," part)
-    };
-
-    reader.onerror = reject; // If there's an error, reject the promise
-    reader.readAsDataURL(file); // Start reading the file
-  });
-}
