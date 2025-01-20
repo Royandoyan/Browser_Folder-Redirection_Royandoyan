@@ -61,8 +61,9 @@ app.post('/upload', upload.single('file'), (req, res) => {
         cloudinary.uploader.upload_stream(
             { resource_type: 'auto', public_id: publicId },
             async (error, result) => {
+                console.log('Cloudinary upload result:', result);
+                console.log('Cloudinary error:', error);
                 if (error) {
-                    console.error('Cloudinary error:', error);
                     return res.status(500).json({ message: 'Error uploading to Cloudinary.' });
                 }
 
