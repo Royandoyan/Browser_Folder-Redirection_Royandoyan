@@ -1,4 +1,3 @@
-
 import { auth, db } from './firebase.js';
 import { doc, setDoc, collection, addDoc, getDocs, getDoc, writeBatch, serverTimestamp, query, where, onSnapshot, deleteDoc } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
 import { signOut } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
@@ -223,7 +222,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.log("User logged out successfully!");
 
                 // Redirect to another HTML file
-                window.location.href = 'index.html'; // Change to the desired file
+                window.location.href = '../index.html'; // Change to the desired file
             } catch (error) {
                 console.error("Error logging out:", error);
             }
