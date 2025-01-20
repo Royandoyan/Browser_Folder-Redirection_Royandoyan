@@ -1,3 +1,4 @@
+
 import { auth, db } from './firebase.js';
 import { doc, setDoc, collection, addDoc, getDocs, getDoc, writeBatch, serverTimestamp, query, where, onSnapshot, deleteDoc } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
 import { signOut } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
@@ -110,51 +111,54 @@ function loadFolders(parentId = 0) {
         });
     });
 
+    // Load files
+    const filesRef = collection(db, "files");
+    const fileQuery = query(
+        filesRef,
+        where("parent_id", "==", effectiveParentId),
+        where("user_id", "==", currentUserUid)
+    );
 
-   // Load files
-const filesRef = collection(db, "files");
-const fileQuery = query(
-    filesRef,
-    where("parent_id", "==", effectiveParentId),
-    where("user_id", "==", currentUserUid)
-);
+    const unsubscribeFiles = onSnapshot(fileQuery, (querySnapshot) => {
+        if (querySnapshot.metadata.hasPendingWrites) {
+            console.log("Waiting for Firestore sync...");
+            return;
+        }
 
-const unsubscribeFiles = onSnapshot(fileQuery, (querySnapshot) => {
-    if (querySnapshot.metadata.hasPendingWrites) {
-        console.log("Waiting for Firestore sync...");
-        return;
-    }
+        const fileItems = [];
+        querySnapshot.forEach((doc) => {
+            const file = doc.data();
+            fileItems.push(`
+                <div class="file-item">
+                    <img src="../file.png" class="file-icon" alt="File Icon">
+                    <a href="${file.url}" target="_blank" class="file-link">${file.name}</a>
+                    <button class="delete-btn" data-id="${doc.id}">Delete</button>
+                </div>
+            `);
+        });
 
-    const fileItems = [];
-    querySnapshot.forEach((doc) => {
-        const file = doc.data();
-        fileItems.push(`
-            <div class="file-item">
-                <img src="${file.url}" class="file-icon" alt="File Icon"> <!-- Correct file URL -->
-                <a href="${file.url}" target="_blank" class="file-link">${file.name}</a>
-                <button class="delete-btn" data-id="${doc.id}">Delete</button>
-            </div>
-        `);
-    });
+        filesElement.innerHTML = fileItems.join("");
 
-    filesElement.innerHTML = fileItems.join("");
+        const deleteButtons = filesElement.querySelectorAll(".delete-btn");
+        deleteButtons.forEach((button, index) => {
+            const fileId = querySnapshot.docs[index].id;
 
-    const deleteButtons = filesElement.querySelectorAll(".delete-btn");
-    deleteButtons.forEach((button, index) => {
-        const fileId = querySnapshot.docs[index].id;
-
-        button.addEventListener("click", async (e) => {
-            e.stopPropagation();
-            try {
-                await deleteFile(fileId);
-            } catch (error) {
-                console.error("Error deleting file:", error);
-            }
+            button.addEventListener("click", async (e) => {
+                e.stopPropagation();
+                try {
+                    await deleteFile(fileId);
+                } catch (error) {
+                    console.error("Error deleting file:", error);
+                }
+            });
         });
     });
-});
+
     return { unsubscribeFolders, unsubscribeFiles };
 }
+
+
+
 
 // Open folder
 function openFolder(folderId) {
@@ -241,6 +245,8 @@ async function deleteFile(fileId) {
 
 
 
+
+
 const fileInput = document.getElementById('fileUpload');
 
 fileInput.addEventListener('change', async (event) => {
@@ -280,4 +286,3 @@ fileInput.addEventListener('change', async (event) => {
         alert('An error occurred during upload.');
     }
 });
-
