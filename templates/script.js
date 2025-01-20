@@ -90,19 +90,27 @@ function loadFolders() {
 }
 
 // Load Files (Real-time listener)
-function loadFiles() {
+// Load Folders (Real-time listener)
+function loadFolders() {
   const q = query(
-    collection(db, "files"),
-    where("folderID", "==", currentFolderID || "root")
+    collection(db, "folders"),
+    where("parentID", "==", currentFolderID),
+    where("isDeleted", "==", false)
   );
 
   onSnapshot(q, (snapshot) => {
-    fileList.innerHTML = ""; // Clear the file list
+    folderList.innerHTML = ""; // Clear the folder list
     snapshot.forEach((doc) => {
-      const file = document.createElement("div");
-      file.className = "file";
-      file.textContent = doc.data().fileName;
-      fileList.appendChild(file);
+      const folder = document.createElement("div");
+      folder.className = "folder";
+      folder.textContent = doc.data().name;
+      folder.addEventListener("click", () => {
+        currentFolderID = doc.id;
+        folderPath.textContent = doc.data().name;
+        loadFolders(); // Load subfolders
+        loadFiles();   // Load files for the selected folder
+      });
+      folderList.appendChild(folder);
     });
   });
 }
