@@ -1,6 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
 import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
-import { getFirestore, doc, setDoc, collection, query, where, getDocs, onSnapshot } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+import { getFirestore, doc, setDoc, deleteDoc, collection, query, where, getDocs, onSnapshot } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
 // Firebase configuration
 const firebaseConfig = {
@@ -74,6 +74,16 @@ async function loadFolders() {
       const folder = document.createElement("div");
       folder.className = "folder";
       folder.textContent = doc.data().name;
+      
+      const deleteButton = document.createElement("button");
+      deleteButton.textContent = "Delete";
+      deleteButton.addEventListener("click", async () => {
+        // Permanently delete folder
+        await deleteFolder(doc.id);
+        loadFolders();  // Reload folders after deletion
+      });
+      
+      folder.appendChild(deleteButton);
       folder.addEventListener("click", () => {
         currentFolderID = doc.id;
         folderPath.textContent = doc.data().name;
@@ -97,6 +107,17 @@ document.getElementById("createFolderBtn").addEventListener("click", async () =>
   });
   loadFolders();  // Reload folder list after creating a folder
 });
+
+// Delete Folder Permanently
+async function deleteFolder(folderId) {
+  try {
+    // Permanently delete folder from Firestore
+    await deleteDoc(doc(db, "folders", folderId));
+    console.log("Folder deleted successfully!");
+  } catch (error) {
+    console.error("Error deleting folder:", error);
+  }
+}
 
 // File Upload
 document.getElementById("uploadFileBtn").addEventListener("click", async () => {
