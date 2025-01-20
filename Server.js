@@ -30,8 +30,12 @@ cloudinary.config({
   api_key: '264281543633578',
   api_secret: 'PcW6nrqsjkJxg9rxM2UwUfJowoU',
 });
+
 // Enable CORS for all origins
 app.use(cors());
+
+// Serve static files from the 'templates' directory (assuming index.html is in templates)
+app.use(express.static('templates'));
 
 // Multer Configuration for File Handling
 const storage = multer.memoryStorage();
@@ -88,6 +92,11 @@ app.post('/upload', upload.single('file'), (req, res) => {
         console.error('Error during upload:', error); // Log the error
         res.status(500).json({ message: 'Error during upload.', error: error.message }); // Send JSON error
     }
+});
+
+// Add route to serve the index.html when navigating to the root URL
+app.get('/', (req, res) => {
+    res.sendFile(__dirname + '/templates/index.html'); // Make sure this path is correct
 });
 
 // Start the Server
