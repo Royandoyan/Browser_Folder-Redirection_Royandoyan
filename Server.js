@@ -96,8 +96,9 @@ app.post('/upload', upload.single('file'), (req, res) => {
 
 // Add route to serve the index.html when navigating to the root URL
 app.get('/', (req, res) => {
-    res.sendFile(__dirname + 'index.html'); // Make sure this path is correct
+    res.sendFile(__dirname + '/templates/index.html'); // Ensure correct path to the index.html
 });
+
 
 // Start the Server
 app.listen(port, () => {
