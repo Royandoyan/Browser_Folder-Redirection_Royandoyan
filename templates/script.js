@@ -66,7 +66,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             alert('Sign-up successful! Redirecting...');
-            window.location.href = "index.html";
+            window.location.href = "/templates/home.html";
         } catch (error) {
             console.error('Error during sign-up:', error.message);
             alert('Sign-up failed. Please try again.');
