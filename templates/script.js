@@ -75,20 +75,20 @@ async function loadFolders() {
       folder.className = "folder";
       folder.textContent = doc.data().name;
       
-      const deleteButton = document.createElement("button");
-      deleteButton.textContent = "Delete";
-      deleteButton.addEventListener("click", async () => {
-        // Permanently delete folder
-        await deleteFolder(doc.id);
-        loadFolders();  // Reload folders after deletion
-      });
-      
-      folder.appendChild(deleteButton);
       folder.addEventListener("click", () => {
         currentFolderID = doc.id;
         folderPath.textContent = doc.data().name;
         loadFolders();  // Load subfolders
       });
+      
+      // Deletion Button
+      const deleteButton = document.createElement("button");
+      deleteButton.textContent = "Delete";
+      deleteButton.addEventListener("click", (e) => {
+        e.stopPropagation(); // Prevent the click event from propagating to the folder
+        deleteFolder(doc.id);
+      });
+      folder.appendChild(deleteButton);
       folderList.appendChild(folder);
     });
   });
@@ -108,14 +108,15 @@ document.getElementById("createFolderBtn").addEventListener("click", async () =>
   loadFolders();  // Reload folder list after creating a folder
 });
 
-// Delete Folder Permanently
-async function deleteFolder(folderId) {
+// Delete Folder
+async function deleteFolder(folderID) {
+  const folderRef = doc(db, "folders", folderID);
   try {
-    // Permanently delete folder from Firestore
-    await deleteDoc(doc(db, "folders", folderId));
-    console.log("Folder deleted successfully!");
+    await deleteDoc(folderRef);
+    alert("Folder deleted successfully!");
+    loadFolders(); // Reload the folder list after deletion
   } catch (error) {
-    console.error("Error deleting folder:", error);
+    alert("Error deleting folder: " + error.message);
   }
 }
 
