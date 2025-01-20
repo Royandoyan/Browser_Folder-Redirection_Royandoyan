@@ -26,10 +26,11 @@ const firebaseApp = initializeApp(firebaseConfig);
 const db = getFirestore(firebaseApp);
 
 cloudinary.config({
-  cloud_name: 'dvkzio03x',
-  api_key: '264281543633578',
-  api_secret: 'PcW6nrqsjkJxg9rxM2UwUfJowoU',
-});
+    cloud_name: 'dvkzio03x',  // Correct Cloudinary account
+    api_key: '264281543633578',
+    api_secret: 'PcW6nrqsjkJxg9rxM2UwUfJowoU',
+  });
+  
 
 // Enable CORS for all origins
 app.use(cors());
