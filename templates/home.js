@@ -1,4 +1,3 @@
-
 import { auth, db } from './firebase.js';
 import { doc, setDoc, collection, addDoc, getDocs, getDoc, writeBatch, serverTimestamp, query, where, onSnapshot, deleteDoc } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
 import { signOut } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
@@ -281,3 +280,4 @@ fileInput.addEventListener('change', async (event) => {
         alert('An error occurred during upload.');
     }
 });
+
