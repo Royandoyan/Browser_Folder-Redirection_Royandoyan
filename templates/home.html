@@ -4,14 +4,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Group Marites | Browser File Redirection</title>
+    <title>Rea | Browser File Redirection</title>
     <link rel="stylesheet" href="home.css">
 </head>
 
 <body>
     <nav>
         <div class="nav-left">
-            <span>FileHaven</span>
+            <span>FILE REDIRECTION</span>
         </div>
         <div class="nav-right">
             <button class="nav-item btn" id="logoutButton">Log Out</button>
@@ -21,23 +21,20 @@
     <div class="container">
         <div class="add-folder">
             <div class="left"></div>
-            <input type="text" id="folderName" placeholder="Enter folder name">
+            <input type="text" id="folderName" class="folder-text" placeholder="Enter folder name">
             <button class="right">Create Folder</button>
             <button class="right" onclick="window.location.href='home.html'">Back to Root</button>
         </div>
         <input type="hidden" id="currentParentId" value="0">
         <div class="folders-background">
-            <div id="folders"></div>
-            <div id="files"></div>
+            <div id="folders" class="folder-item"></div>
+            <div id="files" class="file-item"></div>
         </div>
     </div>
 
     <div class="floating-file-btn">
-        <input type="file" id="fileUpload" multiple>
-        <label for="fileUpload">Upload</label>
-    </div>    
-    <img src="folder.png" alt="Folder">
-<img src="file.png" alt="File">
+        <button id="uploadButton">Upload</button>
+    </div> 
 
     <script type="module" src="https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js"></script>
     <script type="module" src="https://www.gstatic.com/firebasejs/10.5.0/firebase-firestore.js"></script>
