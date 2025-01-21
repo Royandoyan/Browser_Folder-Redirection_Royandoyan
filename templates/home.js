@@ -268,7 +268,7 @@ fileInput.addEventListener('change', async (event) => {
     formData.append('parent_id', parentId);
 
     try {
-        const response = await fetch('https://advance-realtime-folder.onrender.com/upload', {
+        const response = await fetch('https://advance-realtime-folder.onrender.com/Upload', {
             method: 'POST',
             body: formData,
         });
