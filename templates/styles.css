@@ -1,56 +1,78 @@
 /* General Styles */
 body {
-  font-family: Arial, sans-serif;
+  font-family: 'Arial', sans-serif;
+  background-color: #f0f2f5;
   margin: 0;
   padding: 0;
-  background-color: #f4f4f4;
 }
 
+/* Header Styling */
 h1 {
   text-align: center;
-  margin-top: 20px;
+  margin-top: 40px;
+  font-size: 2.5rem;
+  font-weight: bold;
   color: #333;
 }
 
 /* Authentication Container */
 #authContainer {
-  width: 350px;
+  width: 100%;
+  max-width: 400px;
   margin: 50px auto;
-  padding: 20px;
-  background-color: white;
-  border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  padding: 30px;
+  background-color: #fff;
+  border-radius: 15px;
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
 }
 
 #authContainer h2 {
   text-align: center;
-  margin-bottom: 20px;
   color: #4CAF50;
+  font-size: 1.8rem;
+  margin-bottom: 20px;
 }
 
+/* Input Fields */
 input {
   width: 100%;
-  padding: 12px;
-  margin: 10px 0;
+  max-width: 350px;  /* Ensures consistency with buttons */
+  padding: 12px;  /* Shorter padding */
+  margin: 12px 0;
   border: 1px solid #ccc;
-  border-radius: 5px;
+  border-radius: 8px;
   font-size: 16px;
+  background-color: #f9f9f9;
+  transition: all 0.3s ease;
 }
 
+input:focus {
+  border-color: #4CAF50;
+  outline: none;
+  background-color: #eafaf1;
+}
+
+/* Buttons */
 button {
   width: 100%;
-  padding: 12px;
+  max-width: 350px;  /* Same as input width */
+  padding: 14px;
   background-color: #4CAF50;
   color: white;
   border: none;
-  border-radius: 5px;
+  border-radius: 8px;
   font-size: 16px;
   cursor: pointer;
   transition: background-color 0.3s ease;
+  margin: 10px 0; /* Added some space for separation between buttons and inputs */
 }
 
 button:hover {
   background-color: #45a049;
+}
+
+button:active {
+  background-color: #388e3c;
 }
 
 /* Links */
@@ -58,13 +80,26 @@ button:hover {
   color: #4CAF50;
   text-decoration: none;
   font-size: 14px;
+  display: inline-block;
+  margin-top: 15px;
+  text-align: center;
 }
 
 #authContainer a:hover {
   text-decoration: underline;
 }
 
-/* Toggle between Sign In and Sign Up */
+/* Center Button and Link */
+#authContainer p {
+  text-align: center;
+  margin-top: 20px;
+}
+
+#signupBtn {
+  margin-bottom: 20px; /* Give some space below the button */
+}
+
+/* Form Toggle */
 #signupForm {
   display: none;
 }
@@ -72,7 +107,11 @@ button:hover {
 /* Responsive Design */
 @media (max-width: 768px) {
   #authContainer {
-      width: 90%;
-      padding: 15px;
+    width: 90%;
+    padding: 20px;
+  }
+
+  h1 {
+    font-size: 2rem;
   }
 }
