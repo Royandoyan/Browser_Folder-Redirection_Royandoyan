@@ -27,8 +27,8 @@ const db = getFirestore(firebaseApp);
 
 cloudinary.config({
     cloud_name: 'dvkzio03x',  // Correct Cloudinary account
-    api_key: '264281543633578',
-    api_secret: 'PcW6nrqsjkJxg9rxM2UwUfJowoU',
+    api_key: '944258497648494',
+    api_secret: 'mnH7wMY5-x5VAtUL_Mdu6-6t-0w',
   });
   
 
