@@ -12,23 +12,30 @@ const port = 3000;
 
 // Firebase Configuration
 const firebaseConfig = {
-    apiKey: "AIzaSyDv6QALxp7OqwTaS6shB4SZ1n2fmSwvM1E",
-    authDomain: "filehaven-aae7f.firebaseapp.com",
-    projectId: "filehaven-aae7f",
-    storageBucket: "filehaven-aae7f.firebasestorage.app",
-    messagingSenderId: "651173413232",
-    appId: "1:651173413232:web:4d5478f6bb5fa8427ecfb5",
-    measurementId: "G-S2KQMF1SLK"
-};
-
-const firebaseApp = initializeApp(firebaseConfig);
-const db = getFirestore(firebaseApp);
-
-cloudinary.config({
-    cloud_name: 'dimiumaxg',
-    api_key: '236537376185178',
-    api_secret: 'xGb6dQRMzV0MJOFfJBqHjbJ5Wd4',
-});
+    apiKey: "AIzaSyAIKjugxiJh9Bd0B32SEd4t9FImRQ9SVK8",
+    authDomain: "browser-redirection.firebaseapp.com",
+    databaseURL: "https://browser-redirection-default-rtdb.firebaseio.com",
+    projectId: "browser-redirection",
+    storageBucket: "browser-redirection.firebasestorage.app",
+    messagingSenderId: "119718481062",
+    appId: "1:119718481062:web:3f57b707f3438fc309f867",
+    measurementId: "G-RG2M2FHGWV"
+  };
+  
+  const firebaseApp = initializeApp(firebaseConfig);
+  const db = getFirestore(firebaseApp);
+  
+  cloudinary.config({
+      cloud_name: 'dvkzio03x',  // Correct Cloudinary account
+      api_key: '944258497648494',
+      api_secret: 'mnH7wMY5-x5VAtUL_Mdu6-6t-0w',
+    });
+  
+  app.use(cors());
+  
+  app.use(express.static('templates')); 
+  
+  
 
 // Enable CORS for all origins
 app.use(cors());
