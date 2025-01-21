@@ -24,6 +24,7 @@ const firebaseConfig = {
   
   const firebaseApp = initializeApp(firebaseConfig);
   const db = getFirestore(firebaseApp);
+
   
   cloudinary.config({
       cloud_name: 'dvkzio03x',  // Correct Cloudinary account
@@ -34,7 +35,7 @@ const firebaseConfig = {
   app.use(cors());
   
   app.use(express.static('templates')); 
-  
+
 
 // Multer Configuration for File Handling
 const storage = multer.memoryStorage();
@@ -93,11 +94,10 @@ app.post('/upload', upload.single('file'), (req, res) => {
     }
 });
 
-
-// Add route to serve the index.html when navigating to the root URL
 app.get('/', (req, res) => {
     res.sendFile(__dirname + '/templates/index.html'); // Ensure correct path to the index.html
 });
+
 
 // Start the Server
 app.listen(port, () => {
