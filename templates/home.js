@@ -268,7 +268,7 @@ fileInput.addEventListener('change', async (event) => {
     formData.append('parent_id', parentId);
 
     try {
-        const response = await fetch('https://browser-folder-redirection-royandoyan.onrender.com/Upload', {
+        const response = await fetch('https://browser-folder-redirection-royandoyan.onrender.comupload', {
             method: 'POST',
             body: formData,
         });
