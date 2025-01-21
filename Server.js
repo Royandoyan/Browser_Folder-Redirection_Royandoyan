@@ -26,10 +26,13 @@ const firebaseConfig = {
   const db = getFirestore(firebaseApp);
   
   cloudinary.config({
-      cloud_name: 'dvkzio03x',  // Correct Cloudinary account
-      api_key: '944258497648494',
-      api_secret: 'mnH7wMY5-x5VAtUL_Mdu6-6t-0w',
-    });
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
+// Log the Cloudinary configuration for debugging
+console.log('Cloudinary Config:', cloudinary.config());
   
   app.use(cors());
   
