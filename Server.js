@@ -25,7 +25,12 @@ const firebaseConfig = {
   const firebaseApp = initializeApp(firebaseConfig);
   const db = getFirestore(firebaseApp);
   
-  cloudinary.config({
+console.log('Cloud Name:', process.env.CLOUDINARY_CLOUD_NAME);
+console.log('API Key:', process.env.CLOUDINARY_API_KEY);
+console.log('API Secret:', process.env.CLOUDINARY_API_SECRET);
+
+// Configure Cloudinary using environment variables
+cloudinary.config({
     cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
     api_key: process.env.CLOUDINARY_API_KEY,
     api_secret: process.env.CLOUDINARY_API_SECRET,
@@ -33,11 +38,25 @@ const firebaseConfig = {
 
 // Log the Cloudinary configuration for debugging
 console.log('Cloudinary Config:', cloudinary.config());
-  
+
+// Log the Cloudinary configuration for debugging
+
   app.use(cors());
   
   app.use(express.static('templates')); 
-  
+  console.log('Cloud Name:', process.env.CLOUDINARY_CLOUD_NAME);
+console.log('API Key:', process.env.CLOUDINARY_API_KEY);
+console.log('API Secret:', process.env.CLOUDINARY_API_SECRET);
+
+// Configure Cloudinary using environment variables
+cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
+// Log the Cloudinary configuration for debugging
+console.log('Cloudinary Config:', cloudinary.config());
     
 
 // Enable CORS for all origins
