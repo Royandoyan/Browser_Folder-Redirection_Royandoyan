@@ -35,10 +35,6 @@ const firebaseConfig = {
   
   app.use(express.static('templates')); 
   
-    
-
-// Enable CORS for all origins
-app.use(cors());
 
 // Multer Configuration for File Handling
 const storage = multer.memoryStorage();
