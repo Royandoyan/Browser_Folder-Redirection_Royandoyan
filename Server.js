@@ -31,7 +31,7 @@ cloudinary.config({
     api_secret: 'mnH7wMY5-x5VAtUL_Mdu6-6t-0w',
   });
   
-
+  console.log('Cloudinary Config:', cloudinary.config());
 // Enable CORS for all origins
 app.use(cors());
 
