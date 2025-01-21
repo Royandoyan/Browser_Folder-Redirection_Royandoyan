@@ -5,16 +5,6 @@
     box-sizing: border-box;
 }
 
-/* Font Import */
-@font-face {
-    font-family: LEMONMILK-Bold;
-    src: url(../Fonts/LEMONMILK-Bold.otf);
-}
-@font-face {
-    font-family: LEMONMILK-Light;
-    src: url(../Fonts/LEMONMILK-Light.otf);
-}
-
 /* Layout */
 .left {
     margin-right: auto;
